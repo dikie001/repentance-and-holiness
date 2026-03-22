@@ -14,7 +14,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<AppLayout />}>
           <Route index element={<HomePage />} />
-          <Route path="radio" element={<RadioPage />} />
+          <Route path="jesus-is-lord-radio" element={<RadioPage />} />
           <Route path="media" element={<MediaPage />} />
           <Route path="prophecies" element={<PropheciesPage />} />
           <Route path="about" element={<AboutPage />} />

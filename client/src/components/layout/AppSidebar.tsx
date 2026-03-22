@@ -73,17 +73,17 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: "Main",
     items: [
-      { title: "Home", url: "#", icon: House, active: true },
+      { title: "Home", url: "/", icon: House, active: true },
       {
         title: "Jesus Is Lord Radio",
-        url: "#",
+        url: "jesus-is-lord-radio",
         icon: RadioTower,
         badge: "LIVE",
       },
-      { title: "Media & Worship", url: "#", icon: Music4 },
-      { title: "Teachings", url: "#", icon: BookOpenText, badge: "New" },
-      { title: "Prophecies", url: "#", icon: Flame },
-      { title: "Gallery", url: "#", icon: ImagePlay },
+      { title: "Media & Worship", url: "/media", icon: Music4 },
+      { title: "Teachings", url: "/teachings", icon: BookOpenText, badge: "New" },
+      { title: "Prophecies", url: "/prophesies", icon: Flame },
+      { title: "Gallery", url: "/gallery", icon: ImagePlay },
     ],
   },
   {
@@ -97,7 +97,6 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: "Account",
     items: [
-      { title: "Dashboard", url: "#", icon: LayoutDashboard },
       { title: "Notifications", url: "#", icon: Bell, badge: "3" },
       { title: "Settings", url: "#", icon: Settings2 },
     ],
