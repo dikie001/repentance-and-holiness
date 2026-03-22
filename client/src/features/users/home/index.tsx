@@ -14,47 +14,33 @@
  *   lato:   ['Lato', 'sans-serif'],
  */
 
-import { useState } from "react"
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
+import { motion, useScroll, useTransform } from "framer-motion"
 import {
-  Radio,
-  Music2,
-  Video,
-  BookOpen,
-  Flame,
-  ImageIcon,
-  Play,
-  Pause,
-  SkipBack,
-  SkipForward,
-  Volume2,
-  VolumeX,
-  Heart,
-  Search,
-  Bell,
-  Home,
-  X,
-  ChevronRight,
-  TrendingUp,
-  Star,
-  Headphones,
-  Share2,
-  Bookmark,
-  ArrowRight,
-  Users,
-  Globe,
+    ArrowRight,
+    Bell,
+    Bookmark,
+    BookOpen,
+    ChevronRight,
+    Flame,
+    Globe,
+    Headphones,
+    Heart,
+    ImageIcon,
+    Music2,
+    Pause,
+    Play,
+    Radio,
+    Share2,
+    SkipBack,
+    SkipForward,
+    Star,
+    TrendingUp,
+    Video,
+    Volume2,
+    VolumeX
 } from "lucide-react"
+import { useState } from "react"
 
-/* ─── Types ───────────────────────────────────────────────── */
-type NavItem = "home" | "radio" | "media" | "prophecies" | "about"
-
-const NAV_ITEMS: { id: NavItem; label: string; icon: React.ReactNode }[] = [
-  { id: "home", label: "Home", icon: <Home size={20} /> },
-  { id: "radio", label: "Radio", icon: <Radio size={20} /> },
-  { id: "media", label: "Media", icon: <Music2 size={20} /> },
-  { id: "prophecies", label: "Prophecies", icon: <Flame size={20} /> },
-  { id: "about", label: "About", icon: <Users size={20} /> },
-]
 
 const MEDIA_CATEGORIES = [
   {
@@ -817,156 +803,57 @@ function HomeContent() {
   )
 }
 
-/* ─── Desktop Sidebar ────────────────────────────────────── */
-function Sidebar({
-  active,
-  setActive,
-}: {
-  active: NavItem
-  setActive: (n: NavItem) => void
-}) {
-  return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-slate-100 bg-white/80 px-4 py-6 backdrop-blur-xl md:flex">
-      {/* Logo */}
-      <div className="mb-8 flex items-center gap-3 px-2">
-        <div
-          className="flex h-10 w-10 items-center justify-center rounded-2xl text-lg text-white shadow-md"
-          style={{ background: "linear-gradient(135deg, #1d4ed8, #4338ca)" }}
-        >
-          ✝
-        </div>
-        <div>
-          <p
-            className="text-sm leading-tight font-black text-blue-900"
-            style={{ fontFamily: "'Cinzel', serif" }}
-          >
-            Repentance &
-          </p>
-          <p
-            className="text-xs font-bold text-blue-600"
-            style={{ fontFamily: "'Cinzel', serif" }}
-          >
-            Holiness Ministry
-          </p>
-        </div>
-      </div>
-
-      {/* Nav links */}
-      <nav className="flex-1 space-y-1">
-        {NAV_ITEMS.map(({ id, label, icon }) => (
-          <motion.button
-            key={id}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setActive(id)}
-            className="relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left"
-          >
-            {active === id && (
-              <motion.div
-                layoutId="sidebarIndicator"
-                className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600"
-              />
-            )}
-            <motion.div
-              animate={
-                active === id ? { color: "#ffffff" } : { color: "#64748b" }
-              }
-              className="relative z-10"
-            >
-              {icon}
-            </motion.div>
-            <span
-              className={`relative z-10 text-sm font-semibold ${active === id ? "text-white" : "text-slate-500"}`}
-            >
-              {label}
-            </span>
-          </motion.button>
-        ))}
-      </nav>
-
-      {/* Mini radio teaser */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="relative mt-4 overflow-hidden rounded-2xl p-4 text-white"
-        style={{ background: "linear-gradient(135deg, #1e3a8a, #1d4ed8)" }}
-      >
-        <div className="mb-1 flex items-center gap-2">
-          <motion.div
-            className="h-2 w-2 rounded-full bg-red-400"
-            animate={{ opacity: [1, 0.3, 1] }}
-            transition={{ duration: 1.2, repeat: Infinity }}
-          />
-          <span className="text-[10px] font-bold tracking-widest text-blue-200 uppercase">
-            Live
-          </span>
-        </div>
-        <p className="mb-2 text-xs leading-tight font-bold">
-          Jesus Is Lord Radio
-        </p>
-        <EqBars playing />
-      </motion.div>
-
-      <p className="mt-4 text-center text-[10px] text-slate-300">
-        © 2026 Repentance & Holiness Ministry
-      </p>
-    </aside>
-  )
-}
 
 /* ─── Mobile Bottom Nav ───────────────────────────────────── */
-function BottomNav({
-  active,
-  setActive,
-}: {
-  active: NavItem
-  setActive: (n: NavItem) => void
-}) {
-  return (
-    <div className="fixed right-0 bottom-0 left-0 z-50 md:hidden">
-      <div className="border-t border-slate-100 bg-white/95 px-2 pt-2 pb-3 backdrop-blur-lg">
-        <div className="flex justify-around">
-          {NAV_ITEMS.map(({ id, label, icon }) => (
-            <motion.button
-              key={id}
-              whileTap={{ scale: 0.88 }}
-              onClick={() => setActive(id)}
-              className="relative flex flex-col items-center gap-1 px-3 py-1"
-            >
-              {active === id && (
-                <motion.div
-                  layoutId="navIndicator"
-                  className="absolute -top-1.5 left-1/2 h-1 w-5 -translate-x-1/2 rounded-full bg-blue-600"
-                />
-              )}
-              <motion.div
-                animate={
-                  active === id
-                    ? { color: "#1d4ed8", scale: 1.1 }
-                    : { color: "#94a3b8", scale: 1 }
-                }
-                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              >
-                {icon}
-              </motion.div>
-              <span
-                className={`text-[10px] font-semibold ${active === id ? "text-blue-700" : "text-slate-400"}`}
-              >
-                {label}
-              </span>
-            </motion.button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
+// function BottomNav({
+//   active,
+//   setActive,
+// }: {
+//   active: NavItem
+//   setActive: (n: NavItem) => void
+// }) {
+//   return (
+//     <div className="fixed right-0 bottom-0 left-0 z-50 md:hidden">
+//       <div className="border-t border-slate-100 bg-white/95 px-2 pt-2 pb-3 backdrop-blur-lg">
+//         <div className="flex justify-around">
+//           {NAV_ITEMS.map(({ id, label, icon }) => (
+//             <motion.button
+//               key={id}
+//               whileTap={{ scale: 0.88 }}
+//               onClick={() => setActive(id)}
+//               className="relative flex flex-col items-center gap-1 px-3 py-1"
+//             >
+//               {active === id && (
+//                 <motion.div
+//                   layoutId="navIndicator"
+//                   className="absolute -top-1.5 left-1/2 h-1 w-5 -translate-x-1/2 rounded-full bg-blue-600"
+//                 />
+//               )}
+//               <motion.div
+//                 animate={
+//                   active === id
+//                     ? { color: "#1d4ed8", scale: 1.1 }
+//                     : { color: "#94a3b8", scale: 1 }
+//                 }
+//                 transition={{ type: "spring", stiffness: 400, damping: 20 }}
+//               >
+//                 {icon}
+//               </motion.div>
+//               <span
+//                 className={`text-[10px] font-semibold ${active === id ? "text-blue-700" : "text-slate-400"}`}
+//               >
+//                 {label}
+//               </span>
+//             </motion.button>
+//           ))}
+//         </div>
+//       </div>
+//     </div>
+//   )
+// }
 
 /* ─── App Shell ───────────────────────────────────────────── */
 export default function HomePage() {
-  const [activeNav, setActiveNav] = useState<NavItem>("home")
-  const [searchOpen, setSearchOpen] = useState(false)
-
   return (
     <div
       className="min-h-screen"
@@ -976,128 +863,9 @@ export default function HomePage() {
         fontFamily: "'Lato', sans-serif",
       }}
     >
-      <div className="flex min-h-screen">
-        <Sidebar active={activeNav} setActive={setActiveNav} />
-
-        <div className="flex min-h-screen flex-1 flex-col">
-          {/* Top bar */}
-          <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/80 backdrop-blur-xl">
-            <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
-              {/* Mobile logo */}
-              <div className="flex flex-shrink-0 items-center gap-2 md:hidden">
-                <div
-                  className="flex h-8 w-8 items-center justify-center rounded-xl text-sm text-white shadow"
-                  style={{
-                    background: "linear-gradient(135deg, #1d4ed8, #4338ca)",
-                  }}
-                >
-                  ✝
-                </div>
-                <p
-                  className="text-xs font-black text-blue-900"
-                  style={{ fontFamily: "'Cinzel', serif" }}
-                >
-                  RHM
-                </p>
-              </div>
-
-              {/* Search bar */}
-              <motion.div layout className="flex-1">
-                <AnimatePresence mode="wait">
-                  {searchOpen ? (
-                    <motion.div
-                      key="search"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"
-                    >
-                      <Search size={16} className="text-slate-400" />
-                      <input
-                        autoFocus
-                        placeholder="Search songs, teachings, prophecies..."
-                        className="flex-1 bg-transparent text-sm text-slate-700 placeholder-slate-400 outline-none"
-                      />
-                      <button onClick={() => setSearchOpen(false)}>
-                        <X size={16} className="text-slate-400" />
-                      </button>
-                    </motion.div>
-                  ) : (
-                    <motion.button
-                      key="searchbtn"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      onClick={() => setSearchOpen(true)}
-                      className="flex w-full items-center gap-2 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-400 transition-colors hover:border-blue-200"
-                    >
-                      <Search size={15} />
-                      <span>Search songs, teachings, prophecies…</span>
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-blue-600"
-              >
-                <Bell size={17} />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500" />
-              </motion.button>
-            </div>
-          </header>
-
-          {/* Main scrollable content */}
-          <main className="mx-auto w-full max-w-3xl flex-1 overflow-y-auto px-4 py-5">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeNav}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              >
-                {activeNav === "home" && <HomeContent />}
-                {activeNav !== "home" && (
-                  <div className="flex min-h-[60vh] flex-col items-center justify-center pb-20 text-center">
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                      className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 text-blue-400"
-                    >
-                      {NAV_ITEMS.find((n) => n.id === activeNav)?.icon}
-                    </motion.div>
-                    <h2
-                      className="mb-2 text-xl font-black text-slate-700"
-                      style={{ fontFamily: "'Cinzel', serif" }}
-                    >
-                      {NAV_ITEMS.find((n) => n.id === activeNav)?.label}
-                    </h2>
-                    <p className="text-sm text-slate-400">
-                      This section is coming soon.
-                    </p>
-                    <motion.button
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => setActiveNav("home")}
-                      className="mt-6 rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white"
-                    >
-                      Back to Home
-                    </motion.button>
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </main>
-        </div>
+      <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-5">
+        <HomeContent />
       </div>
-
-      <BottomNav active={activeNav} setActive={setActiveNav} />
     </div>
   )
 }

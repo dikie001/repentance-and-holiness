@@ -450,7 +450,6 @@ function SidebarBody({
 ───────────────────────────────────────────────────────────── */
 function DesktopSidebar() {
   const [collapsed, setCollapsed] = useState(false)
-  const shouldReduce = useReducedMotion()
 
   return (
     <motion.aside
