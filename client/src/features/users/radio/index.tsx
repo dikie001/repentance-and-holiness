@@ -92,7 +92,7 @@ const BAR_COLORS = [
 const SEGMENTS = 16
 const BAR_COUNT = 30
 
-/* ── Bottom Sheet ── */
+// ── Bottom Sheet ────────────────────────────────────────────────
 interface SheetProps {
   open: boolean
   onClose: () => void
@@ -106,73 +106,26 @@ function Sheet({ open, onClose, title, children }: SheetProps) {
   return (
     <div
       onClick={(e) => e.target === e.currentTarget && onClose()}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 200,
-        background: "rgba(0,0,6,0.72)",
-        backdropFilter: "blur(10px)",
-        display: "flex",
-        alignItems: "flex-end",
-      }}
+      className="fixed inset-0 z-[200] flex items-end bg-black/70 backdrop-blur-lg"
     >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 560,
-          background: "#0d0d1a",
-          borderRadius: "28px 28px 0 0",
-          maxHeight: "85vh",
-          overflowY: "auto",
-          boxShadow: "0 -12px 60px rgba(0,0,0,0.7)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          borderBottom: "none",
-        }}
-      >
-        <div
-          style={{
-            width: 44,
-            height: 5,
-            background: "#333",
-            borderRadius: 999,
-            margin: "18px auto 0",
-          }}
-        />
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "16px 24px 8px",
-          }}
-        >
-          <span style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>
-            {title}
-          </span>
+      <div className="max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-t-[28px] border border-b-0 border-white/7 bg-[#0d0d1a] shadow-2xl">
+        <div className="mx-auto mt-4.5 h-1.5 w-11 rounded-full bg-neutral-700" />
+        <div className="flex items-center justify-between px-6 pt-4 pb-2">
+          <span className="text-xl font-extrabold text-white">{title}</span>
           <button
             onClick={onClose}
-            style={{
-              background: "rgba(255,255,255,0.08)",
-              border: "none",
-              borderRadius: "50%",
-              width: 40,
-              height: 40,
-              display: "grid",
-              placeItems: "center",
-              color: "#aaa",
-              cursor: "pointer",
-            }}
+            className="grid h-10 w-10 place-items-center rounded-full bg-white/8 text-neutral-400 transition-colors hover:bg-white/12"
           >
             <X size={22} />
           </button>
         </div>
-        <div style={{ padding: "0 24px 40px" }}>{children}</div>
+        <div className="px-6 pb-10">{children}</div>
       </div>
     </div>
   )
 }
 
-/* ── Segmented Equalizer ── */
+// ── Segmented Equalizer ─────────────────────────────────────────
 const EQ_W = 600
 const EQ_H = 160
 
@@ -189,7 +142,6 @@ function SegmentedEQ({ analyserRef, playing }: SegmentedEQProps) {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
@@ -275,13 +227,7 @@ function SegmentedEQ({ analyserRef, playing }: SegmentedEQProps) {
       ref={canvasRef}
       width={EQ_W}
       height={EQ_H}
-      style={{
-        width: "100%",
-        height: "auto",
-        display: "block",
-        margin: "0 auto",
-        background: "transparent",
-      }}
+      className="mx-auto block h-auto w-full bg-transparent"
     />
   )
 }
@@ -317,31 +263,25 @@ export default function RadioPlayer() {
   const recTimer = useRef<number | null>(null)
   const recDuration = useRef(0)
 
-  // ── Audio element setup ───────────────────────────────────────
+  // Audio setup
   useEffect(() => {
     const a = new Audio()
     a.crossOrigin = "anonymous"
     audioRef.current = a
 
-    const onPlaying = () => {
+    a.addEventListener("playing", () => {
       setPlaying(true)
       setLoading(false)
       setError(null)
-    }
-    const onPause = () => setPlaying(false)
-    const onWaiting = () => setLoading(true)
-    const onCanPlay = () => setLoading(false)
-    const onError = () => {
+    })
+    a.addEventListener("pause", () => setPlaying(false))
+    a.addEventListener("waiting", () => setLoading(true))
+    a.addEventListener("canplay", () => setLoading(false))
+    a.addEventListener("error", () => {
       setLoading(false)
       setError("Stream failed – try another server")
       setPlaying(false)
-    }
-
-    a.addEventListener("playing", onPlaying)
-    a.addEventListener("pause", onPause)
-    a.addEventListener("waiting", onWaiting)
-    a.addEventListener("canplay", onCanPlay)
-    a.addEventListener("error", onError)
+    })
 
     a.src = STREAMS[0].url
     a.volume = 1
@@ -349,17 +289,11 @@ export default function RadioPlayer() {
     a.play().catch(() => {})
 
     return () => {
-      a.removeEventListener("playing", onPlaying)
-      a.removeEventListener("pause", onPause)
-      a.removeEventListener("waiting", onWaiting)
-      a.removeEventListener("canplay", onCanPlay)
-      a.removeEventListener("error", onError)
       a.pause()
       a.src = ""
     }
   }, [])
 
-  // Volume & mute control
   useEffect(() => {
     if (gainNodeRef.current) {
       gainNodeRef.current.gain.value = muted ? 0 : volume / 100
@@ -368,7 +302,7 @@ export default function RadioPlayer() {
     }
   }, [volume, muted])
 
-  // Fake listener count
+  // Fake listeners
   useEffect(() => {
     const id = setInterval(() => {
       setListeners((n) =>
@@ -386,22 +320,17 @@ export default function RadioPlayer() {
         window.AudioContext || (window as any).webkitAudioContext
       )()
     }
-
     const ctx = ctxRef.current
-    if (ctx.state === "suspended") {
-      ctx.resume().catch(() => {})
-    }
+    if (ctx.state === "suspended") ctx.resume().catch(() => {})
 
     if (!sourceRef.current) {
       sourceRef.current = ctx.createMediaElementSource(audioRef.current)
     }
-
     if (!gainNodeRef.current) {
       gainNodeRef.current = ctx.createGain()
       gainNodeRef.current.gain.value = muted ? 0 : volume / 100
       sourceRef.current.connect(gainNodeRef.current)
     }
-
     if (!analyserRef.current) {
       analyserRef.current = ctx.createAnalyser()
       analyserRef.current.fftSize = 1024
@@ -409,7 +338,6 @@ export default function RadioPlayer() {
       gainNodeRef.current.connect(analyserRef.current)
       analyserRef.current.connect(ctx.destination)
     }
-
     if (!destRef.current) {
       destRef.current = ctx.createMediaStreamDestination()
       analyserRef.current.connect(destRef.current)
@@ -429,13 +357,9 @@ export default function RadioPlayer() {
 
     try {
       ensureAudioContext()
-    } catch {
-      // ignore
-    }
-
+    } catch {}
     setLoading(true)
     setError(null)
-
     a.play().catch(() => {
       setError("Playback blocked – tap again")
       setLoading(false)
@@ -446,16 +370,13 @@ export default function RadioPlayer() {
     (newIdx: number) => {
       setSheet(null)
       setMenuOpen(false)
-
       const a = audioRef.current
       if (!a) return
 
       if (sourceRef.current) {
         try {
           sourceRef.current.disconnect()
-        } catch (err){
-          console.log(err)
-        }
+        } catch {}
         sourceRef.current = null
       }
       gainNodeRef.current = null
@@ -470,24 +391,19 @@ export default function RadioPlayer() {
 
       try {
         ensureAudioContext()
-      } catch (err){
-        setError("Audio context failed")
-        console.log(err)
-      }
-
+      } catch {}
       a.play().catch(() => setError("Tap play to start"))
     },
     [ensureAudioContext]
   )
 
-  // ── Recording ──────────────────────────────────────────────────
+  // Recording
   const startRecording = async () => {
     try {
       const stream = ensureAudioContext()
       recChunks.current = []
       recDuration.current = 0
 
-      // Prefer webm/opus, fallback to default
       const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
         ? "audio/webm;codecs=opus"
         : "audio/webm"
@@ -496,7 +412,6 @@ export default function RadioPlayer() {
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) recChunks.current.push(e.data)
       }
-
       recorder.onstop = () => {
         const blob = new Blob(recChunks.current, { type: "audio/webm" })
         setRecordings((prev) => [
@@ -518,18 +433,14 @@ export default function RadioPlayer() {
         recDuration.current++
         setRecSeconds(recDuration.current)
       }, 1000)
-    } catch (err: unknown) {
+    } catch (err: any) {
       setError(`Recording failed: ${err?.message || "Unknown error"}`)
     }
   }
 
   const stopRecording = () => {
-    if (recRef.current) {
-      recRef.current.stop()
-    }
-    if (recTimer.current) {
-      clearInterval(recTimer.current)
-    }
+    recRef.current?.stop()
+    if (recTimer.current) clearInterval(recTimer.current)
     setRecording(false)
   }
 
@@ -543,19 +454,13 @@ export default function RadioPlayer() {
   }
 
   const share = async () => {
-    const data = {
-      title: "Jesus Is Lord Radio",
-      url: STREAMS[streamIdx].url,
-    }
-
+    const data = { title: "Jesus Is Lord Radio", url: STREAMS[streamIdx].url }
     if (navigator.share) {
       navigator.share(data).catch(() => {})
     } else {
       try {
         await navigator.clipboard.writeText(data.url)
-      } catch (error) {
-        setError(`Failed to share: ${error}`)
-      }
+      } catch {}
     }
   }
 
@@ -569,7 +474,7 @@ export default function RadioPlayer() {
       icon: <Mic size={20} />,
       label: recording ? `Stop (${fmt(recSeconds)})` : "Record",
       action: recording ? stopRecording : startRecording,
-      color: recording ? "#f87171" : undefined,
+      color: recording ? "text-red-400" : "",
     },
     {
       icon: <Download size={20} />,
@@ -586,166 +491,47 @@ export default function RadioPlayer() {
         href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap"
         rel="stylesheet"
       />
-      <style>{`
-        * { margin:0; padding:0; box-sizing:border-box; }
-        html,body { height:100%; background:#000; font-family:'Barlow',sans-serif; overscroll-behavior:none; }
-        button { touch-action:manipulation; cursor:pointer; }
-        @keyframes spin   { to { transform:rotate(360deg) } }
-        @keyframes pulse  { 0%,100%{box-shadow:0 0 0 0 rgba(99,202,255,0.35)} 50%{box-shadow:0 0 0 28px rgba(99,202,255,0)} }
-        @keyframes blink  { 0%,100%{opacity:1} 50%{opacity:0.2} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-      `}</style>
 
-      <div
-        style={{
-          height: "100svh",
-          display: "flex",
-          flexDirection: "column",
-          background:
-            "linear-gradient(170deg, #060614 0%, #0a0a1e 60%, #060610 100%)",
-          color: "#fff",
-          overflow: "hidden",
-          position: "relative",
-          padding:
-            "env(safe-area-inset-top,0) env(safe-area-inset-right,0) 0 env(safe-area-inset-left,0)",
-        }}
-      >
+      <div className="font-barlow relative flex h-svh flex-col overflow-hidden bg-gradient-to-br from-[#060614] via-[#0a0a1e] to-[#060610] text-white">
         {/* Ambient glow */}
-        <div
-          style={{
-            position: "absolute",
-            top: -80,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 400,
-            height: 400,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(0,120,255,0.12) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
+        <div className="bg-gradient-radial pointer-events-none absolute -top-20 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full from-blue-500/12 to-transparent" />
 
         {/* Header */}
-        <div
-          style={{
-            padding: "14px 18px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            position: "relative",
-            zIndex: 10,
-          }}
-        >
-          {/* Logo + Name */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 12,
-                background: "linear-gradient(135deg, #1a6fff, #00c8ff)",
-                display: "grid",
-                placeItems: "center",
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontWeight: 900,
-                fontSize: 13,
-                color: "#fff",
-                letterSpacing: 0.5,
-                boxShadow: "0 4px 20px rgba(0,170,255,0.4)",
-              }}
-            >
+        <header className="relative z-10 flex items-center justify-between px-4.5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="font-barlow-condensed grid h-10.5 w-10.5 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-400 text-sm font-bold tracking-wide shadow-lg shadow-cyan-500/40">
               JIL
             </div>
             <div>
-              <div
-                style={{
-                  fontSize: 15,
-                  fontWeight: 800,
-                  color: "#fff",
-                  lineHeight: 1,
-                }}
-              >
+              <div className="text-[15px] leading-none font-extrabold">
                 Jesus Is Lord
               </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#4db8ff",
-                  fontWeight: 600,
-                  marginTop: 2,
-                }}
-              >
+              <div className="mt-0.5 text-xs font-semibold text-cyan-400">
                 Global Radio
               </div>
             </div>
           </div>
 
-          {/* Live badge + Menu */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div
-              style={{
-                background: "rgba(255,40,40,0.15)",
-                border: "1px solid rgba(255,80,80,0.35)",
-                borderRadius: 999,
-                padding: "5px 12px",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                fontSize: 11,
-                fontWeight: 800,
-                color: "#ff6060",
-                letterSpacing: 1.5,
-              }}
-            >
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-1.5 rounded-full border border-red-600/35 bg-red-900/15 px-3 py-1 text-xs font-extrabold tracking-wider text-red-400">
               <div
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: "#ff4040",
-                  animation: playing ? "blink 1.4s infinite" : "none",
-                }}
+                className={`h-2 w-2 rounded-full bg-red-500 ${playing ? "animate-pulse" : ""}`}
               />
               LIVE
             </div>
 
-            <div style={{ position: "relative" }}>
+            <div className="relative">
               <button
                 onClick={() => setMenuOpen((o) => !o)}
-                style={{
-                  background: menuOpen
-                    ? "rgba(255,255,255,0.12)"
-                    : "rgba(255,255,255,0.07)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  width: 42,
-                  height: 42,
-                  borderRadius: 12,
-                  display: "grid",
-                  placeItems: "center",
-                  color: "#aaa",
-                  transition: "background 0.2s",
-                }}
+                className={`grid h-10.5 w-10.5 place-items-center rounded-xl border border-white/10 text-neutral-400 transition-colors ${
+                  menuOpen ? "bg-white/12" : "bg-white/7 hover:bg-white/10"
+                }`}
               >
                 <MoreVertical size={22} />
               </button>
 
               {menuOpen && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "calc(100% + 10px)",
-                    right: 0,
-                    background: "#0f0f24",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: 16,
-                    boxShadow: "0 20px 60px rgba(0,0,0,0.6)",
-                    padding: 8,
-                    minWidth: 210,
-                    zIndex: 300,
-                    animation: "fadeUp 0.18s ease",
-                  }}
-                >
+                <div className="animate-fade-up absolute top-full right-0 z-30 mt-2.5 min-w-[210px] rounded-xl border border-white/10 bg-[#0f0f24] py-2 shadow-2xl">
                   {menuItems.map((item) => (
                     <button
                       key={item.label}
@@ -753,21 +539,7 @@ export default function RadioPlayer() {
                         item.action()
                         setMenuOpen(false)
                       }}
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 14,
-                        padding: "11px 14px",
-                        border: "none",
-                        background: "none",
-                        color: item.color || "#e0e0ff",
-                        fontWeight: 600,
-                        fontSize: 14,
-                        borderRadius: 10,
-                        cursor: "pointer",
-                        transition: "background 0.15s",
-                      }}
+                      className={`flex w-full items-center gap-3.5 rounded-lg px-3.5 py-2.5 text-sm font-semibold transition-colors hover:bg-white/7 ${item.color || "text-indigo-100"}`}
                     >
                       {item.icon}
                       {item.label}
@@ -777,50 +549,24 @@ export default function RadioPlayer() {
               )}
             </div>
           </div>
-        </div>
+        </header>
 
         {/* Main content */}
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            padding: "0 20px 20px",
-            overflow: "hidden",
-          }}
-        >
-          {/* Artwork */}
-          <div style={{ textAlign: "center", marginTop: "2vh", width: "100%" }}>
-            <div
-              style={{
-                position: "relative",
-                width: "fit-content",
-                margin: "0 auto 8px",
-              }}
-            >
+        <main className="flex flex-1 flex-col items-center overflow-hidden px-5 pb-5">
+          {/* Artwork + title */}
+          <div className="mt-[2vh] w-full text-center">
+            <div className="relative mx-auto mb-2 w-fit">
               <div
-                style={{
-                  width: "min(56vw, 220px)",
-                  aspectRatio: "1",
-                  borderRadius: "50%",
-                  overflow: "hidden",
-                  border: "4px solid rgba(255,255,255,0.12)",
-                  boxShadow: playing
-                    ? "0 0 0 12px rgba(0,140,255,0.15), 0 20px 60px rgba(0,100,255,0.4)"
-                    : "0 16px 50px rgba(0,0,0,0.5)",
-                  animation: playing ? "pulse 3.2s infinite" : "none",
-                }}
+                className={`aspect-square w-[min(56vw,220px)] overflow-hidden rounded-full border-4 border-white/12 transition-all duration-700 ${
+                  playing
+                    ? "animate-pulse-slow shadow-[0_0_0_12px_rgba(0,140,255,0.15),0_20px_60px_rgba(0,100,255,0.4)]"
+                    : "shadow-xl shadow-black/50"
+                }`}
               >
                 <img
                   src="/images/radio-logo.png"
                   alt="Jesus Is Lord Radio"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    animation: playing ? "spin 28s linear infinite" : "none",
-                  }}
+                  className={`h-full w-full object-cover ${playing ? "animate-spin-slow" : ""}`}
                   onError={(e) => {
                     e.currentTarget.src =
                       "https://static-media.streema.com/media/cache/b8/70/b870ab4505ebd20d76984a8ea8025007.jpg"
@@ -829,77 +575,39 @@ export default function RadioPlayer() {
               </div>
 
               <div
-                style={{
-                  position: "absolute",
-                  bottom: -10,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  background: playing
-                    ? "linear-gradient(90deg,#0066ff,#00c8ff)"
-                    : "#2a2a4a",
-                  color: "white",
-                  fontSize: 11,
-                  fontWeight: 900,
-                  padding: "5px 16px",
-                  borderRadius: 999,
-                  border: "2px solid rgba(255,255,255,0.15)",
-                  letterSpacing: 1.5,
-                  textTransform: "uppercase",
-                  whiteSpace: "nowrap",
-                }}
+                className={`absolute -bottom-2.5 left-1/2 -translate-x-1/2 rounded-full border-2 border-white/15 px-4 py-1.5 text-xs font-black tracking-widest whitespace-nowrap uppercase ${
+                  playing
+                    ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white"
+                    : "bg-neutral-800 text-white/90"
+                }`}
               >
                 {playing ? "● ON AIR" : "OFF AIR"}
               </div>
             </div>
 
-            <div
-              style={{
-                fontSize: 22,
-                fontWeight: 900,
-                lineHeight: 1.1,
-                margin: "18px 0 4px",
-                letterSpacing: -0.5,
-              }}
-            >
+            <h1 className="mt-4.5 mb-1 text-2xl leading-tight font-black tracking-tight">
               Jesus Is Lord Radio
-            </div>
-            <div style={{ fontSize: 13, color: "#7080a0", fontWeight: 600 }}>
+            </h1>
+            <p className="text-sm font-semibold text-slate-400">
               Repentance & Holiness · {listeners} listening
-            </div>
+            </p>
           </div>
 
           {/* EQ */}
-          <div style={{ width: "100%", maxWidth: 400, marginTop: 16 }}>
+          <div className="mt-4 w-full max-w-md">
             <SegmentedEQ analyserRef={analyserRef} playing={playing} />
           </div>
 
           {/* Controls */}
-          <div
-            style={{
-              width: "100%",
-              marginTop: "auto",
-              paddingBottom: "env(safe-area-inset-bottom,16px)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 20,
-            }}
-          >
-            {/* Play / skip */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 36,
-              }}
-            >
+          <div className="mt-auto flex w-full flex-col gap-5 pb-[env(safe-area-inset-bottom,16px)]">
+            <div className="flex items-center justify-center gap-9">
               <button
                 onClick={() =>
                   switchStream(
                     (streamIdx - 1 + STREAMS.length) % STREAMS.length
                   )
                 }
-                style={{ background: "none", border: "none", color: "#5580ff" }}
+                className="text-blue-400 transition-colors hover:text-blue-300"
               >
                 <SkipBack size={30} fill="currentColor" />
               </button>
@@ -907,27 +615,14 @@ export default function RadioPlayer() {
               <button
                 onClick={togglePlay}
                 disabled={loading}
-                style={{
-                  width: 88,
-                  height: 88,
-                  borderRadius: "50%",
-                  background: "linear-gradient(145deg, #1a5fff, #00aaff)",
-                  border: "none",
-                  boxShadow: playing
-                    ? "0 0 0 8px rgba(0,140,255,0.2), 0 12px 40px rgba(0,140,255,0.5)"
-                    : "0 10px 36px rgba(0,100,255,0.4)",
-                  display: "grid",
-                  placeItems: "center",
-                  opacity: loading ? 0.7 : 1,
-                  transition: "box-shadow 0.3s",
-                }}
+                className={`grid h-22 w-22 place-items-center rounded-full border-none bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg transition-all duration-300 ${
+                  playing
+                    ? "shadow-[0_0_0_8px_rgba(0,140,255,0.2),0_12px_40px_rgba(0,140,255,0.5)]"
+                    : "shadow-[0_10px_36px_rgba(0,100,255,0.4)]"
+                } ${loading ? "opacity-70" : "hover:scale-105"}`}
               >
                 {loading ? (
-                  <Loader2
-                    size={44}
-                    color="#fff"
-                    style={{ animation: "spin 0.9s linear infinite" }}
-                  />
+                  <Loader2 size={44} className="animate-spin text-white" />
                 ) : playing ? (
                   <Pause size={46} fill="white" color="white" />
                 ) : (
@@ -935,35 +630,24 @@ export default function RadioPlayer() {
                     size={46}
                     fill="white"
                     color="white"
-                    style={{ marginLeft: 6 }}
+                    className="ml-1.5"
                   />
                 )}
               </button>
 
               <button
                 onClick={() => switchStream((streamIdx + 1) % STREAMS.length)}
-                style={{ background: "none", border: "none", color: "#5580ff" }}
+                className="text-blue-400 transition-colors hover:text-blue-300"
               >
                 <SkipForward size={30} fill="currentColor" />
               </button>
             </div>
 
             {/* Volume */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "0 8px",
-              }}
-            >
+            <div className="flex items-center gap-3 px-2">
               <button
                 onClick={() => setMuted((m) => !m)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: muted ? "#444" : "#4499ff",
-                }}
+                className={muted ? "text-neutral-600" : "text-cyan-400"}
               >
                 {muted || volume === 0 ? (
                   <VolumeX size={22} />
@@ -972,26 +656,10 @@ export default function RadioPlayer() {
                 )}
               </button>
 
-              <div
-                style={{
-                  flex: 1,
-                  position: "relative",
-                  height: 6,
-                  borderRadius: 3,
-                  background: "rgba(255,255,255,0.08)",
-                }}
-              >
+              <div className="relative h-1.5 flex-1 rounded-full bg-white/8">
                 <div
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: `${muted ? 0 : volume}%`,
-                    background: "linear-gradient(90deg, #1a5fff, #00c8ff)",
-                    borderRadius: 3,
-                    transition: "width 0.05s",
-                  }}
+                  className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 transition-all duration-100"
+                  style={{ width: `${muted ? 0 : volume}%` }}
                 />
                 <input
                   type="range"
@@ -1002,33 +670,19 @@ export default function RadioPlayer() {
                     setVolume(+e.target.value)
                     setMuted(false)
                   }}
-                  style={{
-                    position: "absolute",
-                    inset: "-8px 0",
-                    opacity: 0,
-                    cursor: "pointer",
-                    width: "100%",
-                  }}
+                  className="absolute inset-y-[-8px] w-full cursor-pointer opacity-0"
                 />
               </div>
 
-              <span
-                style={{
-                  minWidth: 38,
-                  textAlign: "right",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: "#5580aa",
-                }}
-              >
+              <span className="min-w-9 text-right text-sm font-bold text-slate-400">
                 {muted ? "0" : volume}%
               </span>
             </div>
           </div>
-        </div>
+        </main>
       </div>
 
-      {/* ── Bottom Sheets ── */}
+      {/* Sheets */}
       <Sheet
         open={sheet === "sources"}
         onClose={() => setSheet(null)}
@@ -1038,42 +692,19 @@ export default function RadioPlayer() {
           <div
             key={s.id}
             onClick={() => switchStream(i)}
-            style={{
-              padding: "16px 0",
-              display: "flex",
-              alignItems: "center",
-              gap: 16,
-              borderBottom: "1px solid rgba(255,255,255,0.06)",
-              cursor: "pointer",
-            }}
+            className="flex cursor-pointer items-center gap-4 border-b border-white/6 py-4 transition-colors hover:bg-white/3"
           >
             <div
-              style={{
-                width: 11,
-                height: 11,
-                borderRadius: "50%",
-                background: i === streamIdx ? "#00aaff" : "#333",
-                boxShadow: i === streamIdx ? "0 0 8px #00aaff" : "none",
-              }}
+              className={`h-2.5 w-2.5 rounded-full ${i === streamIdx ? "bg-cyan-400 shadow-[0_0_8px] shadow-cyan-400" : "bg-neutral-700"}`}
             />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 15, color: "#e0e8ff" }}>
+            <div className="flex-1">
+              <div className="text-[15px] font-bold text-indigo-100">
                 {s.label}
               </div>
-              <div style={{ fontSize: 12, color: "#556" }}>{s.sub}</div>
+              <div className="text-xs text-slate-500">{s.sub}</div>
             </div>
             {i === streamIdx && (
-              <span
-                style={{
-                  background: "rgba(0,140,255,0.15)",
-                  color: "#00aaff",
-                  fontSize: 11,
-                  fontWeight: 800,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(0,140,255,0.3)",
-                }}
-              >
+              <span className="rounded-full border border-cyan-500/30 bg-cyan-900/15 px-3.5 py-1 text-xs font-extrabold text-cyan-400">
                 ACTIVE
               </span>
             )}
@@ -1087,77 +718,41 @@ export default function RadioPlayer() {
         title="Recordings"
       >
         {recordings.length === 0 ? (
-          <p
-            style={{
-              textAlign: "center",
-              color: "#445",
-              padding: "40px 0",
-              fontSize: 15,
-            }}
-          >
+          <p className="py-10 text-center text-[15px] text-slate-600">
             No recordings yet. Use the Record option in the menu.
           </p>
         ) : (
           recordings.map((r, idx) => (
             <div
               key={idx}
-              style={{
-                padding: "16px 0",
-                borderBottom: "1px solid rgba(255,255,255,0.06)",
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-              }}
+              className="flex flex-col gap-2.5 border-b border-white/6 py-4"
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
+              <div className="flex items-center justify-between">
                 <div>
-                  <div
-                    style={{ fontWeight: 600, fontSize: 15, color: "#e0e8ff" }}
-                  >
+                  <div className="text-[15px] font-semibold text-indigo-100">
                     {r.name}
                   </div>
-                  <div style={{ color: "#556", fontSize: 13 }}>
+                  <div className="text-xs text-slate-500">
                     Duration: {fmt(r.dur)}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 10 }}>
+                <div className="flex gap-2.5">
                   <a
                     href={r.url}
                     download={`${r.name}.webm`}
-                    style={{
-                      background: "rgba(0,140,255,0.12)",
-                      borderRadius: 10,
-                      padding: 10,
-                      color: "#00aaff",
-                      display: "grid",
-                      placeItems: "center",
-                    }}
+                    className="grid place-items-center rounded-lg bg-cyan-900/12 p-2.5 text-cyan-400 transition-colors hover:bg-cyan-900/20"
                   >
                     <Download size={18} />
                   </a>
                   <button
                     onClick={() => deleteRec(idx)}
-                    style={{
-                      background: "rgba(255,80,80,0.12)",
-                      borderRadius: 10,
-                      padding: 10,
-                      color: "#ff6060",
-                      border: "none",
-                      display: "grid",
-                      placeItems: "center",
-                    }}
+                    className="grid place-items-center rounded-lg border-none bg-red-900/12 p-2.5 text-red-400 transition-colors hover:bg-red-900/20"
                   >
                     <Trash2 size={18} />
                   </button>
                 </div>
               </div>
-              <audio controls src={r.url} style={{ width: "100%" }} />
+              <audio controls src={r.url} className="w-full" />
             </div>
           ))
         )}
@@ -1168,8 +763,8 @@ export default function RadioPlayer() {
         onClose={() => setSheet(null)}
         title="Station Info"
       >
-        <div style={{ lineHeight: 1.7, color: "#8090b0", fontSize: 14 }}>
-          <p style={{ color: "#c0ccee", marginBottom: 16 }}>
+        <div className="text-sm leading-relaxed text-slate-400">
+          <p className="mb-4 font-medium text-indigo-200">
             <strong>Jesus Is Lord Radio</strong> — 24/7 Christian broadcast from
             Nakuru, Kenya.
           </p>
@@ -1183,16 +778,10 @@ export default function RadioPlayer() {
           ].map(([k, v]) => (
             <div
               key={k}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "10px 0",
-                borderBottom: "1px solid rgba(255,255,255,0.05)",
-              }}
+              className="flex items-center justify-between border-b border-white/5 py-2.5"
             >
               <span>{k}</span>
-              <span style={{ color: "#00aaff", fontWeight: 700 }}>{v}</span>
+              <span className="font-bold text-cyan-400">{v}</span>
             </div>
           ))}
         </div>
@@ -1200,32 +789,10 @@ export default function RadioPlayer() {
 
       {/* Error toast */}
       {error && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "max(env(safe-area-inset-bottom),16px)",
-            left: 16,
-            right: 16,
-            background: "rgba(30,8,8,0.95)",
-            border: "1px solid rgba(255,80,80,0.3)",
-            borderRadius: 16,
-            padding: "14px 16px",
-            color: "#ff8080",
-            fontSize: 14,
-            zIndex: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
-            animation: "fadeUp 0.2s ease",
-          }}
-        >
-          <Info size={20} style={{ flexShrink: 0 }} />
-          <span style={{ flex: 1 }}>{error}</span>
-          <button
-            onClick={() => setError(null)}
-            style={{ background: "none", border: "none", color: "#ff8080" }}
-          >
+        <div className="animate-fade-up fixed right-4 bottom-[max(16px,env(safe-area-inset-bottom))] left-4 z-[400] flex items-center gap-3 rounded-2xl border border-red-600/30 bg-red-950/95 px-4 py-3.5 text-sm text-red-300 shadow-2xl">
+          <Info size={20} className="flex-shrink-0" />
+          <span className="flex-1">{error}</span>
+          <button onClick={() => setError(null)} className="text-red-300">
             <X size={20} />
           </button>
         </div>
