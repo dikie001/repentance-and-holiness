@@ -25,7 +25,7 @@ export function AppLayout() {
               <div className="mx-auto w-full max-w-7xl max-w-[100vw] sm:max-w-none lg:p-8">
                 <Outlet />
               </div>
-              <Footer />
+              {/* <Footer /> */}
             </main>
           </div>
         </div>
