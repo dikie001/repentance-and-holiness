@@ -18,7 +18,7 @@ export function RadioToast({ message, variant = "default" }: { message: string, 
   const accentColor = isDanger ? "rgb(239, 68, 68)" : isSuccess ? "rgb(34, 197, 94)" : "rgb(59, 130, 246)"
 
   return (
-    <div className="group relative flex items-center gap-4 rounded-2xl border p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[360px] max-w-[calc(100vw-32px)] pointer-events-auto transition-all duration-300 overflow-hidden"
+    <div className="group relative flex items-center gap-4 rounded-3xl border p-4 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] w-[360px] max-w-[calc(100vw-32px)] pointer-events-auto transition-all duration-300 overflow-hidden"
       style={{ 
         backgroundColor: "var(--app-nav-bg)", 
         borderColor: "var(--app-border)",
@@ -27,23 +27,30 @@ export function RadioToast({ message, variant = "default" }: { message: string, 
       }}>
       
       {/* Dynamic Accent Glow */}
-      <div className="absolute -left-12 -top-12 h-24 w-24 rounded-full opacity-20 blur-3xl transition-colors duration-500"
+      <div className="absolute -left-12 -top-12 h-24 w-24 rounded-full opacity-[0.12] blur-3xl transition-colors duration-500"
         style={{ backgroundColor: accentColor }} />
 
-      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl overflow-hidden border border-white/10 shadow-inner bg-black/40">
-        <img src="/images/radio-logo.png" className="h-9 w-9 object-contain" alt="" />
+      <div className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full overflow-hidden border border-white/10 shadow-2xl bg-black/40 ring-1 ring-white/5">
+        <img src="/images/radio-logo.png" className="h-full w-full object-cover scale-110" alt="" />
         {/* Status indicator overlay */}
-        <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 p-0.5 backdrop-blur-md">
-           <Icon className="h-3.5 w-3.5" style={{ color: accentColor }} />
+        <div className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-black/80 p-0.5 backdrop-blur-md border border-white/10">
+           <Icon className="h-3 w-3" style={{ color: accentColor }} />
         </div>
       </div>
 
-      <div className="flex-1">
-        <div className="text-[14px] font-black tracking-tight leading-tight mb-0.5" style={{ color: "var(--app-text)" }}>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 mb-1">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+          </span>
+          <span className="text-[10.5px] font-black tracking-[0.1em] uppercase text-red-500/90 leading-none">LIVE</span>
+        </div>
+        <div className="text-[15px] font-bold tracking-tight leading-tight mb-0.5" style={{ color: "var(--app-text)" }}>
           Jesus Is Lord Radio
         </div>
-        <div className="text-[12.5px] font-medium leading-relaxed" style={{ color: "var(--app-text-muted)" }}>
-          {message}
+        <div className="text-[12px] font-semibold leading-relaxed truncate opacity-70" style={{ color: "var(--app-text)" }}>
+          {message || "105.3 - 105.9 FM"}
         </div>
       </div>
     </div>
