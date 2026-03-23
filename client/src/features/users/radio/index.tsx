@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { useTheme } from "@/components/theme-provider"
 import {
   Play, Pause, Loader2, SkipBack, SkipForward,
   VolumeX, Volume2, MoreVertical, X, Download,
@@ -26,13 +27,15 @@ const BAR_COUNT = 30
 function Sheet({ open, onClose, title, children }: {
   open: boolean; onClose: () => void; title: string; children: React.ReactNode
 }) {
+  const { theme } = useTheme()
+  const isDark = theme !== "light"
   if (!open) return null
   return (
     <div onClick={(e) => e.target === e.currentTarget && onClose()}
       className="fixed inset-0 z-[200] flex items-end bg-black/70 backdrop-blur-lg">
       <div className="max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-t-[28px] border border-b-0 shadow-2xl"
            style={{ background: "var(--app-surface)", borderColor: "var(--app-border)" }}>
-        <div className="mx-auto mt-4.5 h-1.5 w-11 rounded-full bg-neutral-700" />
+        <div className={cn("mx-auto mt-4.5 h-1.5 w-11 rounded-full", isDark ? "bg-neutral-700" : "bg-blue-900/10")} />
         <div className="flex items-center justify-between px-6 pt-4 pb-2">
           <span className="text-xl font-extrabold" style={{ color: "var(--app-text)" }}>{title}</span>
           <button onClick={onClose} className="grid h-10 w-10 place-items-center rounded-full transition-colors border"
@@ -90,6 +93,9 @@ function SegmentedEQ({ analyserRef, playing }: {
         for (let b = 0; b < BAR_COUNT; b++) { smoothRef.current[b] *= 0.85; levels[b] = smoothRef.current[b] }
       }
       ctx.clearRect(0, 0, W, H)
+      const isDark = document.documentElement.classList.contains("dark")
+      const emptyColor = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,10,80,0.05)"
+      
       for (let b = 0; b < BAR_COUNT; b++) {
         const filledSegs = Math.round(levels[b] * SEGMENTS)
         const color = BAR_COLORS[b % BAR_COLORS.length]
@@ -97,7 +103,7 @@ function SegmentedEQ({ analyserRef, playing }: {
         for (let s = 0; s < SEGMENTS; s++) {
           const y = H - (s + 1) * (SEG_H + SEG_GAP) + SEG_GAP
           if (s < filledSegs) { ctx.shadowColor = color; ctx.shadowBlur = 8; ctx.fillStyle = color }
-          else { ctx.shadowBlur = 0; ctx.fillStyle = "rgba(255,255,255,0.05)" }
+          else { ctx.shadowBlur = 0; ctx.fillStyle = emptyColor }
           ctx.fillRect(x, y, BAR_W, SEG_H)
         }
         ctx.shadowBlur = 0
@@ -139,22 +145,32 @@ export default function RadioPlayer() {
     }
   }, [streamIdx])
 
+  const { theme } = useTheme()
+  const isDark = theme !== "light"
+
   return (
     <>
       <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;900&display=swap" rel="stylesheet" />
 
-      <div className="font-barlow relative flex h-full flex-col overflow-hidden bg-gradient-to-br from-[#060614] via-[#0a0a1e] to-[#060610] text-white">
+      <div className={cn("font-barlow relative flex h-full flex-col overflow-hidden transition-colors duration-500", 
+        isDark ? "bg-gradient-to-br from-[#060614] via-[#0a0a1e] to-[#060610] text-white" : "bg-[#eef1ff] text-[#0f1535]")}>
+        
         {/* Ambient glow */}
-        <div className="pointer-events-none absolute -top-20 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full"
-          style={{ background: "radial-gradient(circle,rgba(0,100,255,.12) 0%,transparent 70%)" }} />
+        <div className="pointer-events-none absolute -top-20 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full opacity-60"
+          style={{ background: isDark 
+            ? "radial-gradient(circle,rgba(0,100,255,.12) 0%,transparent 70%)" 
+            : "radial-gradient(circle,rgba(59,130,246,.15) 0%,transparent 70%)" 
+          }} />
 
         <main className="flex flex-1 flex-col items-center overflow-hidden px-4 pt-8 pb-5">
           {/* Artwork */}
           <div className="w-full text-center">
             <div className="relative mx-auto mb-4 w-fit">
-              <div className={`aspect-square w-[min(54vw,200px)] overflow-hidden rounded-full border-4 border-white/12 transition-all duration-700 ${
-                playing ? "animate-pulse-slow shadow-[0_0_0_12px_rgba(0,140,255,0.15),0_20px_60px_rgba(0,100,255,0.4)]" : "shadow-xl shadow-black/50"
-              }`}>
+              <div className={cn("aspect-square w-[min(54vw,200px)] overflow-hidden rounded-full border-4 transition-all duration-700",
+                isDark ? "border-white/12" : "border-white/60 shadow-xl",
+                playing 
+                  ? "animate-pulse-slow shadow-[0_0_0_12px_rgba(0,140,255,0.15),0_20px_60px_rgba(0,100,255,0.4)]" 
+                  : (isDark ? "shadow-xl shadow-black/50" : "shadow-xl shadow-blue-900/10"))}>
                 <img src="/images/radio-logo.png" alt="Jesus Is Lord Radio"
                   className={`h-full w-full object-cover ${playing ? "animate-spin-slow" : ""}`}
                   onError={e => { e.currentTarget.src = "https://static-media.streema.com/media/cache/b8/70/b870ab4505ebd20d76984a8ea8025007.jpg" }} />
@@ -164,12 +180,13 @@ export default function RadioPlayer() {
             <div className="mt-8 flex flex-col items-center gap-2">
               <div className="flex items-center gap-2 text-2xl font-black tracking-tight">
                 <h1>Jesus Is Lord Radio</h1>
-                <div className="flex items-center gap-1.5 rounded-full border border-red-600/35 bg-red-900/15 px-2 py-0.5 text-[9px] font-black tracking-widest text-red-400 uppercase">
+                <div className={cn("flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[9px] font-black tracking-widest uppercase",
+                  isDark ? "border-red-600/35 bg-red-900/15 text-red-400" : "border-red-200 bg-red-50 text-red-600")}>
                   <div className={`h-1.5 w-1.5 rounded-full bg-red-500 ${playing ? "animate-pulse" : ""}`} />
                   LIVE
                 </div>
               </div>
-              <p className="text-sm font-semibold text-slate-400">
+              <p className="text-sm font-semibold opacity-70" style={{ color: "var(--app-text)" }}>
                 Repentance &amp; Holiness · {listeners} listening
               </p>
             </div>
@@ -187,12 +204,16 @@ export default function RadioPlayer() {
               {/* Ellipses menu */}
               <div className="relative shrink-0 flex items-center">
                 <button onClick={() => setMenuOpen(o => !o)}
-                  className={cn("grid h-12 w-12 place-items-center rounded-full text-slate-400 transition-all",
-                    menuOpen ? "bg-white/10 text-white" : "hover:bg-white/5 hover:text-white active:scale-95")}>
+                  className={cn("grid h-12 w-12 place-items-center rounded-full transition-all",
+                    isDark ? "text-slate-400" : "text-blue-900/40",
+                    menuOpen 
+                      ? (isDark ? "bg-white/10 text-white" : "bg-blue-600/10 text-blue-600") 
+                      : (isDark ? "hover:bg-white/5 hover:text-white" : "hover:bg-blue-600/5 hover:text-blue-600"))}>
                   <MoreVertical size={24} />
                 </button>
                 {menuOpen && (
-                  <div className="animate-fade-up absolute bottom-full left-0 z-30 mb-4 min-w-[210px] rounded-2xl border border-white/10 bg-[#0f0f24]/95 backdrop-blur-xl py-2 shadow-2xl overflow-hidden">
+                  <div className={cn("animate-fade-up absolute bottom-full left-0 z-30 mb-4 min-w-[210px] rounded-2xl border backdrop-blur-xl py-2 shadow-2xl overflow-hidden",
+                    isDark ? "border-white/10 bg-[#0f0f24]/95" : "border-blue-200 bg-white/95")}>
                     {[
                       { icon: Server,   label: "Sources",              action: () => { setSheet("sources"); setMenuOpen(false) } },
                       { icon: Download, label: `Clips (${recordings.length})`, action: () => { setSheet("record"); setMenuOpen(false) } },
@@ -200,7 +221,8 @@ export default function RadioPlayer() {
                       { icon: Info,     label: "Info",                 action: () => { setSheet("info"); setMenuOpen(false) } },
                     ].map(({ icon: Icon, label, action }) => (
                       <button key={label} onClick={action}
-                        className="flex w-full items-center gap-3.5 px-3.5 py-3 text-sm font-bold text-indigo-100 transition-colors hover:bg-white/7">
+                        className={cn("flex w-full items-center gap-3.5 px-3.5 py-3 text-sm font-bold transition-colors",
+                          isDark ? "text-indigo-100 hover:bg-white/7" : "text-blue-900 hover:bg-blue-600/5")}>
                         <Icon size={20} /> {label}
                       </button>
                     ))}
@@ -211,7 +233,8 @@ export default function RadioPlayer() {
               {/* Playback controls */}
               <div className="flex items-center justify-center gap-4 sm:gap-6 shrink-0 relative z-10 mx-2">
                 <button onClick={() => switchStream((streamIdx - 1 + STREAMS.length) % STREAMS.length)}
-                  className="text-blue-400/80 hover:text-blue-300 active:scale-95 shrink-0 transition-colors">
+                  className={cn("active:scale-95 shrink-0 transition-colors",
+                    isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-600/70 hover:text-blue-700")}>
                   <SkipBack size={32} fill="currentColor" />
                 </button>
 
@@ -225,7 +248,8 @@ export default function RadioPlayer() {
                 </button>
 
                 <button onClick={() => switchStream((streamIdx + 1) % STREAMS.length)}
-                  className="text-blue-400/80 hover:text-blue-300 active:scale-95 shrink-0 transition-colors">
+                  className={cn("active:scale-95 shrink-0 transition-colors",
+                    isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-600/70 hover:text-blue-700")}>
                   <SkipForward size={32} fill="currentColor" />
                 </button>
               </div>
@@ -234,7 +258,9 @@ export default function RadioPlayer() {
               <div className="shrink-0 flex items-center">
                 <button onClick={recording ? stopRecording : startRecording}
                   className={cn("grid h-12 w-12 place-items-center rounded-full transition-all",
-                    recording ? "bg-white/10 text-white animate-pulse" : "text-slate-400 hover:bg-white/5 hover:text-white active:scale-95")}>
+                    recording 
+                      ? "bg-red-500/10 text-red-500 animate-pulse" 
+                      : cn(isDark ? "text-slate-400 hover:bg-white/5 hover:text-white" : "text-blue-900/40 hover:bg-blue-600/5 hover:text-blue-600"))}>
                   {recording ? <Square size={20} fill="currentColor" className="text-red-500" /> : <Mic size={24} />}
                 </button>
               </div>
@@ -242,17 +268,17 @@ export default function RadioPlayer() {
 
             {/* Volume */}
             <div className="flex items-center gap-3 px-2">
-              <button onClick={() => setMuted(!muted)} className={muted ? "text-neutral-600" : "text-cyan-400"}>
+              <button onClick={() => setMuted(!muted)} className={muted ? "text-neutral-500" : "text-cyan-500"}>
                 {muted || volume === 0 ? <VolumeX size={22} /> : <Volume2 size={22} />}
               </button>
-              <div className="relative h-1.5 flex-1 rounded-full bg-white/8">
+              <div className={cn("relative h-1.5 flex-1 rounded-full", isDark ? "bg-white/8" : "bg-blue-900/10")}>
                 <div className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 transition-all duration-100"
                   style={{ width: `${muted ? 0 : volume}%` }} />
                 <input type="range" min={0} max={100} value={muted ? 0 : volume}
                   onChange={e => { setVolume(+e.target.value); setMuted(false) }}
                   className="absolute inset-y-[-8px] w-full cursor-pointer opacity-0" />
               </div>
-              <span className="min-w-9 text-right text-sm font-bold text-slate-400">
+              <span className="min-w-9 text-right text-sm font-bold opacity-60" style={{ color: "var(--app-text)" }}>
                 {muted ? "0" : volume}%
               </span>
             </div>
