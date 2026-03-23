@@ -8,50 +8,54 @@ import {
   useRef, useState, type ReactNode,
 } from "react"
 import { toast } from "sonner"
-// import { AlertCircle, CheckCircle2, Info } from "lucide-react"
+import { AlertCircle, CheckCircle2, Info } from "lucide-react"
 
-export function RadioToast({ message, variant = "default" }: { message: string, variant?: "default" | "danger" | "success" }) {
-  const isDanger = variant === "danger"
+export function RadioToast({ message, variant = "default" }: { message: string, variant?: "default" | "danger" | "success" | "error" }) {
+  const isError = variant === "danger" || variant === "error"
   const isSuccess = variant === "success"
   
-  // const Icon = isDanger ? AlertCircle : isSuccess ? CheckCircle2 : Info
-  const accentColor = isDanger ? "rgb(239, 68, 68)" : isSuccess ? "rgb(34, 197, 94)" : "rgb(59, 130, 246)"
+  const Icon = isError ? AlertCircle : isSuccess ? CheckCircle2 : Info
+  const accentColor = isError ? "rgb(239, 68, 68)" : isSuccess ? "rgb(34, 197, 94)" : "rgb(59, 130, 246)"
+  const borderColor = isError ? "rgba(239, 68, 68, 0.4)" : isSuccess ? "rgba(34, 197, 94, 0.4)" : "var(--app-border)"
 
   return (
-    <div className="group relative flex items-center gap-3.5 rounded-2xl border p-2.5 shadow-2xl w-[320px] max-w-[calc(100vw-32px)] pointer-events-auto transition-all duration-300 overflow-hidden"
+    <div className="group relative flex items-center gap-4 rounded-[20px] border p-2.5 shadow-2xl w-[340px] max-w-[calc(100vw-32px)] pointer-events-auto transition-all duration-300 overflow-hidden"
       style={{ 
         backgroundColor: "var(--app-nav-bg)", 
-        borderColor: "var(--app-border)",
-        backdropFilter: "blur(24px) saturate(180%)",
-        WebkitBackdropFilter: "blur(24px) saturate(180%)"
+        borderColor: borderColor,
+        backdropFilter: "blur(28px) saturate(180%)",
+        WebkitBackdropFilter: "blur(28px) saturate(180%)"
       }}>
       
       {/* Dynamic Accent Glow */}
-      <div className="absolute -left-10 -top-10 h-20 w-20 rounded-full opacity-[0.1] blur-3xl transition-colors duration-500"
+      <div className="absolute -left-12 -top-12 h-32 w-32 rounded-full opacity-[0.2] blur-3xl transition-colors duration-500"
         style={{ backgroundColor: accentColor }} />
 
-      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden border border-white/10 bg-black/40 shadow-sm">
+      {/* Logo on Left */}
+      <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl overflow-hidden border border-white/10 bg-black/40 shadow-sm">
         <img src="/images/radio-logo.png" className="h-full w-full object-cover" alt="radio-logo" />
-        {/* Status indicator overlay */}
-        {/* <div className="absolute -bottom-0.5 left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-black/90 p-0.5 backdrop-blur-md border border-white/5">
-           <Icon className="h-2.5 w-2.5" style={{ color: accentColor }} />
-        </div> */}
       </div>
 
+      {/* Text in Middle */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
           <span className="relative flex h-1.5 w-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600"></span>
           </span>
-          <span className="text-[9.5px] font-black tracking-widest uppercase text-red-500 leading-none">LIVE</span>
+          <span className="text-[9px] font-black tracking-[0.15em] uppercase text-red-500 leading-none">LIVE</span>
         </div>
-        <div className="text-[14px] font-bold tracking-tight leading-tight" style={{ color: "var(--app-text)" }}>
+        <div className="text-[14.5px] font-extrabold tracking-tight leading-tight" style={{ color: "var(--app-text)" }}>
           Jesus Is Lord Radio
         </div>
-        <div className="text-[11.5px] font-semibold leading-relaxed truncate opacity-60" style={{ color: "var(--app-text)" }}>
+        <div className="text-[12px] font-semibold leading-relaxed truncate opacity-60" style={{ color: "var(--app-text)" }}>
           {message || "105.3 - 105.9 FM"}
         </div>
+      </div>
+
+      {/* Variant Icon at Far Right Middle */}
+      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-inner">
+         <Icon className="h-5.5 w-5.5" style={{ color: accentColor }} />
       </div>
     </div>
   )
@@ -135,6 +139,10 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       setLoading(false); 
       setError(null); 
       failedAttemptsRef.current = 0 
+      // Ensure AudioContext is running when playback starts
+      if (ctxRef.current && ctxRef.current.state === "suspended") {
+        ctxRef.current.resume().catch(() => {})
+      }
     })
     a.addEventListener("pause",   () => setPlaying(false))
     a.addEventListener("waiting", () => setLoading(true))
@@ -185,7 +193,11 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       ctxRef.current = new AC()
     }
     const ctx = ctxRef.current
-    if (ctx.state === "suspended") ctx.resume().catch(() => {})
+    
+    // Always attempt to resume on user interaction or state change
+    if (ctx.state === "suspended") {
+      ctx.resume().catch(() => {})
+    }
 
     if (!srcRef.current) {
        try {
