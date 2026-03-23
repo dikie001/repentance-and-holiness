@@ -6,7 +6,7 @@ import {
   VolumeX, Volume2, MoreVertical, X, Download,
   Trash2, Share2, Info, Server, Mic, Square,
 } from "lucide-react"
-import { useRadio, STREAMS } from "@/context/RadioContext"
+import { useRadio, STREAMS, RadioToast } from "@/context/RadioContext"
 
 /* ── Helpers ───────────────────────────────────────────────── */
 const fmt = (s: number) =>
@@ -158,16 +158,12 @@ export default function RadioPlayer() {
       recorder.start(1000)
       recRef.current = recorder
       setRecording(true)
-      toast.success("Recording started", {
-        icon: <img src="/images/radio-logo.png" alt="" className="w-5 h-5 rounded-full object-cover shadow border border-white/20" />
-      })
+      toast.custom(() => <RadioToast message="Recording started" />)
       recTimer.current = window.setInterval(() => { recDuration.current++ }, 1000)
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error"
       setLocalError(`Recording failed: ${msg}`)
-      toast.error("Failed to start recording", {
-        icon: <img src="/images/radio-logo.png" alt="" className="w-5 h-5 rounded-full object-cover shadow border border-white/20" />
-      })
+      toast.custom(() => <RadioToast message="Failed to start recording" />)
     }
   }, [analyserRef])
 
@@ -175,9 +171,7 @@ export default function RadioPlayer() {
     recRef.current?.stop()
     if (recTimer.current) clearInterval(recTimer.current)
     setRecording(false)
-    toast.success("Recording saved to Clips", {
-      icon: <img src="/images/radio-logo.png" alt="" className="w-5 h-5 rounded-full object-cover shadow border border-white/20" />
-    })
+    toast.custom(() => <RadioToast message="Recording saved to Clips" />)
   }, [])
 
   const deleteRec = (index: number) => {
@@ -195,9 +189,7 @@ export default function RadioPlayer() {
     else {
       try {
         await navigator.clipboard.writeText(data.url);
-        toast.success("Link copied!", {
-          icon: <img src="/images/radio-logo.png" alt="" className="w-5 h-5 rounded-full object-cover shadow border border-white/20" />
-        })
+        toast.custom(() => <RadioToast message="Link copied!" />)
       } catch { /* */ }
     }
   }, [streamIdx])
