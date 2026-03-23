@@ -9,22 +9,29 @@ import {
 } from "react"
 import { toast } from "sonner"
 
-export function RadioToast({ message, variant = "default" }: { message: string, variant?: "default" | "danger" }) {
+export function RadioToast({ message, variant = "default" }: { message: string, variant?: "default" | "danger" | "success" }) {
   const isDanger = variant === "danger"
+  const isSuccess = variant === "success"
   return (
     <div className={`flex items-center gap-3.5 rounded-2xl border p-3 pl-3.5 shadow-2xl w-[320px] max-w-full m-0 pointer-events-auto transition-all ${
       isDanger 
         ? "bg-red-50 border-red-200 text-red-950" 
-        : "bg-[var(--app-nav-bg)] border-[var(--app-border)] backdrop-blur-xl"
+        : isSuccess
+          ? "bg-emerald-50 border-emerald-200 text-emerald-950"
+          : "bg-[var(--app-nav-bg)] border-[var(--app-border)] backdrop-blur-xl"
     }`}>
       <div className="h-11 w-11 shrink-0 rounded-full overflow-hidden border border-white/10 shadow-sm bg-black">
         <img src="/images/radio-logo.png" className="h-full w-full object-cover" alt="" />
       </div>
       <div>
-        <div className={`text-[15px] font-bold leading-tight mb-0.5 ${isDanger ? "text-red-950" : "text-[var(--app-text)]"}`}>
+        <div className={`text-[15px] font-bold leading-tight mb-0.5 ${
+          isDanger ? "text-red-950" : isSuccess ? "text-emerald-950" : "text-[var(--app-text)]"
+        }`}>
           Jesus Is Lord Radio
         </div>
-        <div className={`text-xs font-medium ${isDanger ? "text-red-800" : "text-[var(--app-text-muted)]"}`}>
+        <div className={`text-xs font-medium ${
+          isDanger ? "text-red-800" : isSuccess ? "text-emerald-800" : "text-[var(--app-text-muted)]"
+        }`}>
           {message}
         </div>
       </div>
@@ -192,8 +199,12 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     try { ensureCtx() } catch { /* */ }
     setLoading(true)
     setError(null)
-    a.play().catch(() => {
-      toast.custom(() => <RadioToast message="Playback blocked – tap again" variant="danger" />, { position: "top-center" })
+    a.play().then(() => {
+      toast.custom(() => <RadioToast message={`Connected: ${STREAMS[streamIdxRef.current].label}`} variant="success" />, { id: "radio-status" })
+    }).catch((err) => {
+      if (err instanceof Error && err.name === "NotAllowedError") {
+        toast.custom(() => <RadioToast message="Playback blocked – tap again" variant="danger" />, { id: "radio-status" })
+      }
       setLoading(false)
     })
   }, [playing, ensureCtx])
@@ -207,22 +218,32 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     isCORSFallbackRef.current = false
     a.crossOrigin = "anonymous"
     
+    // Feedback immediately with a consistent ID to replace previous ones
+    if (auto) {
+      toast.custom(() => <RadioToast message={`Source error – trying ${STREAMS[idx].label}...`} variant="danger" />, { id: "radio-status" })
+    } else {
+      toast.custom(() => <RadioToast message={`Connecting to ${STREAMS[idx].label}...`} />, { id: "radio-status" })
+    }
+
     try { srcRef.current?.disconnect() } catch { /* */ }
-    srcRef.current = null; gainRef.current = null; analyserRef.current = null
+    // srcRef.current = null; // Do NOT reset this as earlier identified
+    gainRef.current = null; analyserRef.current = null
     a.pause()
     a.src = STREAMS[idx].url
     setStreamIdx(idx)
+    streamIdxRef.current = idx
     setError(null)
     setLoading(true)
     a.load()
     try { ensureCtx() } catch { /* */ }
-    a.play().catch(() => {
-      // If play() fails immediately, it might be a user gesture issue (but handled by toast)
-      if (!auto) toast.custom(() => <RadioToast message="Tap play to start" variant="danger" />, { position: "top-center" })
+    a.play().then(() => {
+      // Direct success feedback
+      toast.custom(() => <RadioToast message={`Connected: ${STREAMS[idx].label}`} variant="success" />, { id: "radio-status" })
+    }).catch((err) => {
+      if (!auto && err instanceof Error && err.name === "NotAllowedError") {
+        toast.custom(() => <RadioToast message="Tap play to start" variant="danger" />, { id: "radio-status" })
+      }
     })
-    if (!auto) {
-      toast.custom(() => <RadioToast message={`Switched to ${STREAMS[idx].label}`} />)
-    }
   }, [ensureCtx])
 
   useEffect(() => {

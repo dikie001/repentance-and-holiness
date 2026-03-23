@@ -1,18 +1,17 @@
 "use client"
 
-import React from 'react'
+import { Button } from "@/components/ui/button"
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetDescription,
   SheetFooter,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet"
 import { useNotifications, type Notification } from "@/context/NotificationContext"
-import { Bell, CheckCheck, Trash2, Clock, Info, AlertTriangle, Radio, CheckCircle2, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { AlertTriangle, Bell, CheckCheck, CheckCircle2, Clock, Info, Radio, Trash2, X } from "lucide-react"
 
 function formatDistanceToNow(date: Date) {
   const now = new Date()
