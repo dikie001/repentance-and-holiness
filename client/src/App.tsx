@@ -29,7 +29,6 @@ function AppContent() {
           </Route>
         </Routes>
       </BrowserRouter>
-      {/* Dynamic theming via useTheme hook so user preference is respected instantly */}
       <Toaster 
         theme={theme as "system" | "light" | "dark"} 
         position="top-right"
