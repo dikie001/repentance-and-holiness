@@ -8,30 +8,41 @@ import {
   useRef, useState, type ReactNode,
 } from "react"
 import { toast } from "sonner"
+import { AlertCircle, CheckCircle2, Info } from "lucide-react"
 
 export function RadioToast({ message, variant = "default" }: { message: string, variant?: "default" | "danger" | "success" }) {
   const isDanger = variant === "danger"
   const isSuccess = variant === "success"
+  
+  const Icon = isDanger ? AlertCircle : isSuccess ? CheckCircle2 : Info
+  const accentColor = isDanger ? "rgb(239, 68, 68)" : isSuccess ? "rgb(34, 197, 94)" : "rgb(59, 130, 246)"
+
   return (
-    <div className={`flex items-center gap-3.5 rounded-2xl border p-3 pl-3.5 shadow-2xl w-[320px] max-w-full m-0 pointer-events-auto transition-all ${
-      isDanger 
-        ? "bg-red-50 border-red-200 text-red-950" 
-        : isSuccess
-          ? "bg-emerald-50 border-emerald-200 text-emerald-950"
-          : "bg-[var(--app-nav-bg)] border-[var(--app-border)] backdrop-blur-xl"
-    }`}>
-      <div className="h-11 w-11 shrink-0 rounded-full overflow-hidden border border-white/10 shadow-sm bg-black">
-        <img src="/images/radio-logo.png" className="h-full w-full object-cover" alt="" />
+    <div className="group relative flex items-center gap-4 rounded-2xl border p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[360px] max-w-[calc(100vw-32px)] pointer-events-auto transition-all duration-300 overflow-hidden"
+      style={{ 
+        backgroundColor: "var(--app-nav-bg)", 
+        borderColor: "var(--app-border)",
+        backdropFilter: "blur(24px) saturate(180%)",
+        WebkitBackdropFilter: "blur(24px) saturate(180%)"
+      }}>
+      
+      {/* Dynamic Accent Glow */}
+      <div className="absolute -left-12 -top-12 h-24 w-24 rounded-full opacity-20 blur-3xl transition-colors duration-500"
+        style={{ backgroundColor: accentColor }} />
+
+      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl overflow-hidden border border-white/10 shadow-inner bg-black/40">
+        <img src="/images/radio-logo.png" className="h-9 w-9 object-contain" alt="" />
+        {/* Status indicator overlay */}
+        <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 p-0.5 backdrop-blur-md">
+           <Icon className="h-3.5 w-3.5" style={{ color: accentColor }} />
+        </div>
       </div>
-      <div>
-        <div className={`text-[15px] font-bold leading-tight mb-0.5 ${
-          isDanger ? "text-red-950" : isSuccess ? "text-emerald-950" : "text-[var(--app-text)]"
-        }`}>
+
+      <div className="flex-1">
+        <div className="text-[14px] font-black tracking-tight leading-tight mb-0.5" style={{ color: "var(--app-text)" }}>
           Jesus Is Lord Radio
         </div>
-        <div className={`text-xs font-medium ${
-          isDanger ? "text-red-800" : isSuccess ? "text-emerald-800" : "text-[var(--app-text-muted)]"
-        }`}>
+        <div className="text-[12.5px] font-medium leading-relaxed" style={{ color: "var(--app-text-muted)" }}>
           {message}
         </div>
       </div>
