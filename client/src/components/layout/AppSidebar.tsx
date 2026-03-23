@@ -26,7 +26,11 @@ const NAV_ITEMS: NavItem[] = [
   { title: "About",      url: "/about",               icon: UsersRound                },
 ]
 
-const MOBILE_ITEMS = NAV_ITEMS.slice(0, 3)
+const MOBILE_ITEMS = [
+  NAV_ITEMS[0], // Home
+  NAV_ITEMS[1], // Radio
+  NAV_ITEMS[2], // Media
+]
 
 function LiveDot() {
   return (
@@ -83,37 +87,87 @@ export function GlobalHeader() {
 
 export function MobileBottomNav() {
   const { pathname } = useLocation()
+  
+  // Find active index based on route
+  const activeIndex = MOBILE_ITEMS.findIndex(item => {
+    if (item.url === "/") return pathname === "/"
+    return pathname.startsWith(item.url)
+  })
+  
+  const idx = activeIndex === -1 ? 0 : activeIndex
+
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 h-20 md:hidden px-2 flex items-center justify-around backdrop-blur-2xl border-t shadow-xl"
-      style={{ background: "var(--app-nav-bg)", borderColor: "var(--app-border)" }}
-    >
-      {MOBILE_ITEMS.map((item) => {
-        const active = pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url))
-        return (
-          <Link key={item.url} to={item.url}
-            className="flex flex-col items-center justify-center gap-1 transition-all relative px-3 py-1"
-            style={{ color: active ? "#22d3ee" : "var(--app-text-faint)" }}
-          >
-            <div className="relative">
-              <item.icon size={22}
-                className={cn("transition-all duration-300", active && "scale-110 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]")}
-                strokeWidth={active ? 2.5 : 2}
-              />
-              {item.badge === "LIVE" && (
-                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-              )}
-              {active && (
-                <motion.div layoutId="bottomNavDot"
-                  className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
-            </div>
-            <span className="text-[9px] font-bold uppercase tracking-widest">{item.title}</span>
-          </Link>
-        )
-      })}
+    <nav className="fixed bottom-0 left-0 right-0 z-50 h-[76px] md:hidden">
+      {/* Premium Glass Background with Notch */}
+      <div className="absolute inset-x-0 bottom-0 h-[64px] pointer-events-none overflow-visible">
+        <div className="absolute inset-0 backdrop-blur-2xl rounded-t-[20px] overflow-hidden" style={{ maskImage: "inherit" }} />
+        <svg
+          viewBox="0 0 300 64"
+          preserveAspectRatio="none"
+          className="w-full h-full drop-shadow-[0_-8px_25px_rgba(0,0,0,0.15)]"
+        >
+          <motion.path
+            animate={{
+              d: `M 0 0 
+                  L ${(idx * 100) + 22} 0 
+                  C ${(idx * 100) + 35} 0 ${(idx * 100) + 32} 30 ${(idx * 100) + 50} 30 
+                  C ${(idx * 100) + 68} 30 ${(idx * 100) + 65} 0 ${(idx * 100) + 78} 0 
+                  L 300 0 
+                  L 300 64 
+                  L 0 64 
+                  Z`
+            }}
+            transition={{ type: "spring", stiffness: 350, damping: 32 }}
+            style={{ 
+              fill: "var(--app-surface)", 
+              fillOpacity: 0.98,
+              stroke: "var(--app-border)", 
+              strokeWidth: 0.5 
+            }}
+          />
+        </svg>
+      </div>
+
+      <div className="relative w-full h-full flex items-center justify-around z-10 px-6">
+        {MOBILE_ITEMS.map((item, index) => {
+          const active = index === idx
+          return (
+            <Link 
+              key={item.url} 
+              to={item.url} 
+              className="flex-1 flex flex-col items-center justify-center relative h-full transition-all duration-300"
+            >
+              <div className="relative flex flex-col items-center justify-center w-full h-full pt-1">
+                {active ? (
+                  <motion.div
+                    layoutId="activeCircle"
+                    className="absolute -top-8 w-[64px] h-[64px] rounded-full flex items-center justify-center shadow-[0_10px_25px_-5px_rgba(6,182,212,0.6)] z-20"
+                    style={{ 
+                      background: "linear-gradient(135deg, var(--app-primary) 0%, #0891b2 100%)",
+                      color: "white",
+                      border: "4px solid var(--app-bg)"
+                    }}
+                    transition={{ type: "spring", stiffness: 450, damping: 25 }}
+                  >
+                    <item.icon size={28} className="drop-shadow-lg" />
+                    <motion.div 
+                      layoutId="activeDot"
+                      className="absolute -bottom-5 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_12px_#22d3ee]"
+                    />
+                  </motion.div>
+                ) : (
+                  <div className="flex flex-col items-center gap-1.5 opacity-50 hover:opacity-100 transition-opacity">
+                    <item.icon size={22} style={{ color: "var(--app-text)" }} />
+                    <span className="text-[10px] font-black uppercase tracking-[0.1em] leading-none" style={{ color: "var(--app-text)" }}>
+                      {item.title}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </Link>
+          )
+        })}
+      </div>
     </nav>
   )
 }

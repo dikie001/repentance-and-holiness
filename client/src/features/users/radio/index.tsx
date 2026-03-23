@@ -148,7 +148,7 @@ export default function RadioPlayer() {
         <div className="pointer-events-none absolute -top-20 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full"
           style={{ background: "radial-gradient(circle,rgba(0,100,255,.12) 0%,transparent 70%)" }} />
 
-        <main className="flex flex-1 flex-col items-center overflow-hidden px-5 pt-8 pb-5">
+        <main className="flex flex-1 flex-col items-center overflow-hidden px-4 pt-8 pb-5">
           {/* Artwork */}
           <div className="w-full text-center">
             <div className="relative mx-auto mb-4 w-fit">
