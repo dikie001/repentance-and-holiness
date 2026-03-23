@@ -13,12 +13,20 @@ export function RadioToast({ message, variant = "default" }: { message: string, 
   const isDanger = variant === "danger"
   return (
     <div className={`flex items-center gap-3.5 rounded-2xl border p-3 pl-3.5 shadow-2xl w-[320px] max-w-full m-0 pointer-events-auto transition-all ${
-      isDanger ? "bg-red-50 border-red-200 text-red-950" : "bg-[#0f0f24] border-white/10 text-white"
+      isDanger 
+        ? "bg-red-50 border-red-200 text-red-950" 
+        : "bg-[var(--app-nav-bg)] border-[var(--app-border)] backdrop-blur-xl"
     }`}>
-      <img src="/images/radio-logo.png" className="h-11 w-11 shrink-0 rounded-full object-cover shadow-sm bg-black" alt="" />
+      <div className="h-11 w-11 shrink-0 rounded-full overflow-hidden border border-white/10 shadow-sm bg-black">
+        <img src="/images/radio-logo.png" className="h-full w-full object-cover" alt="" />
+      </div>
       <div>
-        <div className={`text-[15px] font-bold leading-tight mb-0.5 ${isDanger ? "text-red-950" : "text-white"}`}>Jesus Is Lord Radio</div>
-        <div className={`text-xs font-medium ${isDanger ? "text-red-800" : "text-slate-400"}`}>{message}</div>
+        <div className={`text-[15px] font-bold leading-tight mb-0.5 ${isDanger ? "text-red-950" : "text-[var(--app-text)]"}`}>
+          Jesus Is Lord Radio
+        </div>
+        <div className={`text-xs font-medium ${isDanger ? "text-red-800" : "text-[var(--app-text-muted)]"}`}>
+          {message}
+        </div>
       </div>
     </div>
   )
