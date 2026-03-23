@@ -110,6 +110,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       setLoading(false); 
       setError(null); 
       failedAttemptsRef.current = 0 
+      toast.custom(() => <RadioToast message={`Connected: ${STREAMS[streamIdxRef.current].label}`} />)
     })
     a.addEventListener("pause",   () => setPlaying(false))
     a.addEventListener("waiting", () => setLoading(true))
@@ -192,8 +193,10 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     try { ensureCtx() } catch { /* */ }
     setLoading(true)
     setError(null)
-    a.play().catch(() => {
-      toast.custom(() => <RadioToast message="Playback blocked – tap again" variant="danger" />, { position: "top-center" })
+    a.play().catch((err) => {
+      if (err instanceof Error && err.name === "NotAllowedError") {
+        toast.custom(() => <RadioToast message="Playback blocked – tap again" variant="danger" />, { position: "top-center" })
+      }
       setLoading(false)
     })
   }, [playing, ensureCtx])
@@ -207,26 +210,28 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     isCORSFallbackRef.current = false
     a.crossOrigin = "anonymous"
     
-    // Do NOT reset srcRef.current here. It's tied to the audio element 'a', 
-    // and can only be created once. If we reset it to null, ensureCtx() 
-    // will fail when it tries to recreate it.
-    
+    // Feedback immediately
+    if (auto) {
+      toast.custom(() => <RadioToast message={`Source error – trying ${STREAMS[idx].label}...`} variant="danger" />)
+    } else {
+      toast.custom(() => <RadioToast message={`Connecting to ${STREAMS[idx].label}...`} />)
+    }
+
+    try { srcRef.current?.disconnect() } catch { /* */ }
+    // srcRef.current = null; // Do NOT reset this as earlier identified
+    gainRef.current = null; analyserRef.current = null
     a.pause()
     a.src = STREAMS[idx].url
     setStreamIdx(idx)
     setError(null)
     setLoading(true)
     a.load()
-    
-    // ensureCtx will handle resuming/reconnecting if needed
     try { ensureCtx() } catch { /* */ }
-    
-    a.play().catch(() => {
-      if (!auto) toast.custom(() => <RadioToast message="Tap play to start" variant="danger" />, { position: "top-center" })
+    a.play().catch((err) => {
+      if (!auto && err instanceof Error && err.name === "NotAllowedError") {
+        toast.custom(() => <RadioToast message="Tap play to start" variant="danger" />, { position: "top-center" })
+      }
     })
-    if (!auto) {
-      toast.custom(() => <RadioToast message={`Switched to ${STREAMS[idx].label}`} />)
-    }
   }, [ensureCtx])
 
   useEffect(() => {
