@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
 import { AnimatePresence, motion } from "framer-motion"
 import {
-  Bell, BookOpenText, Flame, House, ImagePlay, Menu,
+  Bell, BookOpenText, House, ImagePlay, Menu,
   Moon, Music4, RadioTower, Sun, UsersRound, type LucideIcon
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
@@ -21,7 +21,6 @@ const NAV_ITEMS: NavItem[] = [
   { title: "Radio",      url: "/jesus-is-lord-radio", icon: RadioTower, badge: "LIVE" },
   { title: "Media",      url: "/media",               icon: Music4                    },
   { title: "Teachings",  url: "/teachings",           icon: BookOpenText              },
-  { title: "Prophecies", url: "/prophecies",          icon: Flame                     },
   { title: "Gallery",    url: "/gallery",             icon: ImagePlay                 },
   { title: "About",      url: "/about",               icon: UsersRound                },
 ]

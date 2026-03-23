@@ -5,7 +5,6 @@ import { AppLayout } from "./components/layout/AppLayout"
 import HomePage from "./features/users/home"
 import RadioPage from "./features/users/radio"
 import MediaPage from "./features/users/media"
-import PropheciesPage from "./features/users/prophecies"
 import AboutPage from "./features/users/about"
 import TeachingsPage from "./features/users/teachings"
 import GalleryPage from "./features/users/gallery"
@@ -22,7 +21,6 @@ function AppContent() {
             <Route path="jesus-is-lord-radio" element={<RadioPage />} />
             <Route path="media" element={<MediaPage />} />
             <Route path="teachings" element={<TeachingsPage />} />
-            <Route path="prophecies" element={<PropheciesPage />} />
             <Route path="gallery" element={<GalleryPage />} />
             <Route path="about" element={<AboutPage />} />
             <Route path="*" element={<NotFound />} />
@@ -31,7 +29,7 @@ function AppContent() {
       </BrowserRouter>
       <Toaster 
         theme={theme as "system" | "light" | "dark"} 
-        position="top-right"
+        position="top-center"
         toastOptions={{
           style: {
             borderRadius: "0", // Handled by custom component

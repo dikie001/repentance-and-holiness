@@ -196,7 +196,8 @@ function UploadModal({ tab, onClose }: UploadModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[300] flex items-end justify-center bg-black/70 p-4 backdrop-blur-lg sm:items-center"
+      className="fixed inset-0 z-[300] flex items-end justify-center backdrop-blur-lg sm:items-center p-4"
+      style={{ background: "rgba(0, 0, 0, 0.6)" }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div
@@ -205,7 +206,7 @@ function UploadModal({ tab, onClose }: UploadModalProps) {
         exit={{ opacity: 0, y: 40 }}
         className="w-full max-w-lg rounded-3xl border p-6 shadow-2xl"
         style={{
-          background: "var(--app-surface)",
+          background: "var(--app-card)",
           borderColor: "var(--app-border)",
         }}
       >

@@ -177,14 +177,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     const a = audioRef.current
     if (!a) return
     
-    // If we're in CORS fallback mode, skip AudioContext source (it would be silent)
-    if (isCORSFallbackRef.current) {
-       if (ctxRef.current?.state === "running") {
-          ctxRef.current.suspend().catch(() => {})
-       }
-       return
-    }
-
+    // Create AudioContext if it doesn't exist
     if (!ctxRef.current) {
       const AC = window.AudioContext || (window as any).webkitAudioContext
       ctxRef.current = new AC()
@@ -196,6 +189,19 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       ctx.resume().catch(() => {})
     }
 
+    // If we're in CORS fallback mode, only skip source creation but still create analyser
+    if (isCORSFallbackRef.current) {
+      // Just ensure analyser is created for at least audio element frequency data
+      if (!analyserRef.current) {
+        analyserRef.current = ctx.createAnalyser()
+        analyserRef.current.fftSize = 1024
+        analyserRef.current.smoothingTimeConstant = 0.75
+        analyserRef.current.connect(ctx.destination)
+      }
+      return
+    }
+
+    // Try to create source from audio element
     if (!srcRef.current) {
        try {
           srcRef.current = ctx.createMediaElementSource(a)
