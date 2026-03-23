@@ -34,7 +34,8 @@ function Sheet({ open, onClose, title, children }: {
     <div onClick={(e) => e.target === e.currentTarget && onClose()}
       className="fixed inset-0 z-[200] flex items-end bg-black/70 backdrop-blur-lg">
       <div className="max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-t-[28px] border border-b-0 shadow-2xl"
-           style={{ background: "var(--app-surface)", borderColor: "var(--app-border)" }}>
+           style={{ background: isDark ? "var(--app-surface)" : "var(--app-nav-bg)", borderColor: "var(--app-border)" }}>
+
         <div className={cn("mx-auto mt-4.5 h-1.5 w-11 rounded-full", isDark ? "bg-neutral-700" : "bg-blue-900/10")} />
         <div className="flex items-center justify-between px-6 pt-4 pb-2">
           <span className="text-xl font-extrabold" style={{ color: "var(--app-text)" }}>{title}</span>

@@ -374,6 +374,30 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  // Keyboard shortcuts (Enter & Space to Toggle Radio)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      // If user typing in input, textarea, or contentEditable - skip
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return
+      }
+
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault()
+        togglePlay()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [togglePlay])
+
+
   return (
     <RadioContext.Provider value={{
       playing, loading, error, streamIdx, volume, muted, listeners,
