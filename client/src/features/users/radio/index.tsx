@@ -289,7 +289,7 @@ export default function RadioPlayer() {
       {/* Sources sheet */}
       <Sheet open={sheet === "sources"} onClose={() => setSheet(null)} title="Audio Sources">
         {STREAMS.map((s, i) => (
-          <div key={s.id} onClick={() => switchStream(i)}
+          <div key={s.id} onClick={() => { switchStream(i); setSheet(null) }}
             className="flex cursor-pointer items-center gap-4 border-b py-4 hover:opacity-80 transition-opacity"
             style={{ borderColor: "var(--app-border)" }}>
             <div className={`h-2.5 w-2.5 rounded-full ${i === streamIdx ? "bg-cyan-400 shadow-[0_0_8px] shadow-cyan-400" : "bg-neutral-500"}`} />
