@@ -12,15 +12,16 @@ import {
   useState,
   type ReactNode,
 } from "react"
-import { toast } from "sonner"
 import { AlertCircle, CheckCircle2, Info } from "lucide-react"
+
+type RadioToastVariant = "default" | "danger" | "success" | "error"
 
 export function RadioToast({
   message,
   variant = "default",
 }: {
   message: string
-  variant?: "default" | "danger" | "success" | "error"
+  variant?: RadioToastVariant
 }) {
   const isError = variant === "danger" || variant === "error"
   const isSuccess = variant === "success"
@@ -143,6 +144,7 @@ interface RadioState {
   startRecording: () => Promise<void>
   stopRecording: () => void
   deleteRecording: (idx: number) => void
+  notify: (message: string, variant?: RadioToastVariant) => void
 }
 
 const RadioContext = createContext<RadioState | null>(null)
@@ -160,6 +162,10 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const [recording, setRecording] = useState(false)
   const [recordings, setRecordings] = useState<Recording[]>([])
   const [recDuration, setRecDuration] = useState(0)
+  const [inlineToast, setInlineToast] = useState<{
+    message: string
+    variant: RadioToastVariant
+  } | null>(null)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const ctxRef = useRef<AudioContext | null>(null)
@@ -172,6 +178,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const recChunks = useRef<Blob[]>([])
   const recTimer = useRef<number | null>(null)
   const recDurationRef = useRef(0)
+  const toastTimerRef = useRef<number | null>(null)
 
   const streamIdxRef = useRef(streamIdx)
   const failedAttemptsRef = useRef(0)
@@ -237,6 +244,19 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       audioRef.current.volume = muted ? 0 : volume / 100
     }
   }, [volume, muted])
+
+  const notify = useCallback(
+    (message: string, variant: RadioToastVariant = "default") => {
+      setInlineToast({ message, variant })
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current)
+      }
+      toastTimerRef.current = window.setTimeout(() => {
+        setInlineToast(null)
+      }, 3200)
+    },
+    []
+  )
 
   const ensureCtx = useCallback(() => {
     const a = audioRef.current
@@ -306,31 +326,15 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     setError(null)
     a.play()
       .then(() => {
-        toast.custom(
-          () => (
-            <RadioToast
-              message={`Connected: ${STREAMS[streamIdxRef.current].label}`}
-              variant="success"
-            />
-          ),
-          { id: "radio-status", position: "top-center" }
-        )
+        notify(`Connected: ${STREAMS[streamIdxRef.current].label}`, "success")
       })
       .catch((err) => {
         if (err instanceof Error && err.name === "NotAllowedError") {
-          toast.custom(
-            () => (
-              <RadioToast
-                message="Playback blocked – tap again"
-                variant="danger"
-              />
-            ),
-            { id: "radio-status", position: "top-center" }
-          )
+          notify("Playback blocked - tap again", "danger")
         }
         setLoading(false)
       })
-  }, [playing, ensureCtx])
+  }, [playing, ensureCtx, notify])
 
   const switchStream = useCallback(
     (idx: number, auto?: boolean) => {
@@ -344,22 +348,9 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
       // Feedback immediately with a consistent ID to replace previous ones
       if (auto) {
-        toast.custom(
-          () => (
-            <RadioToast
-              message={`Source error – trying ${STREAMS[idx].label}...`}
-              variant="danger"
-            />
-          ),
-          { id: "radio-status", position: "top-center" }
-        )
+        notify(`Source error - trying ${STREAMS[idx].label}...`, "danger")
       } else {
-        toast.custom(
-          () => (
-            <RadioToast message={`Connecting to ${STREAMS[idx].label}...`} />
-          ),
-          { id: "radio-status", position: "top-center" }
-        )
+        notify(`Connecting to ${STREAMS[idx].label}...`)
       }
 
       try {
@@ -385,26 +376,15 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       a.play()
         .then(() => {
           // Direct success feedback
-          toast.custom(
-            () => (
-              <RadioToast
-                message={`Connected: ${STREAMS[idx].label}`}
-                variant="success"
-              />
-            ),
-            { id: "radio-status", position: "top-center" }
-          )
+          notify(`Connected: ${STREAMS[idx].label}`, "success")
         })
         .catch((err) => {
           if (!auto && err instanceof Error && err.name === "NotAllowedError") {
-            toast.custom(
-              () => <RadioToast message="Tap play to start" variant="danger" />,
-              { id: "radio-status", position: "top-center" }
-            )
+            notify("Tap play to start", "danger")
           }
         })
     },
-    [ensureCtx]
+    [ensureCtx, notify]
   )
 
   useEffect(() => {
@@ -429,18 +409,10 @@ export function RadioProvider({ children }: { children: ReactNode }) {
         const nextIdx = (streamIdxRef.current + 1) % STREAMS.length
         switchStream(nextIdx, true)
       } else {
-        toast.custom(
-          () => (
-            <RadioToast
-              message="Stream failed – try another server"
-              variant="danger"
-            />
-          ),
-          { position: "top-center" }
-        )
+        notify("Stream failed - try another server", "danger")
       }
     }
-  }, [switchStream])
+  }, [switchStream, notify])
 
   const setVolume = useCallback((v: number) => setVolumeState(v), [])
   const setMuted = useCallback((m: boolean) => setMutedState(m), [])
@@ -448,10 +420,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const startRecording = useCallback(async () => {
     try {
       if (!analyserRef.current) {
-        toast.custom(
-          () => <RadioToast message="Start radio first" variant="danger" />,
-          { position: "top-center" }
-        )
+        notify("Start radio first", "danger")
         return
       }
 
@@ -488,23 +457,16 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       recRef.current = recorder
       setRecording(true)
 
-      toast.custom(() => <RadioToast message="Recording started" />, {
-        position: "top-center",
-      })
+      notify("Recording started")
 
       recTimer.current = window.setInterval(() => {
         recDurationRef.current++
         setRecDuration(recDurationRef.current)
       }, 1000)
     } catch {
-      toast.custom(
-        () => (
-          <RadioToast message="Failed to start recording" variant="danger" />
-        ),
-        { position: "top-center" }
-      )
+      notify("Failed to start recording", "danger")
     }
-  }, [])
+  }, [notify])
 
   const stopRecording = useCallback(() => {
     if (recRef.current && recRef.current.state !== "inactive") {
@@ -515,10 +477,8 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       recTimer.current = null
     }
     setRecording(false)
-    toast.custom(() => <RadioToast message="Recording saved to Clips" />, {
-      position: "top-center",
-    })
-  }, [])
+    notify("Recording saved to Clips", "success")
+  }, [notify])
 
   const deleteRecording = useCallback((idx: number) => {
     setRecordings((prev) => {
@@ -554,6 +514,14 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [togglePlay])
 
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current)
+      }
+    }
+  }, [])
+
   return (
     <RadioContext.Provider
       value={{
@@ -575,9 +543,15 @@ export function RadioProvider({ children }: { children: ReactNode }) {
         startRecording,
         stopRecording,
         deleteRecording,
+        notify,
       }}
     >
       {children}
+      {inlineToast && (
+        <div className="pointer-events-none fixed top-4 left-1/2 z-[500] -translate-x-1/2 px-3">
+          <RadioToast message={inlineToast.message} variant={inlineToast.variant} />
+        </div>
+      )}
     </RadioContext.Provider>
   )
 }

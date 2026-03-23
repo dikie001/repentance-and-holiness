@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
+import { createPortal } from "react-dom"
 import {
   ImageIcon,
   Search,
@@ -102,6 +103,7 @@ export default function GalleryPage() {
   const filtered = ALBUMS.filter(
     (a) => !search || a.title.toLowerCase().includes(search.toLowerCase())
   )
+  const canPortal = typeof document !== "undefined"
 
   return (
     <>
@@ -111,108 +113,117 @@ export default function GalleryPage() {
       />
 
       {/* Album modal */}
-      {openAlbum && (
-        <div
-          className="fixed inset-0 z-[200] overflow-y-auto bg-black/90 p-4 backdrop-blur-xl"
-          onClick={(e) => e.target === e.currentTarget && setOpenAlbum(null)}
-        >
-          <div className="mx-auto max-w-2xl">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-black text-white">
-                  {openAlbum.title}
-                </h2>
-                <p className="text-xs text-slate-500">
-                  {openAlbum.count} photos · {openAlbum.date}
-                </p>
-              </div>
-              <button
-                onClick={() => setOpenAlbum(null)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-white/8 text-slate-400 hover:text-white"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-1.5">
-              {Array.from({
-                length: openAlbum.count > 12 ? 12 : openAlbum.count,
-              }).map((_, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.03 }}
-                  onClick={() => setLightbox({ album: openAlbum, imgIdx: i })}
-                  className="aspect-square cursor-pointer overflow-hidden rounded-xl"
-                  style={{
-                    background: `linear-gradient(145deg, ${COLORS[i % COLORS.length]}, ${COLORS[(i + 3) % COLORS.length]})`,
-                  }}
+      {canPortal &&
+        openAlbum &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[200] overflow-y-auto bg-black/90 p-4 backdrop-blur-xl"
+            onClick={(e) => e.target === e.currentTarget && setOpenAlbum(null)}
+          >
+            <div className="mx-auto max-w-2xl">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-black text-white">
+                    {openAlbum.title}
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    {openAlbum.count} photos · {openAlbum.date}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setOpenAlbum(null)}
+                  className="grid h-9 w-9 place-items-center rounded-full bg-white/8 text-slate-400 hover:text-white"
                 >
-                  <div className="flex h-full w-full items-center justify-center">
-                    <ImageIcon size={20} className="text-white/20" />
-                  </div>
-                </motion.div>
-              ))}
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {Array.from({
+                  length: openAlbum.count > 12 ? 12 : openAlbum.count,
+                }).map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.03 }}
+                    onClick={() => setLightbox({ album: openAlbum, imgIdx: i })}
+                    className="aspect-square cursor-pointer overflow-hidden rounded-xl"
+                    style={{
+                      background: `linear-gradient(145deg, ${COLORS[i % COLORS.length]}, ${COLORS[(i + 3) % COLORS.length]})`,
+                    }}
+                  >
+                    <div className="flex h-full w-full items-center justify-center">
+                      <ImageIcon size={20} className="text-white/20" />
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* Lightbox */}
-      {lightbox && (
-        <div
-          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/95 backdrop-blur-2xl"
-          onClick={() => setLightbox(null)}
-        >
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setLightbox((l) =>
-                l ? { ...l, imgIdx: Math.max(0, l.imgIdx - 1) } : null
-              )
-            }}
-            className="absolute top-1/2 left-4 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
-          >
-            <ChevronLeft size={20} />
-          </button>
+      {canPortal &&
+        lightbox &&
+        createPortal(
           <div
-            className="aspect-square w-72 overflow-hidden rounded-2xl"
-            style={{
-              background: `linear-gradient(145deg, ${COLORS[lightbox.imgIdx % COLORS.length]}, ${COLORS[(lightbox.imgIdx + 3) % COLORS.length]})`,
-            }}
-          >
-            <div className="flex h-full items-center justify-center">
-              <ImageIcon size={48} className="text-white/20" />
-            </div>
-          </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setLightbox((l) =>
-                l && lightbox.album
-                  ? {
-                      ...l,
-                      imgIdx: Math.min(lightbox.album.count - 1, l.imgIdx + 1),
-                    }
-                  : null
-              )
-            }}
-            className="absolute top-1/2 right-4 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
-          >
-            <ChevronRight size={20} />
-          </button>
-          <button
+            className="fixed inset-0 z-[300] flex items-center justify-center bg-black/95 backdrop-blur-2xl"
             onClick={() => setLightbox(null)}
-            className="absolute top-4 right-4 grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white"
           >
-            <X size={18} />
-          </button>
-          <p className="absolute bottom-6 text-xs text-slate-400">
-            {lightbox.album.title} · {lightbox.imgIdx + 1} /{" "}
-            {lightbox.album.count}
-          </p>
-        </div>
-      )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setLightbox((l) =>
+                  l ? { ...l, imgIdx: Math.max(0, l.imgIdx - 1) } : null
+                )
+              }}
+              className="absolute top-1/2 left-4 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <div
+              className="aspect-square w-72 overflow-hidden rounded-2xl"
+              style={{
+                background: `linear-gradient(145deg, ${COLORS[lightbox.imgIdx % COLORS.length]}, ${COLORS[(lightbox.imgIdx + 3) % COLORS.length]})`,
+              }}
+            >
+              <div className="flex h-full items-center justify-center">
+                <ImageIcon size={48} className="text-white/20" />
+              </div>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setLightbox((l) =>
+                  l && lightbox.album
+                    ? {
+                        ...l,
+                        imgIdx: Math.min(
+                          lightbox.album.count - 1,
+                          l.imgIdx + 1
+                        ),
+                      }
+                    : null
+                )
+              }}
+              className="absolute top-1/2 right-4 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            >
+              <ChevronRight size={20} />
+            </button>
+            <button
+              onClick={() => setLightbox(null)}
+              className="absolute top-4 right-4 grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white"
+            >
+              <X size={18} />
+            </button>
+            <p className="absolute bottom-6 text-xs text-slate-400">
+              {lightbox.album.title} · {lightbox.imgIdx + 1} /{" "}
+              {lightbox.album.count}
+            </p>
+          </div>,
+          document.body
+        )}
 
       <div className="space-y-5 pb-4">
         {/* Header */}

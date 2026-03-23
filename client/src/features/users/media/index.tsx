@@ -1,5 +1,6 @@
 import { useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { createPortal } from "react-dom"
 import {
   Music2,
   Video,
@@ -194,10 +195,12 @@ function UploadModal({ tab, onClose }: UploadModalProps) {
 
   const handleFile = (file: File) => setFileName(file.name)
 
-  return (
+  if (typeof document === "undefined") return null
+
+  return createPortal(
     <div
       className="fixed inset-0 z-[300] flex items-end justify-center p-4 backdrop-blur-lg sm:items-center"
-      style={{ background: "rgba(0, 0, 0, 0.6)" }}
+      style={{ background: "rgba(3, 8, 25, 0.46)" }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div
@@ -206,7 +209,7 @@ function UploadModal({ tab, onClose }: UploadModalProps) {
         exit={{ opacity: 0, y: 40 }}
         className="w-full max-w-lg rounded-3xl border p-6 shadow-2xl"
         style={{
-          background: "var(--app-card)",
+          background: "var(--app-nav-bg)",
           borderColor: "var(--app-border)",
         }}
       >
@@ -334,7 +337,8 @@ function UploadModal({ tab, onClose }: UploadModalProps) {
           </motion.button>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

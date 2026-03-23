@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { cn } from "@/lib/utils"
-import { toast } from "sonner"
 import { useTheme } from "@/components/theme-provider"
+import { createPortal } from "react-dom"
 import {
   Play,
   Pause,
@@ -19,8 +19,10 @@ import {
   Server,
   Mic,
   Square,
+  Timer,
+  Heart,
 } from "lucide-react"
-import { useRadio, STREAMS, RadioToast } from "@/context/RadioContext"
+import { useRadio, STREAMS } from "@/context/RadioContext"
 
 /* ── Helpers ───────────────────────────────────────────────── */
 const fmt = (s: number) =>
@@ -78,8 +80,8 @@ function Sheet({
 }) {
   const { theme } = useTheme()
   const isDark = theme !== "light"
-  if (!open) return null
-  return (
+  if (!open || typeof document === "undefined") return null
+  return createPortal(
     <div
       onClick={(e) => e.target === e.currentTarget && onClose()}
       className="fixed inset-0 z-[200] flex items-end bg-black/70 backdrop-blur-lg"
@@ -118,7 +120,8 @@ function Sheet({
         </div>
         <div className="px-6 pb-10">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -243,10 +246,19 @@ export default function RadioPlayer() {
     startRecording,
     stopRecording,
     deleteRecording,
+    notify,
   } = useRadio()
 
-  const [sheet, setSheet] = useState<"sources" | "record" | "info" | null>(null)
+  const [sheet, setSheet] = useState<
+    "sources" | "record" | "info" | "sleep" | null
+  >(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [sleepEndAt, setSleepEndAt] = useState<number | null>(null)
+  const [sleepNowMs, setSleepNowMs] = useState(Date.now())
+  const [favorite, setFavorite] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false
+    return window.localStorage.getItem("rh-radio-favorite") === "1"
+  })
 
   const share = useCallback(async () => {
     const data = { title: "Jesus Is Lord Radio", url: STREAMS[streamIdx].url }
@@ -255,17 +267,57 @@ export default function RadioPlayer() {
     } else {
       try {
         await navigator.clipboard.writeText(data.url)
-        toast.custom(() => <RadioToast message="Link copied!" />, {
-          position: "top-center",
-        })
+        notify("Link copied!", "success")
       } catch {
         /* */
       }
     }
-  }, [streamIdx])
+  }, [streamIdx, notify])
 
   const { theme } = useTheme()
   const isDark = theme !== "light"
+
+  const sleepRemainingMs = sleepEndAt ? Math.max(0, sleepEndAt - sleepNowMs) : 0
+  const sleepMinutes = Math.floor(sleepRemainingMs / 60000)
+  const sleepSeconds = Math.floor((sleepRemainingMs % 60000) / 1000)
+
+  const setSleepTimer = useCallback((minutes: number) => {
+    if (minutes <= 0) {
+      setSleepEndAt(null)
+      notify("Sleep timer cleared")
+      return
+    }
+    const endAt = Date.now() + minutes * 60_000
+    setSleepEndAt(endAt)
+    notify(`Sleep timer set: ${minutes} min`, "success")
+  }, [notify])
+
+  useEffect(() => {
+    if (!sleepEndAt) return
+    const id = window.setInterval(() => setSleepNowMs(Date.now()), 1000)
+    return () => window.clearInterval(id)
+  }, [sleepEndAt])
+
+  useEffect(() => {
+    if (!sleepEndAt) return
+    if (sleepRemainingMs > 0) return
+    if (playing) {
+      togglePlay()
+      notify("Sleep timer ended. Playback paused.")
+    }
+    setSleepEndAt(null)
+  }, [sleepEndAt, sleepRemainingMs, playing, togglePlay, notify])
+
+  const toggleFavorite = useCallback(() => {
+    setFavorite((prev) => {
+      const next = !prev
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("rh-radio-favorite", next ? "1" : "0")
+      }
+      notify(next ? "Added to Favorites" : "Removed from Favorites", next ? "success" : "default")
+      return next
+    })
+  }, [notify])
 
   return (
     <>
@@ -322,6 +374,20 @@ export default function RadioPlayer() {
             <div className="mt-8 flex flex-col items-center gap-2">
               <div className="flex items-center gap-2 text-2xl font-black tracking-tight">
                 <h1>Jesus Is Lord Radio</h1>
+                <button
+                  onClick={toggleFavorite}
+                  className={cn(
+                    "grid h-8 w-8 place-items-center rounded-full border transition-colors",
+                    favorite
+                      ? "border-rose-400/40 bg-rose-500/10 text-rose-500"
+                      : isDark
+                        ? "border-white/15 bg-white/5 text-slate-300 hover:text-white"
+                        : "border-blue-300/80 bg-white/80 text-blue-700 hover:text-blue-900"
+                  )}
+                  aria-label="Toggle favorite"
+                >
+                  <Heart size={15} fill={favorite ? "currentColor" : "none"} />
+                </button>
                 {playing && (
                   <div
                     className={cn(
@@ -342,6 +408,12 @@ export default function RadioPlayer() {
               >
                 Repentance &amp; Holiness · {listeners} listening
               </p>
+              {sleepEndAt && (
+                <p className="text-[11px] font-semibold text-cyan-400">
+                  Sleep in {String(sleepMinutes).padStart(2, "0")}:
+                  {String(sleepSeconds).padStart(2, "0")}
+                </p>
+              )}
             </div>
           </div>
 
@@ -362,15 +434,14 @@ export default function RadioPlayer() {
                 <button
                   onClick={() => setMenuOpen((o) => !o)}
                   className={cn(
-                    "grid h-12 w-12 place-items-center rounded-full transition-all",
-                    isDark ? "text-slate-400" : "text-blue-900/40",
+                    "grid h-12 w-12 place-items-center rounded-full border transition-all",
                     menuOpen
                       ? isDark
-                        ? "bg-white/10 text-white"
-                        : "bg-blue-600/10 text-blue-600"
+                        ? "border-white/15 bg-white/10 text-white"
+                        : "border-blue-300/80 bg-blue-600/10 text-blue-700 shadow-sm"
                       : isDark
-                        ? "hover:bg-white/5 hover:text-white"
-                        : "hover:bg-blue-600/5 hover:text-blue-600"
+                        ? "border-white/10 text-slate-300 hover:bg-white/5 hover:text-white"
+                        : "border-blue-200 bg-white/85 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
                   )}
                 >
                   <MoreVertical size={24} />
@@ -414,6 +485,14 @@ export default function RadioPlayer() {
                         label: "Info",
                         action: () => {
                           setSheet("info")
+                          setMenuOpen(false)
+                        },
+                      },
+                      {
+                        icon: Timer,
+                        label: sleepEndAt ? "Sleep Timer (On)" : "Sleep Timer",
+                        action: () => {
+                          setSheet("sleep")
                           setMenuOpen(false)
                         },
                       },
@@ -496,13 +575,13 @@ export default function RadioPlayer() {
                 <button
                   onClick={recording ? stopRecording : startRecording}
                   className={cn(
-                    "grid h-12 w-12 place-items-center rounded-full transition-all",
+                    "grid h-12 w-12 place-items-center rounded-full border transition-all",
                     recording
-                      ? "animate-pulse bg-red-500/10 text-red-500"
+                      ? "animate-pulse border-red-300/50 bg-red-500/10 text-red-500"
                       : cn(
                           isDark
-                            ? "text-slate-400 hover:bg-white/5 hover:text-white"
-                            : "text-blue-900/40 hover:bg-blue-600/5 hover:text-blue-600"
+                            ? "border-white/10 text-slate-300 hover:bg-white/5 hover:text-white"
+                            : "border-blue-200 bg-white/85 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
                         )
                   )}
                 >
@@ -694,6 +773,44 @@ export default function RadioPlayer() {
               <span className="font-bold text-cyan-500">{v}</span>
             </div>
           ))}
+        </div>
+      </Sheet>
+
+      <Sheet
+        open={sheet === "sleep"}
+        onClose={() => setSheet(null)}
+        title="Sleep Timer"
+      >
+        <p className="mb-4 text-sm" style={{ color: "var(--app-text-muted)" }}>
+          Stop playback automatically after a set duration.
+        </p>
+        <div className="grid grid-cols-2 gap-2.5">
+          {[15, 30, 45, 60].map((min) => (
+            <button
+              key={min}
+              onClick={() => {
+                setSleepTimer(min)
+                setSheet(null)
+              }}
+              className="rounded-xl border px-3 py-2.5 text-sm font-bold transition-colors hover:bg-cyan-500/10"
+              style={{
+                borderColor: "var(--app-border)",
+                color: "var(--app-text)",
+              }}
+            >
+              {min} min
+            </button>
+          ))}
+          <button
+            onClick={() => {
+              setSleepTimer(0)
+              setSheet(null)
+            }}
+            className="col-span-2 rounded-xl border px-3 py-2.5 text-sm font-bold text-red-400 transition-colors hover:bg-red-500/10"
+            style={{ borderColor: "var(--app-border)" }}
+          >
+            Clear Timer
+          </button>
         </div>
       </Sheet>
     </>
