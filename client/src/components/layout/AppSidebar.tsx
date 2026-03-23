@@ -79,15 +79,17 @@ export function GlobalHeader() {
     <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-16 bg-[#060614]/60 backdrop-blur-xl border-b border-white/5 md:left-[var(--sidebar-width)] md:data-[state=collapsed]:left-[var(--sidebar-width-icon)] transition-all duration-200">
       {/* Logo on Left */}
       <Link to="/" className="flex items-center gap-2.5 group">
-        <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-400 flex items-center justify-center text-white font-black text-[10px] tracking-tighter shadow-lg shadow-blue-500/20 group-active:scale-95 transition-transform">
-          JIL
+        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg shadow-lg shadow-blue-500/20 group-active:scale-95 transition-transform">
+          <img src="/images/logo.png" alt="JIL Logo" className="h-full w-full object-cover" />
         </div>
-        <div className="hidden sm:block">
-          <p className="text-[11px] font-black text-white leading-none uppercase tracking-tight" style={{ fontFamily: "'Cinzel', serif" }}>
+        <div>
+          {/* Mobile/Small Screen Text */}
+          <p className="md:hidden text-xs sm:text-sm font-black text-white leading-tight uppercase tracking-tight" style={{ fontFamily: "'Cinzel', serif" }}>
             Repentance & Holiness
           </p>
-          <p className="text-[8px] font-bold text-cyan-400/60 leading-none mt-0.5 uppercase tracking-widest">
-            Ministry
+          {/* Desktop/Large Screen Text */}
+          <p className="hidden md:block text-sm lg:text-base font-black text-white leading-tight uppercase tracking-tight" style={{ fontFamily: "'Cinzel', serif" }}>
+            Ministry of Repentance & Holiness
           </p>
         </div>
       </Link>

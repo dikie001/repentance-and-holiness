@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 import {
   Play,
   Pause,
@@ -249,15 +250,7 @@ export default function RadioPlayer() {
   const [muted, setMuted] = useState(false)
   const [listeners, setListeners] = useState(48)
   const [recording, setRecording] = useState(false)
-  const [recSeconds, setRecSeconds] = useState(0)
   // Info sheet
-  const [selectedTopic, setSelectedTopic] = useState("ministry")
-  const [toastMsg, setToastMsg] = useState<string | null>(null)
-
-  const showToast = useCallback((msg: string) => {
-    setToastMsg(msg)
-    setTimeout(() => setToastMsg(null), 3000)
-  }, [])
   const [recordings, setRecordings] = useState<Recording[]>([])
   const [sheet, setSheet] = useState<"sources" | "record" | "info" | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -326,12 +319,11 @@ export default function RadioPlayer() {
     if (!audioRef.current) throw new Error("No audio element")
 
     if (!ctxRef.current) {
-      ctxRef.current = new (
-        window.AudioContext || (window as any).webkitAudioContext
-      )()
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      ctxRef.current = new AudioCtx()
     }
     const ctx = ctxRef.current
-    if (ctx.state === "suspended") ctx.resume().catch(() => {})
+    if (ctx.state === "suspended") ctx.resume().catch((e) => console.debug("Resume failed", e))
 
     if (!sourceRef.current) {
       sourceRef.current = ctx.createMediaElementSource(audioRef.current)
@@ -367,7 +359,9 @@ export default function RadioPlayer() {
 
     try {
       ensureAudioContext()
-    } catch {}
+    } catch (e) {
+      console.debug("Audio context error", e)
+    }
     setLoading(true)
     setError(null)
     a.play().catch(() => {
@@ -386,7 +380,9 @@ export default function RadioPlayer() {
       if (sourceRef.current) {
         try {
           sourceRef.current.disconnect()
-        } catch {}
+        } catch (e) {
+          console.debug("Disconnect failed", e)
+        }
         sourceRef.current = null
       }
       gainNodeRef.current = null
@@ -401,7 +397,9 @@ export default function RadioPlayer() {
 
       try {
         ensureAudioContext()
-      } catch {}
+      } catch (e) {
+        console.debug("Audio context error", e)
+      }
       a.play().catch(() => setError("Tap play to start"))
     },
     [ensureAudioContext]
@@ -437,25 +435,24 @@ export default function RadioPlayer() {
       recorder.start(1000)
       recRef.current = recorder
       setRecording(true)
-      setRecSeconds(0)
-      showToast("Recording started")
+      toast.success("Recording started")
  
       recTimer.current = window.setInterval(() => {
         recDuration.current++
-        setRecSeconds(recDuration.current)
       }, 1000)
-    } catch (err: any) {
-      setError(`Recording failed: ${err?.message || "Unknown error"}`)
-      showToast("Failed to start recording")
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unknown error"
+      setError(`Recording failed: ${msg}`)
+      toast.error("Failed to start recording")
     }
-  }, [ensureAudioContext, showToast])
+  }, [ensureAudioContext])
 
   const stopRecording = useCallback(() => {
     recRef.current?.stop()
     if (recTimer.current) clearInterval(recTimer.current)
     setRecording(false)
-    showToast("Recording saved to Clips")
-  }, [showToast])
+    toast.success("Recording saved to Clips")
+  }, [])
  
   const deleteRec = (index: number) => {
     setRecordings((prev) => {
@@ -469,11 +466,13 @@ export default function RadioPlayer() {
   const share = useCallback(async () => {
     const data = { title: "Jesus Is Lord Radio", url: STREAMS[streamIdx].url }
     if (navigator.share) {
-      navigator.share(data).catch(() => {})
+      navigator.share(data).catch((e) => console.debug("Share failed", e))
     } else {
       try {
         await navigator.clipboard.writeText(data.url)
-      } catch {}
+      } catch (e) {
+        console.debug("Clipboard failed", e)
+      }
     }
   }, [streamIdx])
 
@@ -487,14 +486,6 @@ export default function RadioPlayer() {
 
       <div className="font-barlow relative flex h-full flex-col overflow-hidden bg-gradient-to-br from-[#060614] via-[#0a0a1e] to-[#060610] text-white">
         
-        {/* Toast Notification */}
-        {toastMsg && (
-          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 bg-[#0f0f24]/90 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full shadow-2xl text-sm font-bold animate-in fade-in slide-in-from-top-4 flex items-center gap-2">
-            <div className={`h-2 w-2 rounded-full ${toastMsg.includes("started") ? "bg-red-500 animate-pulse" : "bg-cyan-500"}`} />
-            {toastMsg}
-          </div>
-        )}
-
         {/* Ambient glow */}
         <div className="bg-gradient-radial pointer-events-none absolute -top-20 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full from-blue-500/12 to-transparent" />
 
@@ -652,7 +643,7 @@ export default function RadioPlayer() {
                   )}
                 >
                   {recording ? (
-                    <Square size={20} fill="currentColor" />
+                    <Square size={20} fill="currentColor" className="text-red-500" />
                   ) : (
                     <Mic size={24} />
                   )}
