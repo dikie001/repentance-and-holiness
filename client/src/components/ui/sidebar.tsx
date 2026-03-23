@@ -155,6 +155,7 @@ function Sidebar({
   collapsible = "offcanvas",
   className,
   children,
+  style,
   dir,
   ...props
 }: React.ComponentProps<"div"> & {
@@ -180,6 +181,11 @@ function Sidebar({
   }
 
   if (isMobile) {
+    const combinedStyle = {
+      "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+      ...style,
+    } as React.CSSProperties
+
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
         <SheetContent
@@ -187,19 +193,15 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-          style={
-            {
-              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
-          }
+          className={cn("w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden", className)}
+          style={combinedStyle}
           side={side}
         >
           <SheetHeader className="sr-only">
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
           </SheetHeader>
-          <div className="flex h-full w-full flex-col">{children}</div>
+          <div className="relative flex h-full w-full flex-col overflow-hidden">{children}</div>
         </SheetContent>
       </Sheet>
     )

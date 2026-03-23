@@ -66,7 +66,7 @@ export function NotificationSheet() {
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetContent className="w-full sm:max-w-md p-0 flex flex-col border-l" style={{ background: "var(--app-sidebar-bg)", borderColor: "var(--app-border)" }}>
+      <SheetContent className="w-full sm:max-w-md p-0 flex flex-col border-l backdrop-blur-xl" style={{ background: "var(--app-sidebar-bg)", borderColor: "var(--app-border)" }}>
         <SheetHeader className="p-6 border-b" style={{ borderColor: "var(--app-border)" }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

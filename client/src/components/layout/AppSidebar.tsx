@@ -97,7 +97,7 @@ export function MobileBottomNav() {
   const idx = activeIndex === -1 ? 0 : activeIndex
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 h-[76px] md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 h-[76px] md:hidden backdrop-blur-md">
       {/* Premium Background with Dynamic Notch */}
       <div className="absolute inset-x-0 bottom-0 h-[64px] pointer-events-none overflow-visible">
         <svg
@@ -126,7 +126,7 @@ export function MobileBottomNav() {
         </svg>
       </div>
 
-      <div className="relative w-full h-full flex items-center justify-around z-10 px-8 flex-row">
+      <div className="relative w-full h-full flex items-center justify-around z-10 px-0">
         {MOBILE_ITEMS.map((item, index) => {
           const active = index === idx
           return (
@@ -184,7 +184,7 @@ function SidebarContentInner() {
         style={{ borderColor: "var(--app-border)" }}
       >
         <Link to="/" className="flex items-center gap-3">
-          <div className="h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-400 flex items-center justify-center text-white font-black text-xs shadow-lg shadow-blue-500/20">
+          <div className="h-10 w-10 shrink-0 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-400 flex items-center justify-center text-white font-black text-xs shadow-lg shadow-blue-500/20">
             JIL
           </div>
           <AnimatePresence>
@@ -194,7 +194,7 @@ function SidebarContentInner() {
                 <p className="text-sm font-black leading-none tracking-tight" style={{ color: "var(--app-text)" }}>
                   Repentance &amp; Holiness
                 </p>
-                <p className="text-[10px] font-bold text-cyan-500/80 leading-none mt-1 uppercase tracking-widest">Ministry</p>
+                <p className="text-[10px] font-black text-cyan-400 leading-none mt-1 uppercase tracking-widest">Ministry</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -209,10 +209,10 @@ function SidebarContentInner() {
               <SidebarMenuItem key={item.url}>
                 <SidebarMenuButton asChild isActive={active} tooltip={item.title}
                   onClick={() => setOpenMobile(false)}
-                  className={cn("h-11 rounded-xl transition-all duration-200 border",
+                  className={cn("h-11 rounded-xl transition-all duration-300 border",
                     active
-                      ? "bg-gradient-to-r from-blue-600/20 to-cyan-500/20 text-cyan-400 border-cyan-500/20"
-                      : "border-transparent hover:text-white"
+                      ? "bg-white/10 text-cyan-400 border-white/10 shadow-lg"
+                      : "border-transparent hover:bg-white/5 hover:text-white"
                   )}
                   style={!active ? { color: "var(--app-text-muted)" } : {}}
                 >
@@ -259,10 +259,21 @@ export function AppSidebar() {
     <>
       <Sidebar
         collapsible="icon"
-        className="border-r shadow-2xl z-50"
-        style={{ background: "var(--app-sidebar-bg)", borderColor: "var(--app-border)" } as React.CSSProperties}
+        className="border-r shadow-2xl z-50 transition-all duration-300 backdrop-blur-xl [&_[data-slot=sidebar-inner]]:bg-transparent overflow-hidden"
+        style={{ 
+          background: "linear-gradient(to bottom right, #060614, #0a0a1e, #060610)", 
+          borderColor: "var(--app-border)",
+          "--sidebar": "transparent",
+          "--sidebar-background": "transparent"
+        } as React.CSSProperties}
       >
-        <SidebarContentInner />
+        {/* Deep ambient glow - ensuring it's visible */}
+        <div className="pointer-events-none absolute -top-24 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full opacity-40 z-0"
+          style={{ background: "radial-gradient(circle,rgba(37,99,235,0.2) 0%,transparent 70%)" }} />
+          
+        <div className="relative z-10 flex flex-col h-full"> 
+          <SidebarContentInner />
+        </div>
       </Sidebar>
       <GlobalHeader />
       <MobileBottomNav />
