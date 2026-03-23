@@ -30,7 +30,20 @@ function AppContent() {
         </Routes>
       </BrowserRouter>
       {/* Dynamic theming via useTheme hook so user preference is respected instantly */}
-      <Toaster theme={theme as "system" | "light" | "dark"} position="top-center" />
+      <Toaster 
+        theme={theme as "system" | "light" | "dark"} 
+        position="top-center"
+        toastOptions={{
+          style: {
+            borderRadius: "1rem",
+            border: "1px solid var(--app-border)",
+            background: "var(--app-nav-bg)",
+            color: "var(--app-text)",
+            fontFamily: "var(--font-barlow)", // Barlow is used in Radio page
+            backdropFilter: "blur(12px)",
+          },
+        }}
+      />
     </>
   )
 }
