@@ -44,8 +44,12 @@ function EqBars({ active }: { active: boolean }) {
   )
 }
 
+/* ── Helpers ────────────────────────────────────────────────── */
+const fmt = (s: number) =>
+  `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`
+
 function LiveRadioCard() {
-  const { playing, loading, togglePlay } = useRadio()
+  const { playing, loading, togglePlay, recording, recDuration } = useRadio()
 
   return (
     <motion.div
@@ -70,6 +74,12 @@ function LiveRadioCard() {
               <span className={`inline-block h-1.5 w-1.5 rounded-full bg-red-500 ${playing ? "animate-pulse" : ""}`} />
               Live
             </span>
+            {recording && (
+              <span className="flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-px text-[9px] font-black text-rose-400 uppercase">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                REC {fmt(recDuration)}
+              </span>
+            )}
             <EqBars active={playing} />
           </div>
           <p className="text-sm font-black" style={{ color: "var(--app-text)" }}>Jesus Is Lord Radio</p>
@@ -78,6 +88,7 @@ function LiveRadioCard() {
           </p>
         </div>
       </div>
+
 
       <div className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-lg transition-all
         ${playing ? "bg-white/10 shadow-none" : "bg-gradient-to-br from-blue-600 to-cyan-500 shadow-blue-500/30"}`}>
