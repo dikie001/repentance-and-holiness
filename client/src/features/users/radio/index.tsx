@@ -16,6 +16,7 @@ import {
   Info,
   Server,
   Mic,
+  Square,
 } from "lucide-react"
 
 interface Stream {
@@ -249,6 +250,14 @@ export default function RadioPlayer() {
   const [listeners, setListeners] = useState(48)
   const [recording, setRecording] = useState(false)
   const [recSeconds, setRecSeconds] = useState(0)
+  // Info sheet
+  const [selectedTopic, setSelectedTopic] = useState("ministry")
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
+
+  const showToast = useCallback((msg: string) => {
+    setToastMsg(msg)
+    setTimeout(() => setToastMsg(null), 3000)
+  }, [])
   const [recordings, setRecordings] = useState<Recording[]>([])
   const [sheet, setSheet] = useState<"sources" | "record" | "info" | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -429,6 +438,7 @@ export default function RadioPlayer() {
       recRef.current = recorder
       setRecording(true)
       setRecSeconds(0)
+      showToast("Recording started")
  
       recTimer.current = window.setInterval(() => {
         recDuration.current++
@@ -436,14 +446,16 @@ export default function RadioPlayer() {
       }, 1000)
     } catch (err: any) {
       setError(`Recording failed: ${err?.message || "Unknown error"}`)
+      showToast("Failed to start recording")
     }
-  }, [ensureAudioContext])
+  }, [ensureAudioContext, showToast])
 
   const stopRecording = useCallback(() => {
     recRef.current?.stop()
     if (recTimer.current) clearInterval(recTimer.current)
     setRecording(false)
-  }, [])
+    showToast("Recording saved to Clips")
+  }, [showToast])
  
   const deleteRec = (index: number) => {
     setRecordings((prev) => {
@@ -474,6 +486,15 @@ export default function RadioPlayer() {
       />
 
       <div className="font-barlow relative flex h-full flex-col overflow-hidden bg-gradient-to-br from-[#060614] via-[#0a0a1e] to-[#060610] text-white">
+        
+        {/* Toast Notification */}
+        {toastMsg && (
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 bg-[#0f0f24]/90 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full shadow-2xl text-sm font-bold animate-in fade-in slide-in-from-top-4 flex items-center gap-2">
+            <div className={`h-2 w-2 rounded-full ${toastMsg.includes("started") ? "bg-red-500 animate-pulse" : "bg-cyan-500"}`} />
+            {toastMsg}
+          </div>
+        )}
+
         {/* Ambient glow */}
         <div className="bg-gradient-radial pointer-events-none absolute -top-20 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full from-blue-500/12 to-transparent" />
 
@@ -500,15 +521,7 @@ export default function RadioPlayer() {
                 />
               </div>
 
-              <div
-                className={`absolute -bottom-2.5 left-1/2 -translate-x-1/2 rounded-full border-2 border-white/15 px-4 py-1.5 text-[10px] font-black tracking-widest whitespace-nowrap uppercase ${
-                  playing
-                    ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.5)]"
-                    : "bg-neutral-800 text-white/90"
-                }`}
-              >
-                {playing ? "● ON AIR" : "OFF AIR"}
-              </div>
+
             </div>
 
             <div className="mt-8 flex flex-col items-center gap-2">
@@ -632,13 +645,17 @@ export default function RadioPlayer() {
                 <button
                   onClick={recording ? stopRecording : startRecording}
                   className={cn(
-                    "grid h-12 w-12 place-items-center rounded-full transition-all text-slate-400",
+                    "grid h-12 w-12 place-items-center rounded-full transition-all",
                     recording 
-                      ? "bg-red-500/10 text-red-500 animate-pulse outline outline-1 outline-red-500/30" 
-                      : "hover:bg-white/5 hover:text-white active:scale-95"
+                      ? "bg-white/10 text-white animate-pulse" 
+                      : "text-slate-400 hover:bg-white/5 hover:text-white active:scale-95"
                   )}
                 >
-                  <Mic size={24} className={recording ? "animate-bounce shadow-[0_0_15px_rgba(239,68,68,0.3)]" : ""} />
+                  {recording ? (
+                    <Square size={20} fill="currentColor" />
+                  ) : (
+                    <Mic size={24} />
+                  )}
                 </button>
               </div>
             </div>

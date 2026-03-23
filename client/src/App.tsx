@@ -10,19 +10,22 @@ import NotFound from "./components/NotFound"
 
 export function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<HomePage />} />
-          <Route path="jesus-is-lord-radio" element={<RadioPage />} />
-          <Route path="media" element={<MediaPage />} />
-          <Route path="prophecies" element={<PropheciesPage />} />
-          <Route path="about" element={<AboutPage />} />
-          <Route path="admin/dashboard" element={<Dashboard />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<HomePage />} />
+            <Route path="jesus-is-lord-radio" element={<RadioPage />} />
+            <Route path="media" element={<MediaPage />} />
+            <Route path="prophecies" element={<PropheciesPage />} />
+            <Route path="about" element={<AboutPage />} />
+            <Route path="admin/dashboard" element={<Dashboard />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+      <Toaster theme="dark" position="top-center" />
+    </>
   )
 }
 
