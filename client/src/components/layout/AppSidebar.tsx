@@ -1,66 +1,31 @@
-/**
- * Repentance & Holiness Ministry — AppNavigation
- * ─────────────────────────────────────────────
- * Sidebar : Collapsible for Desktop + Drawer for Mobile
- * Header  : Sticky Top with Logo (Left) and Menu (Right)
- * Bottom  : Sticky Bottom Nav (3 key links) for Mobile
- */
-
 "use client"
 
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar
+  Sidebar, SidebarContent, SidebarFooter, SidebarHeader,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
+import { useTheme } from "@/components/theme-provider"
 import { AnimatePresence, motion } from "framer-motion"
 import {
-  Bell,
-  BookOpenText,
-  Flame,
-  House,
-  ImagePlay,
-  Menu,
-  Music4,
-  RadioTower,
-  Settings2,
-  UsersRound,
-  type LucideIcon
+  Bell, BookOpenText, Flame, House, ImagePlay, Menu,
+  Moon, Music4, RadioTower, Sun, UsersRound, type LucideIcon
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 
-/* ─────────────────────────────────────────────────────────────
-   Data
- ───────────────────────────────────────────────────────────── */
-type NavItem = {
-  title: string
-  url: string
-  icon: LucideIcon
-  badge?: string
-}
+type NavItem = { title: string; url: string; icon: LucideIcon; badge?: string }
 
 const NAV_ITEMS: NavItem[] = [
-  { title: "Home", url: "/", icon: House },
-  { title: "Radio", url: "/jesus-is-lord-radio", icon: RadioTower, badge: "LIVE" },
-  { title: "Media", url: "/media", icon: Music4 },
-  { title: "Teachings", url: "/teachings", icon: BookOpenText },
-  { title: "Prophecies", url: "/prophecies", icon: Flame },
-  { title: "Gallery", url: "/gallery", icon: ImagePlay },
-  { title: "About", url: "/about", icon: UsersRound },
+  { title: "Home",       url: "/",                     icon: House                        },
+  { title: "Radio",      url: "/jesus-is-lord-radio",  icon: RadioTower, badge: "LIVE"  },
+  { title: "Media",      url: "/media",                icon: Music4                      },
+  { title: "Teachings",  url: "/teachings",            icon: BookOpenText                },
+  { title: "Prophecies", url: "/prophecies",           icon: Flame                       },
+  { title: "Gallery",    url: "/gallery",              icon: ImagePlay                   },
+  { title: "About",      url: "/about",                icon: UsersRound                  },
 ]
 
-// User requested exactly 3 links for mobile bottom nav
-const MOBILE_BOTTOM_ITEMS = NAV_ITEMS.slice(0, 3)
-
-/* ─────────────────────────────────────────────────────────────
-   Sub-components
- ───────────────────────────────────────────────────────────── */
+const MOBILE_ITEMS = NAV_ITEMS.slice(0, 5)
 
 function LiveDot() {
   return (
@@ -71,64 +36,64 @@ function LiveDot() {
   )
 }
 
-/** ── Global Top Header ──────────────────────────────────────── */
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme()
+  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+  return (
+    <button
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 text-slate-400 hover:text-white transition-colors border border-white/5"
+      aria-label="Toggle theme"
+    >
+      {isDark ? <Sun size={16} /> : <Moon size={16} />}
+    </button>
+  )
+}
+
 export function GlobalHeader() {
   const { toggleSidebar } = useSidebar()
-  
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-16 bg-[#060614]/60 backdrop-blur-xl border-b border-white/5 md:left-[var(--sidebar-width)] md:data-[state=collapsed]:left-[var(--sidebar-width-icon)] transition-all duration-200">
-      {/* Logo on Left */}
+    <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-16 bg-[#060614]/60 backdrop-blur-xl border-b border-white/5 md:left-[var(--sidebar-width)] transition-all duration-200">
       <Link to="/" className="flex items-center gap-2.5 group">
         <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg shadow-lg shadow-blue-500/20 group-active:scale-95 transition-transform">
           <img src="/images/logo.png" alt="JIL Logo" className="h-full w-full object-cover" />
         </div>
-        <div>
-          {/* Mobile/Small Screen Text */}
-          <p className="md:hidden text-xs sm:text-sm font-black text-white leading-tight uppercase tracking-tight" style={{ fontFamily: "'Cinzel', serif" }}>
-            Repentance & Holiness
-          </p>
-          {/* Desktop/Large Screen Text */}
-          <p className="hidden md:block text-sm lg:text-base font-black text-white leading-tight uppercase tracking-tight" style={{ fontFamily: "'Cinzel', serif" }}>
-            Ministry of Repentance & Holiness
-          </p>
-        </div>
+        <p className="text-xs sm:text-sm font-black text-white leading-tight uppercase tracking-tight hidden sm:block" style={{ fontFamily: "'Cinzel', serif" }}>
+          Repentance &amp; Holiness
+        </p>
       </Link>
 
-      {/* Actions & Menu Button on Right */}
       <div className="flex items-center gap-2">
-        <div className="hidden md:flex items-center gap-2 mr-2">
-           <button className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 text-slate-400 hover:text-white transition-colors border border-white/5">
-            <Bell size={18} />
-          </button>
-        </div>
-
-        {/* Modern Menu Button */}
-        <button 
+        <ThemeToggle />
+        <button className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 text-slate-400 hover:text-white transition-colors border border-white/5">
+          <Bell size={16} />
+        </button>
+        <button
           onClick={toggleSidebar}
-          className="h-10 w-10 rounded-xl flex items-center justify-center bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all border border-white/5 group active:scale-90"
+          className="h-10 w-10 rounded-xl flex items-center justify-center bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all border border-white/5 active:scale-90"
           aria-label="Toggle Menu"
         >
-          <Menu size={20} className="group-hover:scale-110 transition-transform" />
+          <Menu size={20} />
         </button>
       </div>
     </header>
   )
 }
 
-/** ── Mobile Bottom Navigation ───────────────────────────────── */
 export function MobileBottomNav() {
   const { pathname } = useLocation()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 h-20 md:hidden px-6 pb-safe bg-[#060614]/90 backdrop-blur-2xl border-t border-white/5 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-      {MOBILE_BOTTOM_ITEMS.map((item) => {
+    <nav className="fixed bottom-0 left-0 right-0 z-50 h-20 md:hidden px-2 pb-safe bg-[#060614]/92 backdrop-blur-2xl border-t border-white/5 flex items-center justify-around shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+      {MOBILE_ITEMS.map((item) => {
         const active = pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url))
         return (
           <Link
             key={item.url}
             to={item.url}
             className={cn(
-              "flex flex-col items-center justify-center gap-1.5 transition-all relative px-4",
+              "flex flex-col items-center justify-center gap-1 transition-all relative px-3 py-1",
               active ? "text-cyan-400" : "text-slate-500"
             )}
           >
@@ -138,15 +103,18 @@ export function MobileBottomNav() {
                 className={cn("transition-all duration-300", active && "scale-110 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]")}
                 strokeWidth={active ? 2.5 : 2}
               />
+              {item.badge === "LIVE" && (
+                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+              )}
               {active && (
                 <motion.div
                   layoutId="bottomNavDot"
-                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_12px_#22d3ee]"
+                  className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]"
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest">{item.title}</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest">{item.title}</span>
           </Link>
         )
       })}
@@ -154,11 +122,12 @@ export function MobileBottomNav() {
   )
 }
 
-/** ── Sidebar Content ─────────────────────────────────────────── */
 function SidebarContentInner() {
   const { pathname } = useLocation()
   const { state } = useSidebar()
   const collapsed = state === "collapsed"
+  const { theme, setTheme } = useTheme()
+  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
 
   return (
     <>
@@ -176,11 +145,9 @@ function SidebarContentInner() {
                 className="overflow-hidden whitespace-nowrap"
               >
                 <p className="text-sm font-black text-white leading-none tracking-tight" style={{ fontFamily: "'Cinzel', serif" }}>
-                  Repentance & Holiness
+                  Repentance &amp; Holiness
                 </p>
-                <p className="text-[10px] font-bold text-cyan-400/70 leading-none mt-1 uppercase tracking-widest">
-                  Ministry
-                </p>
+                <p className="text-[10px] font-bold text-cyan-400/70 leading-none mt-1 uppercase tracking-widest">Ministry</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -194,13 +161,11 @@ function SidebarContentInner() {
             return (
               <SidebarMenuItem key={item.url}>
                 <SidebarMenuButton
-                  asChild
-                  isActive={active}
-                  tooltip={item.title}
+                  asChild isActive={active} tooltip={item.title}
                   className={cn(
                     "h-11 rounded-xl transition-all duration-200",
-                    active 
-                      ? "bg-gradient-to-r from-blue-600/20 to-cyan-500/20 text-cyan-400 border border-cyan-500/20" 
+                    active
+                      ? "bg-gradient-to-r from-blue-600/20 to-cyan-500/20 text-cyan-400 border border-cyan-500/20"
                       : "text-slate-400 hover:bg-white/5 hover:text-white border border-transparent"
                   )}
                 >
@@ -208,7 +173,7 @@ function SidebarContentInner() {
                     <item.icon size={20} className={active ? "text-cyan-400" : "text-slate-500"} />
                     <span className="font-bold tracking-wide">{item.title}</span>
                     {item.badge === "LIVE" && !collapsed && (
-                      <div className="ml-auto flex items-center gap-1.5 bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full text-[9px] font-black border border-red-500/20">
+                      <div className="ml-auto flex items-center gap-1.5 bg-red-500/10 text-red-400 px-2 py-0.5 rounded-full text-[9px] font-black border border-red-500/20">
                         <LiveDot /> LIVE
                       </div>
                     )}
@@ -221,33 +186,25 @@ function SidebarContentInner() {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-white/5">
-        <SidebarMenuButton 
-          className="h-12 rounded-xl bg-white/5 text-slate-400 hover:text-white border border-white/5 gap-3"
-          tooltip="Settings"
+        <SidebarMenuButton
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          className="h-11 rounded-xl bg-white/5 text-slate-400 hover:text-white border border-white/5 gap-3"
+          tooltip={isDark ? "Light mode" : "Dark mode"}
         >
-          <Settings2 size={20} />
-          <span className="font-bold">Settings</span>
+          {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          <span className="font-bold">{isDark ? "Light Mode" : "Dark Mode"}</span>
         </SidebarMenuButton>
       </SidebarFooter>
     </>
   )
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Main Export
- ───────────────────────────────────────────────────────────── */
-
 export function AppSidebar() {
   return (
     <>
-      {/* Desktop/Mobile Sidebar Context handles both based on state */}
-      <Sidebar 
-        collapsible="icon" 
-        className="bg-[#060611] border-r border-white/5 shadow-2xl z-50"
-      >
+      <Sidebar collapsible="icon" className="bg-[#060611] border-r border-white/5 shadow-2xl z-50">
         <SidebarContentInner />
       </Sidebar>
-
       <GlobalHeader />
       <MobileBottomNav />
     </>
