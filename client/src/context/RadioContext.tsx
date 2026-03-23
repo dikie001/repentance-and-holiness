@@ -4,68 +4,123 @@
  * Persists audio playback across all pages (background radio).
  */
 import {
-  createContext, useCallback, useContext, useEffect,
-  useRef, useState, type ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
 } from "react"
 import { toast } from "sonner"
 import { AlertCircle, CheckCircle2, Info } from "lucide-react"
 
-export function RadioToast({ message, variant = "default" }: { message: string, variant?: "default" | "danger" | "success" | "error" }) {
+export function RadioToast({
+  message,
+  variant = "default",
+}: {
+  message: string
+  variant?: "default" | "danger" | "success" | "error"
+}) {
   const isError = variant === "danger" || variant === "error"
   const isSuccess = variant === "success"
-  
+
   const Icon = isError ? AlertCircle : isSuccess ? CheckCircle2 : Info
-  const accentColor = isError ? "rgb(239, 68, 68)" : isSuccess ? "rgb(34, 197, 94)" : "rgb(59, 130, 246)"
-  const borderColor = isError ? "rgba(239, 68, 68, 0.25)" : isSuccess ? "rgba(34, 197, 94, 0.25)" : "var(--app-border)"
+  const accentColor = isError
+    ? "rgb(239, 68, 68)"
+    : isSuccess
+      ? "rgb(34, 197, 94)"
+      : "rgb(59, 130, 246)"
+  const borderColor = isError
+    ? "rgba(239, 68, 68, 0.25)"
+    : isSuccess
+      ? "rgba(34, 197, 94, 0.25)"
+      : "var(--app-border)"
 
   return (
-    <div className="group relative flex items-center gap-3.5 rounded-2xl border p-2 shadow-2xl w-fit min-w-[300px] max-w-[calc(100vw-32px)] pointer-events-auto transition-all duration-300 overflow-hidden"
-      style={{ 
-        backgroundColor: "var(--app-nav-bg)", 
+    <div
+      className="group pointer-events-auto relative flex w-fit max-w-[calc(100vw-32px)] min-w-[300px] items-center gap-3.5 overflow-hidden rounded-2xl border p-2 shadow-2xl transition-all duration-300"
+      style={{
+        backgroundColor: "var(--app-nav-bg)",
         borderColor: borderColor,
         backdropFilter: "blur(28px) saturate(180%)",
-        WebkitBackdropFilter: "blur(28px) saturate(180%)"
-      }}>
-      
+        WebkitBackdropFilter: "blur(28px) saturate(180%)",
+      }}
+    >
       {/* Dynamic Accent Glow */}
-      <div className="absolute -left-10 -top-10 h-24 w-24 rounded-full opacity-[0.12] blur-3xl transition-colors duration-500"
-        style={{ backgroundColor: accentColor }} />
+      <div
+        className="absolute -top-10 -left-10 h-24 w-24 rounded-full opacity-[0.12] blur-3xl transition-colors duration-500"
+        style={{ backgroundColor: accentColor }}
+      />
 
       {/* Logo on Left */}
-      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden border border-white/10 bg-black/40 shadow-sm">
-        <img src="/images/radio-logo.png" className="h-full w-full object-cover" alt="radio-logo" />
+      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black/40 shadow-sm">
+        <img
+          src="/images/radio-logo.png"
+          className="h-full w-full object-cover"
+          alt="radio-logo"
+        />
       </div>
 
       {/* Text in Middle */}
-      <div className="flex-1 min-w-0 pr-2">
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="relative flex h-1.5 w-1.5">
-          </span>
+      <div className="min-w-0 flex-1 pr-2">
+        <div className="mb-0.5 flex items-center gap-1.5">
+          <span className="relative flex h-1.5 w-1.5"></span>
         </div>
-        <div className="text-[14px] font-extrabold tracking-tight leading-tight" style={{ color: "var(--app-text)" }}>
+        <div
+          className="text-[14px] leading-tight font-extrabold tracking-tight"
+          style={{ color: "var(--app-text)" }}
+        >
           Jesus Is Lord Radio
         </div>
-        <div className="text-[11.5px] font-semibold leading-relaxed truncate opacity-60" style={{ color: "var(--app-text)" }}>
+        <div
+          className="truncate text-[11.5px] leading-relaxed font-semibold opacity-60"
+          style={{ color: "var(--app-text)" }}
+        >
           {message || "105.3 - 105.9 FM"}
         </div>
       </div>
 
       {/* Variant Icon at Far Right Middle */}
       <div className="relative flex h-8.5 w-8.5 shrink-0 items-center justify-center">
-         <Icon className="h-4.5 w-4.5" style={{ color: accentColor }} />
+        <Icon className="h-4.5 w-4.5" style={{ color: accentColor }} />
       </div>
     </div>
   )
 }
 
 export const STREAMS = [
-  { id: "primary",  label: "Main Server", sub: "Radio.co",  url: "https://s3.radio.co/s97f38db97/listen" },
-  { id: "backup-1", label: "Backup 1",    sub: "Zeno FM",   url: "https://stream.zeno.fm/3gdtad95608uv" },
-  { id: "backup-2", label: "Backup 2",    sub: "Voscast",   url: "https://station.voscast.com/5ca3d6cd7c777/" },
-  { id: "backup-3", label: "Backup 3",    sub: "Streema",   url: "https://s3.radio.co/s97f38db97/listen" },
+  {
+    id: "primary",
+    label: "Main Server",
+    sub: "Radio.co",
+    url: "https://s3.radio.co/s97f38db97/listen",
+  },
+  {
+    id: "backup-1",
+    label: "Backup 1",
+    sub: "Zeno FM",
+    url: "https://stream.zeno.fm/3gdtad95608uv",
+  },
+  {
+    id: "backup-2",
+    label: "Backup 2",
+    sub: "Voscast",
+    url: "https://station.voscast.com/5ca3d6cd7c777/",
+  },
+  {
+    id: "backup-3",
+    label: "Backup 3",
+    sub: "Streema",
+    url: "https://s3.radio.co/s97f38db97/listen",
+  },
 ]
 
-export interface Recording { url: string; name: string; dur: number }
+export interface Recording {
+  url: string
+  name: string
+  dur: number
+}
 
 interface RadioState {
   playing: boolean
@@ -93,29 +148,29 @@ interface RadioState {
 const RadioContext = createContext<RadioState | null>(null)
 
 export function RadioProvider({ children }: { children: ReactNode }) {
-  const [playing, setPlaying]   = useState(false)
-  const [loading, setLoading]   = useState(false)
-  const [error,   setError]     = useState<string | null>(null)
+  const [playing, setPlaying] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [streamIdx, setStreamIdx] = useState(0)
-  const [volume, setVolumeState]  = useState(82)
-  const [muted, setMutedState]    = useState(false)
+  const [volume, setVolumeState] = useState(82)
+  const [muted, setMutedState] = useState(false)
   const [listeners, setListeners] = useState(48)
-  
+
   // Recording State
-  const [recording, setRecording]   = useState(false)
+  const [recording, setRecording] = useState(false)
   const [recordings, setRecordings] = useState<Recording[]>([])
   const [recDuration, setRecDuration] = useState(0)
 
-  const audioRef    = useRef<HTMLAudioElement | null>(null)
-  const ctxRef      = useRef<AudioContext | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const ctxRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
-  const gainRef     = useRef<GainNode | null>(null)
-  const srcRef      = useRef<MediaElementAudioSourceNode | null>(null)
-  
+  const gainRef = useRef<GainNode | null>(null)
+  const srcRef = useRef<MediaElementAudioSourceNode | null>(null)
+
   // Recording Refs
-  const recRef      = useRef<MediaRecorder | null>(null)
-  const recChunks   = useRef<Blob[]>([])
-  const recTimer    = useRef<number | null>(null)
+  const recRef = useRef<MediaRecorder | null>(null)
+  const recChunks = useRef<Blob[]>([])
+  const recTimer = useRef<number | null>(null)
   const recDurationRef = useRef(0)
 
   const streamIdxRef = useRef(streamIdx)
@@ -123,7 +178,9 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const isCORSFallbackRef = useRef(false)
   const handleErrorRef = useRef<() => void>(() => {})
 
-  useEffect(() => { streamIdxRef.current = streamIdx }, [streamIdx])
+  useEffect(() => {
+    streamIdxRef.current = streamIdx
+  }, [streamIdx])
 
   useEffect(() => {
     const a = new Audio()
@@ -131,36 +188,44 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     a.crossOrigin = "anonymous"
     audioRef.current = a
 
-    a.addEventListener("playing", () => { 
-      setPlaying(true);  
-      setLoading(false); 
-      setError(null); 
-      failedAttemptsRef.current = 0 
+    a.addEventListener("playing", () => {
+      setPlaying(true)
+      setLoading(false)
+      setError(null)
+      failedAttemptsRef.current = 0
       // Ensure AudioContext is running when playback starts
       if (ctxRef.current && ctxRef.current.state === "suspended") {
         ctxRef.current.resume().catch(() => {})
       }
     })
-    a.addEventListener("pause",   () => setPlaying(false))
+    a.addEventListener("pause", () => setPlaying(false))
     a.addEventListener("waiting", () => setLoading(true))
     a.addEventListener("canplay", () => setLoading(false))
-    a.addEventListener("error",   () => handleErrorRef.current())
+    a.addEventListener("error", () => handleErrorRef.current())
 
     a.src = STREAMS[0].url
     a.volume = volume / 100
     a.load()
 
-    return () => { 
-      a.pause(); 
-      a.src = "";
-      if (recTimer.current) clearInterval(recTimer.current);
+    return () => {
+      a.pause()
+      a.src = ""
+      if (recTimer.current) clearInterval(recTimer.current)
     }
   }, [])
 
   /* ── Fake listeners count ─── */
   useEffect(() => {
-    const id = setInterval(() =>
-      setListeners(n => Math.max(1, n + (Math.random() > 0.5 ? 1 : -1) * ~~(Math.random() * 5))), 6000)
+    const id = setInterval(
+      () =>
+        setListeners((n) =>
+          Math.max(
+            1,
+            n + (Math.random() > 0.5 ? 1 : -1) * ~~(Math.random() * 5)
+          )
+        ),
+      6000
+    )
     return () => clearInterval(id)
   }, [])
 
@@ -176,14 +241,14 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const ensureCtx = useCallback(() => {
     const a = audioRef.current
     if (!a) return
-    
+
     // Create AudioContext if it doesn't exist
     if (!ctxRef.current) {
       const AC = window.AudioContext || (window as any).webkitAudioContext
       ctxRef.current = new AC()
     }
     const ctx = ctxRef.current
-    
+
     // Always attempt to resume on user interaction or state change
     if (ctx.state === "suspended") {
       ctx.resume().catch(() => {})
@@ -203,14 +268,14 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
     // Try to create source from audio element
     if (!srcRef.current) {
-       try {
-          srcRef.current = ctx.createMediaElementSource(a)
-       } catch (e) {
-          console.warn("AudioContext source creation failed:", e)
-          return
-       }
+      try {
+        srcRef.current = ctx.createMediaElementSource(a)
+      } catch (e) {
+        console.warn("AudioContext source creation failed:", e)
+        return
+      }
     }
-    
+
     if (!gainRef.current) {
       gainRef.current = ctx.createGain()
       gainRef.current.gain.value = muted ? 0 : volume / 100
@@ -228,56 +293,119 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const togglePlay = useCallback(() => {
     const a = audioRef.current
     if (!a) return
-    if (playing) { a.pause(); return }
-    try { ensureCtx() } catch { /* */ }
+    if (playing) {
+      a.pause()
+      return
+    }
+    try {
+      ensureCtx()
+    } catch {
+      /* */
+    }
     setLoading(true)
     setError(null)
-    a.play().then(() => {
-      toast.custom(() => <RadioToast message={`Connected: ${STREAMS[streamIdxRef.current].label}`} variant="success" />, { id: "radio-status", position: "top-center" })
-    }).catch((err) => {
-      if (err instanceof Error && err.name === "NotAllowedError") {
-        toast.custom(() => <RadioToast message="Playback blocked – tap again" variant="danger" />, { id: "radio-status", position: "top-center" })
-      }
-      setLoading(false)
-    })
+    a.play()
+      .then(() => {
+        toast.custom(
+          () => (
+            <RadioToast
+              message={`Connected: ${STREAMS[streamIdxRef.current].label}`}
+              variant="success"
+            />
+          ),
+          { id: "radio-status", position: "top-center" }
+        )
+      })
+      .catch((err) => {
+        if (err instanceof Error && err.name === "NotAllowedError") {
+          toast.custom(
+            () => (
+              <RadioToast
+                message="Playback blocked – tap again"
+                variant="danger"
+              />
+            ),
+            { id: "radio-status", position: "top-center" }
+          )
+        }
+        setLoading(false)
+      })
   }, [playing, ensureCtx])
 
-  const switchStream = useCallback((idx: number, auto?: boolean) => {
-    const a = audioRef.current
-    if (!a) return
-    if (!auto) failedAttemptsRef.current = 0
-    
-    // Reset CORS state when switching
-    isCORSFallbackRef.current = false
-    a.crossOrigin = "anonymous"
-    
-    // Feedback immediately with a consistent ID to replace previous ones
-    if (auto) {
-      toast.custom(() => <RadioToast message={`Source error – trying ${STREAMS[idx].label}...`} variant="danger" />, { id: "radio-status", position: "top-center" })
-    } else {
-      toast.custom(() => <RadioToast message={`Connecting to ${STREAMS[idx].label}...`} />, { id: "radio-status", position: "top-center" })
-    }
+  const switchStream = useCallback(
+    (idx: number, auto?: boolean) => {
+      const a = audioRef.current
+      if (!a) return
+      if (!auto) failedAttemptsRef.current = 0
 
-    try { srcRef.current?.disconnect() } catch { /* */ }
-    // srcRef.current = null; // Do NOT reset this as earlier identified
-    gainRef.current = null; analyserRef.current = null
-    a.pause()
-    a.src = STREAMS[idx].url
-    setStreamIdx(idx)
-    streamIdxRef.current = idx
-    setError(null)
-    setLoading(true)
-    a.load()
-    try { ensureCtx() } catch { /* */ }
-    a.play().then(() => {
-      // Direct success feedback
-      toast.custom(() => <RadioToast message={`Connected: ${STREAMS[idx].label}`} variant="success" />, { id: "radio-status", position: "top-center" })
-    }).catch((err) => {
-      if (!auto && err instanceof Error && err.name === "NotAllowedError") {
-        toast.custom(() => <RadioToast message="Tap play to start" variant="danger" />, { id: "radio-status", position: "top-center" })
+      // Reset CORS state when switching
+      isCORSFallbackRef.current = false
+      a.crossOrigin = "anonymous"
+
+      // Feedback immediately with a consistent ID to replace previous ones
+      if (auto) {
+        toast.custom(
+          () => (
+            <RadioToast
+              message={`Source error – trying ${STREAMS[idx].label}...`}
+              variant="danger"
+            />
+          ),
+          { id: "radio-status", position: "top-center" }
+        )
+      } else {
+        toast.custom(
+          () => (
+            <RadioToast message={`Connecting to ${STREAMS[idx].label}...`} />
+          ),
+          { id: "radio-status", position: "top-center" }
+        )
       }
-    })
-  }, [ensureCtx])
+
+      try {
+        srcRef.current?.disconnect()
+      } catch {
+        /* */
+      }
+      // srcRef.current = null; // Do NOT reset this as earlier identified
+      gainRef.current = null
+      analyserRef.current = null
+      a.pause()
+      a.src = STREAMS[idx].url
+      setStreamIdx(idx)
+      streamIdxRef.current = idx
+      setError(null)
+      setLoading(true)
+      a.load()
+      try {
+        ensureCtx()
+      } catch {
+        /* */
+      }
+      a.play()
+        .then(() => {
+          // Direct success feedback
+          toast.custom(
+            () => (
+              <RadioToast
+                message={`Connected: ${STREAMS[idx].label}`}
+                variant="success"
+              />
+            ),
+            { id: "radio-status", position: "top-center" }
+          )
+        })
+        .catch((err) => {
+          if (!auto && err instanceof Error && err.name === "NotAllowedError") {
+            toast.custom(
+              () => <RadioToast message="Tap play to start" variant="danger" />,
+              { id: "radio-status", position: "top-center" }
+            )
+          }
+        })
+    },
+    [ensureCtx]
+  )
 
   useEffect(() => {
     handleErrorRef.current = () => {
@@ -294,27 +422,39 @@ export function RadioProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      setLoading(false); setPlaying(false);
-      failedAttemptsRef.current += 1;
+      setLoading(false)
+      setPlaying(false)
+      failedAttemptsRef.current += 1
       if (failedAttemptsRef.current < STREAMS.length) {
-         const nextIdx = (streamIdxRef.current + 1) % STREAMS.length
-         switchStream(nextIdx, true)
+        const nextIdx = (streamIdxRef.current + 1) % STREAMS.length
+        switchStream(nextIdx, true)
       } else {
-         toast.custom(() => <RadioToast message="Stream failed – try another server" variant="danger" />, { position: "top-center" })
+        toast.custom(
+          () => (
+            <RadioToast
+              message="Stream failed – try another server"
+              variant="danger"
+            />
+          ),
+          { position: "top-center" }
+        )
       }
     }
   }, [switchStream])
 
   const setVolume = useCallback((v: number) => setVolumeState(v), [])
-  const setMuted  = useCallback((m: boolean) => setMutedState(m), [])
+  const setMuted = useCallback((m: boolean) => setMutedState(m), [])
 
   const startRecording = useCallback(async () => {
     try {
       if (!analyserRef.current) {
-        toast.custom(() => <RadioToast message="Start radio first" variant="danger" />, { position: "top-center" })
+        toast.custom(
+          () => <RadioToast message="Start radio first" variant="danger" />,
+          { position: "top-center" }
+        )
         return
       }
-      
+
       const ctx = analyserRef.current.context as AudioContext
       const dest = ctx.createMediaStreamDestination()
       analyserRef.current.connect(dest)
@@ -322,38 +462,47 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       recChunks.current = []
       recDurationRef.current = 0
       setRecDuration(0)
-      
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : "audio/webm"
+
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : "audio/webm"
       const recorder = new MediaRecorder(dest.stream, { mimeType })
-      
+
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) recChunks.current.push(e.data)
       }
-      
+
       recorder.onstop = () => {
         const blob = new Blob(recChunks.current, { type: "audio/webm" })
-        setRecordings(prev => [
-          { 
-            url: URL.createObjectURL(blob), 
-            name: `Clip ${new Date().toLocaleTimeString([], { hour12: false })}`, 
-            dur: recDurationRef.current 
-          }, 
-          ...prev
+        setRecordings((prev) => [
+          {
+            url: URL.createObjectURL(blob),
+            name: `Clip ${new Date().toLocaleTimeString([], { hour12: false })}`,
+            dur: recDurationRef.current,
+          },
+          ...prev,
         ])
       }
 
       recorder.start(1000)
       recRef.current = recorder
       setRecording(true)
-      
-      toast.custom(() => <RadioToast message="Recording started" />, { position: "top-center" })
-      
+
+      toast.custom(() => <RadioToast message="Recording started" />, {
+        position: "top-center",
+      })
+
       recTimer.current = window.setInterval(() => {
         recDurationRef.current++
         setRecDuration(recDurationRef.current)
       }, 1000)
     } catch {
-      toast.custom(() => <RadioToast message="Failed to start recording" variant="danger" />, { position: "top-center" })
+      toast.custom(
+        () => (
+          <RadioToast message="Failed to start recording" variant="danger" />
+        ),
+        { position: "top-center" }
+      )
     }
   }, [])
 
@@ -366,11 +515,13 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       recTimer.current = null
     }
     setRecording(false)
-    toast.custom(() => <RadioToast message="Recording saved to Clips" />, { position: "top-center" })
+    toast.custom(() => <RadioToast message="Recording saved to Clips" />, {
+      position: "top-center",
+    })
   }, [])
 
   const deleteRecording = useCallback((idx: number) => {
-    setRecordings(prev => {
+    setRecordings((prev) => {
       const next = [...prev]
       if (next[idx]) {
         URL.revokeObjectURL(next[idx].url)
@@ -403,14 +554,29 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [togglePlay])
 
-
   return (
-    <RadioContext.Provider value={{
-      playing, loading, error, streamIdx, volume, muted, listeners,
-      analyserRef, togglePlay, switchStream, setVolume, setMuted,
-      recording, recordings, recDuration,
-      startRecording, stopRecording, deleteRecording,
-    }}>
+    <RadioContext.Provider
+      value={{
+        playing,
+        loading,
+        error,
+        streamIdx,
+        volume,
+        muted,
+        listeners,
+        analyserRef,
+        togglePlay,
+        switchStream,
+        setVolume,
+        setMuted,
+        recording,
+        recordings,
+        recDuration,
+        startRecording,
+        stopRecording,
+        deleteRecording,
+      }}
+    >
       {children}
     </RadioContext.Provider>
   )

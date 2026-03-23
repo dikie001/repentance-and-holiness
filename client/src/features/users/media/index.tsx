@@ -196,7 +196,7 @@ function UploadModal({ tab, onClose }: UploadModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[300] flex items-end justify-center backdrop-blur-lg sm:items-center p-4"
+      className="fixed inset-0 z-[300] flex items-end justify-center p-4 backdrop-blur-lg sm:items-center"
       style={{ background: "rgba(0, 0, 0, 0.6)" }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >

@@ -27,8 +27,8 @@ function AppContent() {
           </Route>
         </Routes>
       </BrowserRouter>
-      <Toaster 
-        theme={theme as "system" | "light" | "dark"} 
+      <Toaster
+        theme={theme as "system" | "light" | "dark"}
         position="top-center"
         toastOptions={{
           style: {
