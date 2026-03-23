@@ -532,16 +532,13 @@ export default function RadioPlayer() {
 
           {/* Controls */}
           <div className="mt-auto flex w-full flex-col gap-6 pb-[env(safe-area-inset-bottom,16px)]">
-            <div className="flex items-center justify-center gap-7">
-              {/* Ellipses Menu on the left of controls for symmetry or right? User said "near the controls" */}
-              <div className="relative">
+            <div className="flex items-center justify-center gap-6 sm:gap-8">
+              {/* Ellipses Menu */}
+              <div className="relative shrink-0">
                 <button
                   onClick={() => setMenuOpen((o) => !o)}
-                  className={`grid h-12 w-12 place-items-center rounded-2xl border border-white/10 text-neutral-400 transition-all ${
-                    menuOpen ? "bg-white/15 text-white" : "bg-white/5 hover:bg-white/10"
-                  }`}
                 >
-                  <MoreVertical size={22} />
+                  <MoreVertical size={20} />
                 </button>
 
                 {menuOpen && (
@@ -598,7 +595,7 @@ export default function RadioPlayer() {
                     (streamIdx - 1 + STREAMS.length) % STREAMS.length
                   )
                 }
-                className="text-blue-400/80 transition-colors hover:text-blue-300 active:scale-95"
+                className="text-blue-400/80 transition-colors hover:text-blue-300 active:scale-95 shrink-0"
               >
                 <SkipBack size={32} fill="currentColor" />
               </button>
@@ -606,11 +603,13 @@ export default function RadioPlayer() {
               <button
                 onClick={togglePlay}
                 disabled={loading}
-                className={`grid h-24 w-24 place-items-center rounded-full border-none bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg transition-all duration-300 ${
+                className={cn(
+                  "grid h-24 w-24 shrink-0 aspect-square place-items-center rounded-full border-none bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg transition-all duration-300",
                   playing
                     ? "shadow-[0_0_0_8px_rgba(0,140,255,0.2),0_12px_40px_rgba(0,140,255,0.5)]"
-                    : "shadow-[0_10px_36px_rgba(0,100,255,0.4)]"
-                } ${loading ? "opacity-70" : "hover:scale-105 active:scale-95"}`}
+                    : "shadow-[0_10px_36px_rgba(0,100,255,0.4)]",
+                  loading ? "opacity-70" : "hover:scale-105 active:scale-95"
+                )}
               >
                 {loading ? (
                   <Loader2 size={44} className="animate-spin text-white" />
@@ -628,13 +627,10 @@ export default function RadioPlayer() {
 
               <button
                 onClick={() => switchStream((streamIdx + 1) % STREAMS.length)}
-                className="text-blue-400/80 transition-colors hover:text-blue-300 active:scale-95"
+                className="text-blue-400/80 transition-colors hover:text-blue-300 active:scale-95 shrink-0"
               >
                 <SkipForward size={32} fill="currentColor" />
               </button>
-
-              {/* Added symmetry spacer or another button? Let's keep it clean as requested. */}
-              <div className="w-12" /> 
             </div>
 
             {/* Volume */}
