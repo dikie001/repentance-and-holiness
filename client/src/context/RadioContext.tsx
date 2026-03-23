@@ -16,10 +16,10 @@ export function RadioToast({ message, variant = "default" }: { message: string, 
   
   const Icon = isError ? AlertCircle : isSuccess ? CheckCircle2 : Info
   const accentColor = isError ? "rgb(239, 68, 68)" : isSuccess ? "rgb(34, 197, 94)" : "rgb(59, 130, 246)"
-  const borderColor = isError ? "rgba(239, 68, 68, 0.4)" : isSuccess ? "rgba(34, 197, 94, 0.4)" : "var(--app-border)"
+  const borderColor = isError ? "rgba(239, 68, 68, 0.25)" : isSuccess ? "rgba(34, 197, 94, 0.25)" : "var(--app-border)"
 
   return (
-    <div className="group relative flex items-center gap-4 rounded-[20px] border p-2.5 shadow-2xl w-[340px] max-w-[calc(100vw-32px)] pointer-events-auto transition-all duration-300 overflow-hidden"
+    <div className="group relative flex items-center gap-3.5 rounded-2xl border p-2 shadow-2xl w-fit min-w-[300px] max-w-[calc(100vw-32px)] pointer-events-auto transition-all duration-300 overflow-hidden"
       style={{ 
         backgroundColor: "var(--app-nav-bg)", 
         borderColor: borderColor,
@@ -28,34 +28,31 @@ export function RadioToast({ message, variant = "default" }: { message: string, 
       }}>
       
       {/* Dynamic Accent Glow */}
-      <div className="absolute -left-12 -top-12 h-32 w-32 rounded-full opacity-[0.2] blur-3xl transition-colors duration-500"
+      <div className="absolute -left-10 -top-10 h-24 w-24 rounded-full opacity-[0.12] blur-3xl transition-colors duration-500"
         style={{ backgroundColor: accentColor }} />
 
       {/* Logo on Left */}
-      <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl overflow-hidden border border-white/10 bg-black/40 shadow-sm">
+      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden border border-white/10 bg-black/40 shadow-sm">
         <img src="/images/radio-logo.png" className="h-full w-full object-cover" alt="radio-logo" />
       </div>
 
       {/* Text in Middle */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 pr-2">
         <div className="flex items-center gap-1.5 mb-0.5">
           <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600"></span>
           </span>
-          <span className="text-[9px] font-black tracking-[0.15em] uppercase text-red-500 leading-none">LIVE</span>
         </div>
-        <div className="text-[14.5px] font-extrabold tracking-tight leading-tight" style={{ color: "var(--app-text)" }}>
+        <div className="text-[14px] font-extrabold tracking-tight leading-tight" style={{ color: "var(--app-text)" }}>
           Jesus Is Lord Radio
         </div>
-        <div className="text-[12px] font-semibold leading-relaxed truncate opacity-60" style={{ color: "var(--app-text)" }}>
+        <div className="text-[11.5px] font-semibold leading-relaxed truncate opacity-60" style={{ color: "var(--app-text)" }}>
           {message || "105.3 - 105.9 FM"}
         </div>
       </div>
 
       {/* Variant Icon at Far Right Middle */}
-      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-inner">
-         <Icon className="h-5.5 w-5.5" style={{ color: accentColor }} />
+      <div className="relative flex h-8.5 w-8.5 shrink-0 items-center justify-center">
+         <Icon className="h-4.5 w-4.5" style={{ color: accentColor }} />
       </div>
     </div>
   )
@@ -230,10 +227,10 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     setLoading(true)
     setError(null)
     a.play().then(() => {
-      toast.custom(() => <RadioToast message={`Connected: ${STREAMS[streamIdxRef.current].label}`} variant="success" />, { id: "radio-status" })
+      toast.custom(() => <RadioToast message={`Connected: ${STREAMS[streamIdxRef.current].label}`} variant="success" />, { id: "radio-status", position: "top-center" })
     }).catch((err) => {
       if (err instanceof Error && err.name === "NotAllowedError") {
-        toast.custom(() => <RadioToast message="Playback blocked – tap again" variant="danger" />, { id: "radio-status" })
+        toast.custom(() => <RadioToast message="Playback blocked – tap again" variant="danger" />, { id: "radio-status", position: "top-center" })
       }
       setLoading(false)
     })
@@ -250,9 +247,9 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     
     // Feedback immediately with a consistent ID to replace previous ones
     if (auto) {
-      toast.custom(() => <RadioToast message={`Source error – trying ${STREAMS[idx].label}...`} variant="danger" />, { id: "radio-status" })
+      toast.custom(() => <RadioToast message={`Source error – trying ${STREAMS[idx].label}...`} variant="danger" />, { id: "radio-status", position: "top-center" })
     } else {
-      toast.custom(() => <RadioToast message={`Connecting to ${STREAMS[idx].label}...`} />, { id: "radio-status" })
+      toast.custom(() => <RadioToast message={`Connecting to ${STREAMS[idx].label}...`} />, { id: "radio-status", position: "top-center" })
     }
 
     try { srcRef.current?.disconnect() } catch { /* */ }
@@ -268,10 +265,10 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     try { ensureCtx() } catch { /* */ }
     a.play().then(() => {
       // Direct success feedback
-      toast.custom(() => <RadioToast message={`Connected: ${STREAMS[idx].label}`} variant="success" />, { id: "radio-status" })
+      toast.custom(() => <RadioToast message={`Connected: ${STREAMS[idx].label}`} variant="success" />, { id: "radio-status", position: "top-center" })
     }).catch((err) => {
       if (!auto && err instanceof Error && err.name === "NotAllowedError") {
-        toast.custom(() => <RadioToast message="Tap play to start" variant="danger" />, { id: "radio-status" })
+        toast.custom(() => <RadioToast message="Tap play to start" variant="danger" />, { id: "radio-status", position: "top-center" })
       }
     })
   }, [ensureCtx])
@@ -343,7 +340,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       recRef.current = recorder
       setRecording(true)
       
-      toast.custom(() => <RadioToast message="Recording started" />)
+      toast.custom(() => <RadioToast message="Recording started" />, { position: "top-center" })
       
       recTimer.current = window.setInterval(() => {
         recDurationRef.current++
@@ -363,7 +360,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       recTimer.current = null
     }
     setRecording(false)
-    toast.custom(() => <RadioToast message="Recording saved to Clips" />)
+    toast.custom(() => <RadioToast message="Recording saved to Clips" />, { position: "top-center" })
   }, [])
 
   const deleteRecording = useCallback((idx: number) => {

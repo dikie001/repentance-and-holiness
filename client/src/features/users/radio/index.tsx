@@ -140,7 +140,7 @@ export default function RadioPlayer() {
     else {
       try {
         await navigator.clipboard.writeText(data.url);
-        toast.custom(() => <RadioToast message="Link copied!" />)
+        toast.custom(() => <RadioToast message="Link copied!" />, { position: "top-center" })
       } catch { /* */ }
     }
   }, [streamIdx])

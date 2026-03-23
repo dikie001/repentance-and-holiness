@@ -32,15 +32,15 @@ function AppContent() {
       {/* Dynamic theming via useTheme hook so user preference is respected instantly */}
       <Toaster 
         theme={theme as "system" | "light" | "dark"} 
-        position="top-center"
+        position="top-right"
         toastOptions={{
           style: {
-            borderRadius: "1rem",
-            border: "1px solid var(--app-border)",
-            background: "var(--app-nav-bg)",
+            borderRadius: "0", // Handled by custom component
+            border: "none",
+            background: "transparent",
             color: "var(--app-text)",
-            fontFamily: "var(--font-barlow)", // Barlow is used in Radio page
-            backdropFilter: "blur(12px)",
+            fontFamily: "var(--font-barlow)",
+            boxShadow: "none",
           },
         }}
       />
