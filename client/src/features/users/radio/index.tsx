@@ -532,10 +532,10 @@ export default function RadioPlayer() {
 
           {/* Controls */}
           <div className="mt-auto flex w-full flex-col gap-6 pb-[env(safe-area-inset-bottom,16px)]">
-            <div className="flex items-center justify-between px-2 sm:px-6">
+            <div className="mt-4 flex items-center justify-center gap-1 sm:gap-4 px-2 sm:px-6">
               
               {/* Left Side: Ellipses Menu */}
-              <div className="relative shrink-0 flex items-center justify-start w-14">
+              <div className="relative shrink-0 flex items-center">
                 <button
                   onClick={() => setMenuOpen((o) => !o)}
                   className={cn(
@@ -581,7 +581,7 @@ export default function RadioPlayer() {
               </div>
 
               {/* Center: Playback Controls */}
-              <div className="flex items-center justify-center gap-4 sm:gap-6 shrink-0 relative z-10 w-full max-w-[200px]">
+              <div className="flex items-center justify-center gap-4 sm:gap-6 shrink-0 relative z-10 mx-2">
                 <button
                   onClick={() =>
                     switchStream(
@@ -628,7 +628,7 @@ export default function RadioPlayer() {
               </div>
 
               {/* Right Side: Record Button */}
-              <div className="shrink-0 flex items-center justify-end w-14">
+              <div className="shrink-0 flex items-center">
                 <button
                   onClick={recording ? stopRecording : startRecording}
                   className={cn(
