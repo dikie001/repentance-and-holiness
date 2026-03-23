@@ -74,7 +74,7 @@ function LiveRadioCard() {
           </div>
           <p className="text-sm font-black" style={{ color: "var(--app-text)" }}>Jesus Is Lord Radio</p>
           <p className="text-[11px]" style={{ color: "var(--app-text-muted)" }}>
-            {playing ? "Now Playing · 95.3 FM" : "Tap to play · 95.3 FM"}
+            {playing ? "Now Playing · 105.9 FM" : "Tap to play · 105.9 FM"}
           </p>
         </div>
       </div>

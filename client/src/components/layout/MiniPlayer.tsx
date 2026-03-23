@@ -50,7 +50,7 @@ export function MiniPlayer() {
                 style={{ color: "var(--app-text)" }}>
                 Jesus Is Lord Radio
               </Link>
-              <p className="text-[10px]" style={{ color: "var(--app-text-muted)" }}>95.3 · 105.9 FM</p>
+              <p className="text-[10px]" style={{ color: "var(--app-text-muted)" }}>105.3 · 105.9 FM</p>
             </div>
 
             {/* Mute */}

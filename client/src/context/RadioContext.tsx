@@ -26,8 +26,8 @@ export function RadioToast({ message, variant = "default" }: { message: string, 
 
 export const STREAMS = [
   { id: "primary",  label: "Main Server", sub: "Radio.co",  url: "https://s3.radio.co/s97f38db97/listen" },
-  { id: "backup-1", label: "Backup 1",    sub: "Zeno FM",   url: "https://stream-155.zeno.fm/3gdtad95608uv" },
-  { id: "backup-2", label: "Backup 2",    sub: "Voscast",   url: "http://station.voscast.com/5ca3d6cd7c777/" },
+  { id: "backup-1", label: "Backup 1",    sub: "Zeno FM",   url: "https://stream.zeno.fm/3gdtad95608uv" },
+  { id: "backup-2", label: "Backup 2",    sub: "Voscast",   url: "https://station.voscast.com/5ca3d6cd7c777/" },
   { id: "backup-3", label: "Backup 3",    sub: "Streema",   url: "https://s3.radio.co/s97f38db97/listen" },
 ]
 
@@ -65,24 +65,30 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
   const streamIdxRef = useRef(streamIdx)
   const failedAttemptsRef = useRef(0)
+  const isCORSFallbackRef = useRef(false)
   const handleErrorRef = useRef<() => void>(() => {})
 
   useEffect(() => { streamIdxRef.current = streamIdx }, [streamIdx])
 
-  /* ── Audio element setup (once) ─── */
   useEffect(() => {
     const a = new Audio()
+    // Start with anonymous to support visualizer
     a.crossOrigin = "anonymous"
     audioRef.current = a
 
-    a.addEventListener("playing", () => { setPlaying(true);  setLoading(false); setError(null); failedAttemptsRef.current = 0 })
+    a.addEventListener("playing", () => { 
+      setPlaying(true);  
+      setLoading(false); 
+      setError(null); 
+      failedAttemptsRef.current = 0 
+    })
     a.addEventListener("pause",   () => setPlaying(false))
     a.addEventListener("waiting", () => setLoading(true))
     a.addEventListener("canplay", () => setLoading(false))
     a.addEventListener("error",   () => handleErrorRef.current())
 
     a.src = STREAMS[0].url
-    a.volume = 0.82
+    a.volume = volume / 100
     a.load()
 
     return () => { a.pause(); a.src = "" }
@@ -107,14 +113,31 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const ensureCtx = useCallback(() => {
     const a = audioRef.current
     if (!a) return
+    
+    // If we're in CORS fallback mode, skip AudioContext source (it would be silent)
+    if (isCORSFallbackRef.current) {
+       if (ctxRef.current?.state === "running") {
+          ctxRef.current.suspend().catch(() => {})
+       }
+       return
+    }
+
     if (!ctxRef.current) {
-      const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      const AC = window.AudioContext || (window as any).webkitAudioContext
       ctxRef.current = new AC()
     }
     const ctx = ctxRef.current
     if (ctx.state === "suspended") ctx.resume().catch(() => {})
 
-    if (!srcRef.current) srcRef.current = ctx.createMediaElementSource(a)
+    if (!srcRef.current) {
+       try {
+          srcRef.current = ctx.createMediaElementSource(a)
+       } catch (e) {
+          console.warn("AudioContext source creation failed:", e)
+          return
+       }
+    }
+    
     if (!gainRef.current) {
       gainRef.current = ctx.createGain()
       gainRef.current.gain.value = muted ? 0 : volume / 100
@@ -146,6 +169,11 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     const a = audioRef.current
     if (!a) return
     if (!auto) failedAttemptsRef.current = 0
+    
+    // Reset CORS state when switching
+    isCORSFallbackRef.current = false
+    a.crossOrigin = "anonymous"
+    
     try { srcRef.current?.disconnect() } catch { /* */ }
     srcRef.current = null; gainRef.current = null; analyserRef.current = null
     a.pause()
@@ -156,6 +184,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     a.load()
     try { ensureCtx() } catch { /* */ }
     a.play().catch(() => {
+      // If play() fails immediately, it might be a user gesture issue (but handled by toast)
       if (!auto) toast.custom(() => <RadioToast message="Tap play to start" variant="danger" />, { position: "top-center" })
     })
     if (!auto) {
@@ -165,6 +194,19 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     handleErrorRef.current = () => {
+      const a = audioRef.current
+      if (!a) return
+
+      // If we failed with CORS, try again WITHOUT CORS before skipping to next server
+      if (a.crossOrigin === "anonymous" && !isCORSFallbackRef.current) {
+        console.warn("Retrying stream without CORS...")
+        isCORSFallbackRef.current = true
+        a.crossOrigin = null
+        a.load()
+        a.play().catch(() => {}) // Audio only now
+        return
+      }
+
       setLoading(false); setPlaying(false);
       failedAttemptsRef.current += 1;
       if (failedAttemptsRef.current < STREAMS.length) {
