@@ -91,16 +91,15 @@ function LiveRadioCard() {
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col gap-6 pb-28 md:pb-10">
+    <div className="flex flex-col gap-6 pb-28 md:pb-10 p-4">
 
       {/* Greeting */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <p className="text-[11px] font-black tracking-widest text-cyan-500 uppercase mb-0.5">✝ Welcome</p>
         <h1 className="text-2xl font-black leading-tight" style={{ color: "var(--app-text)" }}>
           Repentance &amp; Holiness
         </h1>
         <p className="text-sm mt-0.5" style={{ color: "var(--app-text-muted)" }}>
-          Nakuru, Kenya · Broadcasting Worldwide
+          Nakuru, Kenya 
         </p>
       </motion.div>
 
