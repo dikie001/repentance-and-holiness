@@ -292,7 +292,7 @@ export default function MediaPage() {
         {showUpload && <UploadModal tab={activeTab} onClose={() => setShowUpload(false)} />}
       </AnimatePresence>
 
-      <div className="space-y-5 pb-28 md:pb-10">
+      <div className="space-y-5 pb-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

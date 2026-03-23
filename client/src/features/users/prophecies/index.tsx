@@ -71,7 +71,7 @@ export default function PropheciesPage() {
   return (
     <>
       <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet" />
-      <div className="space-y-5 pb-28 md:pb-10">
+      <div className="space-y-5 pb-4">
 
         {/* Header */}
         <div className="rounded-3xl border p-5" style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}>

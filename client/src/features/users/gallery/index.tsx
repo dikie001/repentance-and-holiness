@@ -90,7 +90,7 @@ export default function GalleryPage() {
         </div>
       )}
 
-      <div className="space-y-5 pb-28 md:pb-10">
+      <div className="space-y-5 pb-4">
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}

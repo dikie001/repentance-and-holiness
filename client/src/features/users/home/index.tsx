@@ -70,10 +70,12 @@ function LiveRadioCard() {
         </div>
         <div>
           <div className="mb-0.5 flex items-center gap-2">
-            <span className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-px text-[9px] font-black text-red-400 uppercase">
-              <span className={`inline-block h-1.5 w-1.5 rounded-full bg-red-500 ${playing ? "animate-pulse" : ""}`} />
-              Live
-            </span>
+            {playing && (
+              <span className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-px text-[9px] font-black text-red-400 uppercase">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+                Live
+              </span>
+            )}
             {recording && (
               <span className="flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-px text-[9px] font-black text-rose-400 uppercase">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
@@ -102,7 +104,7 @@ function LiveRadioCard() {
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col gap-6 pb-28 md:pb-10 p-4">
+    <div className="flex flex-col gap-6 pb-4">
 
       {/* Greeting */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>

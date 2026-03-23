@@ -28,7 +28,7 @@ export function MiniPlayer() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed bottom-20 md:bottom-4 left-3 right-3 z-40 md:left-auto md:right-6 md:w-80"
+          className="fixed bottom-24 md:bottom-6 left-4 right-4 z-40 md:left-auto md:right-8 md:w-80"
         >
           <div
             className="relative flex items-center gap-3 overflow-hidden rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-xl"
@@ -48,8 +48,12 @@ export function MiniPlayer() {
             {/* Info */}
             <div className="relative z-10 min-w-0 flex-1">
               <div className="flex items-center gap-1.5 mb-px">
-                <span className={`h-1.5 w-1.5 rounded-full bg-red-500 ${playing ? "animate-pulse" : ""} inline-block`} />
-                <span className="text-[9px] font-black tracking-widest text-red-400 uppercase">Live</span>
+                {playing && (
+                  <>
+                    <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse inline-block" />
+                    <span className="text-[9px] font-black tracking-widest text-red-400 uppercase">Live</span>
+                  </>
+                )}
               </div>
               <Link to="/jesus-is-lord-radio"
                 className="block truncate text-xs font-bold hover:text-cyan-400 transition-colors"

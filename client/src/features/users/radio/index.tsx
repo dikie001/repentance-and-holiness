@@ -181,11 +181,13 @@ export default function RadioPlayer() {
             <div className="mt-8 flex flex-col items-center gap-2">
               <div className="flex items-center gap-2 text-2xl font-black tracking-tight">
                 <h1>Jesus Is Lord Radio</h1>
-                <div className={cn("flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[9px] font-black tracking-widest uppercase",
-                  isDark ? "border-red-600/35 bg-red-900/15 text-red-400" : "border-red-200 bg-red-50 text-red-600")}>
-                  <div className={`h-1.5 w-1.5 rounded-full bg-red-500 ${playing ? "animate-pulse" : ""}`} />
-                  LIVE
-                </div>
+                {playing && (
+                  <div className={cn("flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[9px] font-black tracking-widest uppercase",
+                    isDark ? "border-red-600/35 bg-red-900/15 text-red-400" : "border-red-200 bg-red-50 text-red-600")}>
+                    <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+                    LIVE
+                  </div>
+                )}
               </div>
               <p className="text-sm font-semibold opacity-70" style={{ color: "var(--app-text)" }}>
                 Repentance &amp; Holiness · {listeners} listening
