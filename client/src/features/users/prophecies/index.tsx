@@ -1,6 +1,15 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Flame, ChevronRight, ChevronDown, Search, Share2, Bookmark, Heart, Filter } from "lucide-react"
+import {
+  Flame,
+  ChevronRight,
+  ChevronDown,
+  Search,
+  Share2,
+  Bookmark,
+  Heart,
+  Filter,
+} from "lucide-react"
 
 const PROPHECIES = [
   {
@@ -53,7 +62,17 @@ const PROPHECIES = [
   },
 ]
 
-const TAGS = ["All", "End Times", "Revival", "Africa", "Holiness", "Faith", "Evangelism", "Love", "Glory"]
+const TAGS = [
+  "All",
+  "End Times",
+  "Revival",
+  "Africa",
+  "Holiness",
+  "Faith",
+  "Evangelism",
+  "Love",
+  "Glory",
+]
 
 export default function PropheciesPage() {
   const [expanded, setExpanded] = useState<number | null>(null)
@@ -62,49 +81,78 @@ export default function PropheciesPage() {
   const [saved, setSaved] = useState<Set<number>>(new Set())
   const [liked, setLiked] = useState<Set<number>>(new Set())
 
-  const filtered = PROPHECIES.filter(p => {
-    const matchSearch = !search || p.title.toLowerCase().includes(search.toLowerCase()) || p.prophet.toLowerCase().includes(search.toLowerCase())
+  const filtered = PROPHECIES.filter((p) => {
+    const matchSearch =
+      !search ||
+      p.title.toLowerCase().includes(search.toLowerCase()) ||
+      p.prophet.toLowerCase().includes(search.toLowerCase())
     const matchTag = activeTag === "All" || p.tags.includes(activeTag)
     return matchSearch && matchTag
   })
 
   return (
     <>
-      <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Barlow:wght@400;600;700;900&display=swap"
+        rel="stylesheet"
+      />
       <div className="space-y-5 pb-4">
-
         {/* Header */}
-        <div className="rounded-3xl border p-5" style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}>
+        <div
+          className="rounded-3xl border p-5"
+          style={{
+            background: "var(--app-card)",
+            borderColor: "var(--app-border)",
+          }}
+        >
           <div className="mb-1 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/15 border border-amber-500/20">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-amber-500/20 bg-amber-500/15">
               <Flame size={16} className="text-amber-400" />
             </div>
-            <span className="text-[10px] font-black tracking-widest text-amber-400 uppercase">Prophetic Word</span>
+            <span className="text-[10px] font-black tracking-widest text-amber-400 uppercase">
+              Prophetic Word
+            </span>
           </div>
-          <h1 className="text-2xl font-black" style={{ color: "var(--app-text)", fontFamily: "'Cinzel', serif" }}>Prophecies</h1>
-          <p className="mt-1 text-xs" style={{ color: "var(--app-text-muted)" }}>960+ words from the Spirit of God</p>
+          <h1
+            className="text-2xl font-black"
+            style={{ color: "var(--app-text)", fontFamily: "'Cinzel', serif" }}
+          >
+            Prophecies
+          </h1>
+          <p
+            className="mt-1 text-xs"
+            style={{ color: "var(--app-text-muted)" }}
+          >
+            960+ words from the Spirit of God
+          </p>
         </div>
 
         {/* Search & Filter */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600" />
+            <Search
+              size={15}
+              className="absolute top-1/2 left-3.5 -translate-y-1/2 text-slate-600"
+            />
             <input
               type="text"
               placeholder="Search prophecies..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-white/8 bg-white/4 py-2.5 pl-9 pr-4 text-sm text-white placeholder-slate-600 outline-none focus:border-amber-500/40 transition-colors"
+              className="w-full rounded-xl border border-white/8 bg-white/4 py-2.5 pr-4 pl-9 text-sm text-white placeholder-slate-600 transition-colors outline-none focus:border-amber-500/40"
             />
           </div>
-          <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/8 bg-white/4 text-slate-400 hover:text-white transition-colors">
+          <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/8 bg-white/4 text-slate-400 transition-colors hover:text-white">
             <Filter size={16} />
           </button>
         </div>
 
         {/* Tags */}
-        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-          {TAGS.map(tag => (
+        <div
+          className="flex gap-2 overflow-x-auto pb-1"
+          style={{ scrollbarWidth: "none" }}
+        >
+          {TAGS.map((tag) => (
             <button
               key={tag}
               onClick={() => setActiveTag(tag)}
@@ -132,7 +180,10 @@ export default function PropheciesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.07 }}
                 className="overflow-hidden rounded-2xl border"
-                style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}
+                style={{
+                  background: "var(--app-card)",
+                  borderColor: "var(--app-border)",
+                }}
               >
                 <button
                   className="w-full p-4 text-left"
@@ -140,18 +191,29 @@ export default function PropheciesPage() {
                 >
                   <div className="mb-2 flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 border border-amber-500/20">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-amber-500/20 bg-amber-500/10">
                         <Flame size={13} className="text-amber-400" />
                       </div>
                       <div>
-                        <p className="text-[11px] font-bold text-amber-300">{p.prophet}</p>
+                        <p className="text-[11px] font-bold text-amber-300">
+                          {p.prophet}
+                        </p>
                         <p className="text-[9px] text-slate-600">{p.date}</p>
                       </div>
                     </div>
-                    <ChevronDown size={16} className={`text-slate-600 shrink-0 transition-transform mt-0.5 ${isOpen ? "rotate-180" : ""}`} />
+                    <ChevronDown
+                      size={16}
+                      className={`mt-0.5 shrink-0 text-slate-600 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    />
                   </div>
-                  <h3 className="mb-2 text-sm font-bold text-white">{p.title}</h3>
-                  <p className={`text-xs leading-relaxed text-slate-400 italic ${isOpen ? "" : "line-clamp-2"}`}>{p.text}</p>
+                  <h3 className="mb-2 text-sm font-bold text-white">
+                    {p.title}
+                  </h3>
+                  <p
+                    className={`text-xs leading-relaxed text-slate-400 italic ${isOpen ? "" : "line-clamp-2"}`}
+                  >
+                    {p.text}
+                  </p>
                   {!isOpen && (
                     <span className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-cyan-400">
                       Read full word <ChevronRight size={11} />
@@ -168,8 +230,11 @@ export default function PropheciesPage() {
                       className="overflow-hidden"
                     >
                       <div className="flex flex-wrap gap-1.5 px-4 pb-3">
-                        {p.tags.map(tag => (
-                          <span key={tag} className="rounded-full border border-amber-500/20 bg-amber-500/8 px-2.5 py-0.5 text-[10px] font-bold text-amber-400">
+                        {p.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full border border-amber-500/20 bg-amber-500/8 px-2.5 py-0.5 text-[10px] font-bold text-amber-400"
+                          >
                             {tag}
                           </span>
                         ))}
@@ -177,20 +242,40 @@ export default function PropheciesPage() {
                       <div className="flex items-center justify-between border-t border-white/5 px-4 py-3">
                         <div className="flex gap-3">
                           <button
-                            onClick={() => setLiked(s => { const n = new Set(s); isLiked ? n.delete(p.id) : n.add(p.id); return n })}
+                            onClick={() =>
+                              setLiked((s) => {
+                                const n = new Set(s)
+                                isLiked ? n.delete(p.id) : n.add(p.id)
+                                return n
+                              })
+                            }
                             className={`flex items-center gap-1.5 text-[11px] font-bold transition-colors ${isLiked ? "text-red-400" : "text-slate-600 hover:text-white"}`}
                           >
-                            <Heart size={13} fill={isLiked ? "currentColor" : "none"} /> {isLiked ? "Liked" : "Like"}
+                            <Heart
+                              size={13}
+                              fill={isLiked ? "currentColor" : "none"}
+                            />{" "}
+                            {isLiked ? "Liked" : "Like"}
                           </button>
-                          <button className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 hover:text-white transition-colors">
+                          <button className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 transition-colors hover:text-white">
                             <Share2 size={13} /> Share
                           </button>
                         </div>
                         <button
-                          onClick={() => setSaved(s => { const n = new Set(s); isSaved ? n.delete(p.id) : n.add(p.id); return n })}
+                          onClick={() =>
+                            setSaved((s) => {
+                              const n = new Set(s)
+                              isSaved ? n.delete(p.id) : n.add(p.id)
+                              return n
+                            })
+                          }
                           className={`flex items-center gap-1.5 text-[11px] font-bold transition-colors ${isSaved ? "text-cyan-400" : "text-slate-600 hover:text-cyan-400"}`}
                         >
-                          <Bookmark size={13} fill={isSaved ? "currentColor" : "none"} /> {isSaved ? "Saved" : "Save"}
+                          <Bookmark
+                            size={13}
+                            fill={isSaved ? "currentColor" : "none"}
+                          />{" "}
+                          {isSaved ? "Saved" : "Save"}
                         </button>
                       </div>
                     </motion.div>

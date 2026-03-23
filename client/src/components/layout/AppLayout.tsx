@@ -13,10 +13,13 @@ export function AppLayout() {
       <NotificationProvider>
         <TooltipProvider>
           <SidebarProvider>
-            <div className="flex min-h-screen w-full" style={{ background: "var(--app-bg)", color: "var(--app-text)" }}>
+            <div
+              className="flex min-h-screen w-full"
+              style={{ background: "var(--app-bg)", color: "var(--app-text)" }}
+            >
               <AppSidebar />
-              <SidebarInset className="flex flex-col relative overflow-hidden bg-transparent w-full">
-                <main className="flex-1 flex flex-col relative pt-16 pb-24 md:pb-6 overflow-y-auto w-full">
+              <SidebarInset className="relative flex w-full flex-col overflow-hidden bg-transparent">
+                <main className="relative flex w-full flex-1 flex-col overflow-y-auto pt-16 pb-24 md:pb-6">
                   <div className="w-full px-4 md:px-6">
                     <div className="mx-auto w-full max-w-2xl md:max-w-3xl">
                       <Outlet />
@@ -24,8 +27,8 @@ export function AppLayout() {
                   </div>
                 </main>
                 <MiniPlayer />
-              <NotificationSheet />
-            </SidebarInset>
+                <NotificationSheet />
+              </SidebarInset>
             </div>
           </SidebarProvider>
         </TooltipProvider>
