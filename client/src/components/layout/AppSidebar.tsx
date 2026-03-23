@@ -12,6 +12,7 @@ import {
   Moon, Music4, RadioTower, Sun, UsersRound, type LucideIcon
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
+import { useNotifications } from "@/context/NotificationContext"
 
 type NavItem = { title: string; url: string; icon: LucideIcon; badge?: string }
 
@@ -38,6 +39,8 @@ function LiveDot() {
 
 export function GlobalHeader() {
   const { toggleSidebar } = useSidebar()
+  const { unreadCount, setIsOpen } = useNotifications()
+
   return (
     <header
       className="fixed top-0 left-0 right-0 z-40 flex h-16 items-center justify-between px-4 backdrop-blur-xl border-b md:left-[var(--sidebar-width)] transition-all duration-200"
@@ -54,10 +57,16 @@ export function GlobalHeader() {
 
       <div className="flex items-center gap-2">
         <button
-          className="h-9 w-9 rounded-xl flex items-center justify-center transition-colors border"
+          onClick={() => setIsOpen(true)}
+          className="h-9 w-9 rounded-xl flex items-center justify-center transition-colors border relative group/bell"
           style={{ background: "var(--app-surface)", borderColor: "var(--app-border)", color: "var(--app-text-muted)" }}
         >
-          <Bell size={16} />
+          <Bell size={16} className="group-hover/bell:rotate-12 transition-transform" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 rounded-full bg-blue-600 text-[9px] font-black text-white flex items-center justify-center border-2 border-slate-950 shadow-[0_0_8px_rgba(37,99,235,0.5)]">
+              {unreadCount}
+            </span>
+          )}
         </button>
         <button
           onClick={toggleSidebar}

@@ -9,17 +9,16 @@ import {
 } from "react"
 import { toast } from "sonner"
 
-export function RadioToast({ message }: { message: string }) {
+export function RadioToast({ message, variant = "default" }: { message: string, variant?: "default" | "danger" }) {
+  const isDanger = variant === "danger"
   return (
-    <div className="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-[#0f0f24] p-3 pl-3.5 shadow-2xl w-[320px] max-w-full m-0 pointer-events-auto">
+    <div className={`flex items-center gap-3.5 rounded-2xl border p-3 pl-3.5 shadow-2xl w-[320px] max-w-full m-0 pointer-events-auto transition-all ${
+      isDanger ? "bg-red-50 border-red-200 text-red-950" : "bg-[#0f0f24] border-white/10 text-white"
+    }`}>
       <img src="/images/radio-logo.png" className="h-11 w-11 shrink-0 rounded-full object-cover shadow-sm bg-black" alt="" />
       <div>
-        <div className="flex items-center gap-1.5 pb-0.5">
-          <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-          <span className="text-[10px] font-black tracking-widest text-red-500 uppercase leading-none mt-0.5">LIVE</span>
-        </div>
-        <div className="text-[15px] font-bold text-white leading-tight mb-0.5">Jesus Is Lord Radio</div>
-        <div className="text-xs font-medium text-slate-400">{message}</div>
+        <div className={`text-[15px] font-bold leading-tight mb-0.5 ${isDanger ? "text-red-950" : "text-white"}`}>Jesus Is Lord Radio</div>
+        <div className={`text-xs font-medium ${isDanger ? "text-red-800" : "text-slate-400"}`}>{message}</div>
       </div>
     </div>
   )
@@ -42,7 +41,7 @@ interface RadioState {
   listeners: number
   analyserRef: React.MutableRefObject<AnalyserNode | null>
   togglePlay: () => void
-  switchStream: (idx: number) => void
+  switchStream: (idx: number, auto?: boolean) => void
   setVolume: (v: number) => void
   setMuted: (m: boolean) => void
 }
@@ -64,17 +63,23 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const gainRef     = useRef<GainNode | null>(null)
   const srcRef      = useRef<MediaElementAudioSourceNode | null>(null)
 
+  const streamIdxRef = useRef(streamIdx)
+  const failedAttemptsRef = useRef(0)
+  const handleErrorRef = useRef<() => void>(() => {})
+
+  useEffect(() => { streamIdxRef.current = streamIdx }, [streamIdx])
+
   /* ── Audio element setup (once) ─── */
   useEffect(() => {
     const a = new Audio()
     a.crossOrigin = "anonymous"
     audioRef.current = a
 
-    a.addEventListener("playing", () => { setPlaying(true);  setLoading(false); setError(null) })
+    a.addEventListener("playing", () => { setPlaying(true);  setLoading(false); setError(null); failedAttemptsRef.current = 0 })
     a.addEventListener("pause",   () => setPlaying(false))
     a.addEventListener("waiting", () => setLoading(true))
     a.addEventListener("canplay", () => setLoading(false))
-    a.addEventListener("error",   () => { setLoading(false); setError("Stream failed – try another server"); setPlaying(false) })
+    a.addEventListener("error",   () => handleErrorRef.current())
 
     a.src = STREAMS[0].url
     a.volume = 0.82
@@ -131,12 +136,16 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     try { ensureCtx() } catch { /* */ }
     setLoading(true)
     setError(null)
-    a.play().catch(() => { setError("Playback blocked – tap again"); setLoading(false) })
+    a.play().catch(() => {
+      toast.custom(() => <RadioToast message="Playback blocked – tap again" variant="danger" />, { position: "top-center" })
+      setLoading(false)
+    })
   }, [playing, ensureCtx])
 
-  const switchStream = useCallback((idx: number) => {
+  const switchStream = useCallback((idx: number, auto?: boolean) => {
     const a = audioRef.current
     if (!a) return
+    if (!auto) failedAttemptsRef.current = 0
     try { srcRef.current?.disconnect() } catch { /* */ }
     srcRef.current = null; gainRef.current = null; analyserRef.current = null
     a.pause()
@@ -146,9 +155,26 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     setLoading(true)
     a.load()
     try { ensureCtx() } catch { /* */ }
-    a.play().catch(() => setError("Tap play to start"))
-    toast.custom(() => <RadioToast message={`Switched to ${STREAMS[idx].label}`} />)
+    a.play().catch(() => {
+      if (!auto) toast.custom(() => <RadioToast message="Tap play to start" variant="danger" />, { position: "top-center" })
+    })
+    if (!auto) {
+      toast.custom(() => <RadioToast message={`Switched to ${STREAMS[idx].label}`} />)
+    }
   }, [ensureCtx])
+
+  useEffect(() => {
+    handleErrorRef.current = () => {
+      setLoading(false); setPlaying(false);
+      failedAttemptsRef.current += 1;
+      if (failedAttemptsRef.current < STREAMS.length) {
+         const nextIdx = (streamIdxRef.current + 1) % STREAMS.length
+         switchStream(nextIdx, true)
+      } else {
+         toast.custom(() => <RadioToast message="Stream failed – try another server" variant="danger" />, { position: "top-center" })
+      }
+    }
+  }, [switchStream])
 
   const setVolume = useCallback((v: number) => setVolumeState(v), [])
   const setMuted  = useCallback((m: boolean) => setMutedState(m), [])

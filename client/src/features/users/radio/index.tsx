@@ -129,9 +129,6 @@ export default function RadioPlayer() {
   const [recording,  setRecording]  = useState(false)
   const [sheet,      setSheet]      = useState<"sources" | "record" | "info" | null>(null)
   const [menuOpen,   setMenuOpen]   = useState(false)
-  const [localError, setLocalError] = useState<string | null>(null)
-
-  const error = ctxError || localError
 
   const recRef      = useRef<MediaRecorder | null>(null)
   const recChunks   = useRef<Blob[]>([])
@@ -161,9 +158,7 @@ export default function RadioPlayer() {
       toast.custom(() => <RadioToast message="Recording started" />)
       recTimer.current = window.setInterval(() => { recDuration.current++ }, 1000)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unknown error"
-      setLocalError(`Recording failed: ${msg}`)
-      toast.custom(() => <RadioToast message="Failed to start recording" />)
+      toast.custom(() => <RadioToast message="Failed to start recording" variant="danger" />, { position: "top-center" })
     }
   }, [analyserRef])
 
@@ -378,14 +373,6 @@ export default function RadioPlayer() {
         </div>
       </Sheet>
 
-      {/* Error banner */}
-      {error && (
-        <div className="animate-fade-up fixed right-4 bottom-[max(16px,env(safe-area-inset-bottom))] left-4 z-[400] flex items-center gap-3 rounded-2xl border border-red-600/30 bg-red-950/95 px-4 py-3.5 text-sm text-red-300 shadow-2xl">
-          <Info size={20} className="flex-shrink-0" />
-          <span className="flex-1">{error}</span>
-          <button onClick={() => setLocalError(null)} className="text-red-300"><X size={20} /></button>
-        </div>
-      )}
     </>
   )
 }
