@@ -98,37 +98,35 @@ export function MobileBottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 h-[76px] md:hidden">
-      {/* Premium Glass Background with Notch */}
+      {/* Premium Background with Dynamic Notch */}
       <div className="absolute inset-x-0 bottom-0 h-[64px] pointer-events-none overflow-visible">
-        <div className="absolute inset-0 backdrop-blur-2xl rounded-t-[20px] overflow-hidden" style={{ maskImage: "inherit" }} />
         <svg
           viewBox="0 0 300 64"
           preserveAspectRatio="none"
-          className="w-full h-full drop-shadow-[0_-8px_25px_rgba(0,0,0,0.15)]"
+          className="w-full h-full drop-shadow-[0_-5px_24px_rgba(0,0,0,0.4)]"
         >
           <motion.path
             animate={{
               d: `M 0 0 
-                  L ${(idx * 100) + 22} 0 
-                  C ${(idx * 100) + 35} 0 ${(idx * 100) + 32} 30 ${(idx * 100) + 50} 30 
-                  C ${(idx * 100) + 68} 30 ${(idx * 100) + 65} 0 ${(idx * 100) + 78} 0 
+                  L ${(idx * 100) + 24} 0 
+                  C ${(idx * 100) + 36} 0 ${(idx * 100) + 34} 24 ${(idx * 100) + 50} 24 
+                  C ${(idx * 100) + 66} 24 ${(idx * 100) + 64} 0 ${(idx * 100) + 76} 0 
                   L 300 0 
                   L 300 64 
                   L 0 64 
                   Z`
             }}
-            transition={{ type: "spring", stiffness: 350, damping: 32 }}
+            transition={{ type: "spring", stiffness: 400, damping: 35 }}
             style={{ 
-              fill: "var(--app-surface)", 
-              fillOpacity: 0.98,
+              fill: "var(--app-nav-bg)", 
               stroke: "var(--app-border)", 
-              strokeWidth: 0.5 
+              strokeWidth: 0.8 
             }}
           />
         </svg>
       </div>
 
-      <div className="relative w-full h-full flex items-center justify-around z-10 px-6">
+      <div className="relative w-full h-full flex items-center justify-around z-10 px-8 flex-row">
         {MOBILE_ITEMS.map((item, index) => {
           const active = index === idx
           return (
@@ -141,24 +139,24 @@ export function MobileBottomNav() {
                 {active ? (
                   <motion.div
                     layoutId="activeCircle"
-                    className="absolute -top-8 w-[64px] h-[64px] rounded-full flex items-center justify-center shadow-[0_10px_25px_-5px_rgba(6,182,212,0.6)] z-20"
+                    className="absolute -top-8 w-[60px] h-[60px] rounded-full flex items-center justify-center z-20 shadow-[0_12px_28px_-6px_rgba(6,182,212,0.45)]"
                     style={{ 
-                      background: "linear-gradient(135deg, var(--app-primary) 0%, #0891b2 100%)",
+                      background: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)",
                       color: "white",
                       border: "4px solid var(--app-bg)"
                     }}
-                    transition={{ type: "spring", stiffness: 450, damping: 25 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   >
-                    <item.icon size={28} className="drop-shadow-lg" />
+                    <item.icon size={26} className="drop-shadow-lg" />
                     <motion.div 
                       layoutId="activeDot"
                       className="absolute -bottom-5 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_12px_#22d3ee]"
                     />
                   </motion.div>
                 ) : (
-                  <div className="flex flex-col items-center gap-1.5 opacity-50 hover:opacity-100 transition-opacity">
-                    <item.icon size={22} style={{ color: "var(--app-text)" }} />
-                    <span className="text-[10px] font-black uppercase tracking-[0.1em] leading-none" style={{ color: "var(--app-text)" }}>
+                  <div className="flex flex-col items-center gap-1.5 opacity-40 hover:opacity-100 transition-opacity">
+                    <item.icon size={20} style={{ color: "var(--app-text)" }} />
+                    <span className="text-[10px] font-black uppercase tracking-[0.12em] leading-none" style={{ color: "var(--app-text)" }}>
                       {item.title}
                     </span>
                   </div>
