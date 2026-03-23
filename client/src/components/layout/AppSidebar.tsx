@@ -108,9 +108,9 @@ export function MobileBottomNav() {
           <motion.path
             animate={{
               d: `M 0 0 
-                  L ${(idx * 100) + 24} 0 
-                  C ${(idx * 100) + 36} 0 ${(idx * 100) + 34} 24 ${(idx * 100) + 50} 24 
-                  C ${(idx * 100) + 66} 24 ${(idx * 100) + 64} 0 ${(idx * 100) + 76} 0 
+                  L ${(idx * 100) + 17} 0 
+                  C ${(idx * 100) + 32} 0 ${(idx * 100) + 32} 28 ${(idx * 100) + 50} 28 
+                  C ${(idx * 100) + 68} 28 ${(idx * 100) + 68} 0 ${(idx * 100) + 83} 0 
                   L 300 0 
                   L 300 64 
                   L 0 64 
@@ -139,7 +139,7 @@ export function MobileBottomNav() {
                 {active ? (
                   <motion.div
                     layoutId="activeCircle"
-                    className="absolute -top-8 w-[60px] h-[60px] rounded-full flex items-center justify-center z-20 shadow-[0_12px_28px_-6px_rgba(6,182,212,0.45)]"
+                    className="absolute -top-7 w-[54px] h-[54px] rounded-full flex items-center justify-center z-20 shadow-[0_12px_28px_-6px_rgba(6,182,212,0.45)]"
                     style={{ 
                       background: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)",
                       color: "white",
@@ -216,7 +216,7 @@ function SidebarContentInner() {
                   )}
                   style={!active ? { color: "var(--app-text-muted)" } : {}}
                 >
-                  <Link to={item.url}>
+                  <Link to={item.url} onClick={() => setOpenMobile(false)}>
                     <item.icon size={20} style={{ color: active ? "#22d3ee" : "var(--app-text-faint)" }} />
                     <span className="font-bold tracking-wide">{item.title}</span>
                     {item.badge === "LIVE" && !collapsed && (
@@ -255,21 +255,28 @@ function SidebarContentInner() {
 }
 
 export function AppSidebar() {
+  const { theme } = useTheme()
+  const isDark = theme !== "light"
+
   return (
     <>
       <Sidebar
         collapsible="icon"
         className="border-r shadow-2xl z-50 transition-all duration-300 backdrop-blur-xl [&_[data-slot=sidebar-inner]]:bg-transparent overflow-hidden"
         style={{ 
-          background: "linear-gradient(to bottom right, #060614, #0a0a1e, #060610)", 
+          background: isDark 
+            ? "linear-gradient(to bottom right, #060614, #0a0a1e, #060610)" 
+            : "var(--app-sidebar-bg)",
           borderColor: "var(--app-border)",
           "--sidebar": "transparent",
           "--sidebar-background": "transparent"
         } as React.CSSProperties}
       >
-        {/* Deep ambient glow - ensuring it's visible */}
-        <div className="pointer-events-none absolute -top-24 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full opacity-40 z-0"
-          style={{ background: "radial-gradient(circle,rgba(37,99,235,0.2) 0%,transparent 70%)" }} />
+        {/* Deep ambient glow - only in dark mode */}
+        {isDark && (
+          <div className="pointer-events-none absolute -top-24 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full opacity-40 z-0"
+            style={{ background: "radial-gradient(circle,rgba(37,99,235,0.2) 0%,transparent 70%)" }} />
+        )}
           
         <div className="relative z-10 flex flex-col h-full"> 
           <SidebarContentInner />
