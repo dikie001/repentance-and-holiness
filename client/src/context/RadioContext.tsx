@@ -8,17 +8,17 @@ import {
   useRef, useState, type ReactNode,
 } from "react"
 import { toast } from "sonner"
-import { AlertCircle, CheckCircle2, Info } from "lucide-react"
+// import { AlertCircle, CheckCircle2, Info } from "lucide-react"
 
 export function RadioToast({ message, variant = "default" }: { message: string, variant?: "default" | "danger" | "success" }) {
   const isDanger = variant === "danger"
   const isSuccess = variant === "success"
   
-  const Icon = isDanger ? AlertCircle : isSuccess ? CheckCircle2 : Info
+  // const Icon = isDanger ? AlertCircle : isSuccess ? CheckCircle2 : Info
   const accentColor = isDanger ? "rgb(239, 68, 68)" : isSuccess ? "rgb(34, 197, 94)" : "rgb(59, 130, 246)"
 
   return (
-    <div className="group relative flex items-center gap-4 rounded-3xl border p-4 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] w-[360px] max-w-[calc(100vw-32px)] pointer-events-auto transition-all duration-300 overflow-hidden"
+    <div className="group relative flex items-center gap-3.5 rounded-2xl border p-2.5 shadow-2xl w-[320px] max-w-[calc(100vw-32px)] pointer-events-auto transition-all duration-300 overflow-hidden"
       style={{ 
         backgroundColor: "var(--app-nav-bg)", 
         borderColor: "var(--app-border)",
@@ -27,29 +27,29 @@ export function RadioToast({ message, variant = "default" }: { message: string, 
       }}>
       
       {/* Dynamic Accent Glow */}
-      <div className="absolute -left-12 -top-12 h-24 w-24 rounded-full opacity-[0.12] blur-3xl transition-colors duration-500"
+      <div className="absolute -left-10 -top-10 h-20 w-20 rounded-full opacity-[0.1] blur-3xl transition-colors duration-500"
         style={{ backgroundColor: accentColor }} />
 
-      <div className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full overflow-hidden border border-white/10 shadow-2xl bg-black/40 ring-1 ring-white/5">
-        <img src="/images/radio-logo.png" className="h-full w-full object-cover scale-110" alt="" />
+      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden border border-white/10 bg-black/40 shadow-sm">
+        <img src="/images/radio-logo.png" className="h-full w-full object-cover" alt="radio-logo" />
         {/* Status indicator overlay */}
-        <div className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-black/80 p-0.5 backdrop-blur-md border border-white/10">
-           <Icon className="h-3 w-3" style={{ color: accentColor }} />
-        </div>
+        {/* <div className="absolute -bottom-0.5 left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-black/90 p-0.5 backdrop-blur-md border border-white/5">
+           <Icon className="h-2.5 w-2.5" style={{ color: accentColor }} />
+        </div> */}
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 mb-1">
-          <span className="relative flex h-2 w-2">
+        <div className="flex items-center gap-1.5 mb-0.5">
+          <span className="relative flex h-1.5 w-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600"></span>
           </span>
-          <span className="text-[10.5px] font-black tracking-[0.1em] uppercase text-red-500/90 leading-none">LIVE</span>
+          <span className="text-[9.5px] font-black tracking-widest uppercase text-red-500 leading-none">LIVE</span>
         </div>
-        <div className="text-[15px] font-bold tracking-tight leading-tight mb-0.5" style={{ color: "var(--app-text)" }}>
+        <div className="text-[14px] font-bold tracking-tight leading-tight" style={{ color: "var(--app-text)" }}>
           Jesus Is Lord Radio
         </div>
-        <div className="text-[12px] font-semibold leading-relaxed truncate opacity-70" style={{ color: "var(--app-text)" }}>
+        <div className="text-[11.5px] font-semibold leading-relaxed truncate opacity-60" style={{ color: "var(--app-text)" }}>
           {message || "105.3 - 105.9 FM"}
         </div>
       </div>
