@@ -74,20 +74,15 @@ export default function PropheciesPage() {
       <div className="space-y-5 pb-28 md:pb-10">
 
         {/* Header */}
-        <div className="relative overflow-hidden rounded-3xl border border-white/5 p-5"
-          style={{ background: "linear-gradient(145deg, #060614, #0a0a1e, #0d1535)" }}>
-          <div className="pointer-events-none absolute inset-0 opacity-[0.03]"
-            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect x='27' y='4' width='6' height='52' fill='white'/%3E%3Crect x='8' y='18' width='44' height='6' fill='white'/%3E%3C/svg%3E")`, backgroundSize: "60px 60px" }} />
-          <div className="relative z-10">
-            <div className="mb-1 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/15 border border-amber-500/20">
-                <Flame size={16} className="text-amber-400" />
-              </div>
-              <span className="text-[10px] font-black tracking-widest text-amber-400 uppercase">Prophetic Word</span>
+        <div className="rounded-3xl border p-5" style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}>
+          <div className="mb-1 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/15 border border-amber-500/20">
+              <Flame size={16} className="text-amber-400" />
             </div>
-            <h1 className="text-2xl font-black text-white" style={{ fontFamily: "'Cinzel', serif" }}>Prophecies</h1>
-            <p className="mt-1 text-xs text-slate-500">960+ words from the Spirit of God</p>
+            <span className="text-[10px] font-black tracking-widest text-amber-400 uppercase">Prophetic Word</span>
           </div>
+          <h1 className="text-2xl font-black" style={{ color: "var(--app-text)", fontFamily: "'Cinzel', serif" }}>Prophecies</h1>
+          <p className="mt-1 text-xs" style={{ color: "var(--app-text-muted)" }}>960+ words from the Spirit of God</p>
         </div>
 
         {/* Search & Filter */}
@@ -136,8 +131,8 @@ export default function PropheciesPage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.07 }}
-                className="overflow-hidden rounded-2xl border border-white/5"
-                style={{ background: "linear-gradient(145deg, #060614, #0a0a1e)" }}
+                className="overflow-hidden rounded-2xl border"
+                style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}
               >
                 <button
                   className="w-full p-4 text-left"

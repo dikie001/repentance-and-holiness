@@ -16,16 +16,16 @@ import { Link, useLocation } from "react-router-dom"
 type NavItem = { title: string; url: string; icon: LucideIcon; badge?: string }
 
 const NAV_ITEMS: NavItem[] = [
-  { title: "Home",       url: "/",                    icon: House                       },
-  { title: "Radio",      url: "/jesus-is-lord-radio", icon: RadioTower, badge: "LIVE"  },
-  { title: "Media",      url: "/media",               icon: Music4                     },
-  { title: "Teachings",  url: "/teachings",           icon: BookOpenText               },
-  { title: "Prophecies", url: "/prophecies",          icon: Flame                      },
-  { title: "Gallery",    url: "/gallery",             icon: ImagePlay                  },
-  { title: "About",      url: "/about",               icon: UsersRound                 },
+  { title: "Home",       url: "/",                    icon: House                      },
+  { title: "Radio",      url: "/jesus-is-lord-radio", icon: RadioTower, badge: "LIVE" },
+  { title: "Media",      url: "/media",               icon: Music4                    },
+  { title: "Teachings",  url: "/teachings",           icon: BookOpenText              },
+  { title: "Prophecies", url: "/prophecies",          icon: Flame                     },
+  { title: "Gallery",    url: "/gallery",             icon: ImagePlay                 },
+  { title: "About",      url: "/about",               icon: UsersRound                },
 ]
 
-const MOBILE_ITEMS = NAV_ITEMS.slice(0, 5)
+const MOBILE_ITEMS = NAV_ITEMS.slice(0, 3)
 
 function LiveDot() {
   return (
@@ -36,28 +36,33 @@ function LiveDot() {
   )
 }
 
-/** Header — no theme toggle here; theme lives in sidebar footer */
 export function GlobalHeader() {
   const { toggleSidebar } = useSidebar()
-
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-16 bg-[#060614]/60 backdrop-blur-xl border-b border-white/5 md:left-[var(--sidebar-width)] transition-all duration-200">
+    <header
+      className="fixed top-0 left-0 right-0 z-40 flex h-16 items-center justify-between px-4 backdrop-blur-xl border-b md:left-[var(--sidebar-width)] transition-all duration-200"
+      style={{ background: "var(--app-header-bg)", borderColor: "var(--app-border)" }}
+    >
       <Link to="/" className="flex items-center gap-2.5 group">
-        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg shadow-lg shadow-blue-500/20 group-active:scale-95 transition-transform">
+        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg shadow-md group-active:scale-95 transition-transform">
           <img src="/images/logo.png" alt="JIL Logo" className="h-full w-full object-cover" />
         </div>
-        <p className="hidden sm:block text-xs sm:text-sm font-black text-white leading-tight uppercase tracking-tight" style={{ fontFamily: "'Cinzel', serif" }}>
+        <p className="hidden sm:block text-xs sm:text-sm font-black leading-tight uppercase tracking-tight" style={{ color: "var(--app-text)" }}>
           Repentance &amp; Holiness
         </p>
       </Link>
 
       <div className="flex items-center gap-2">
-        <button className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 text-slate-400 hover:text-white transition-colors border border-white/5">
+        <button
+          className="h-9 w-9 rounded-xl flex items-center justify-center transition-colors border"
+          style={{ background: "var(--app-surface)", borderColor: "var(--app-border)", color: "var(--app-text-muted)" }}
+        >
           <Bell size={16} />
         </button>
         <button
           onClick={toggleSidebar}
-          className="h-10 w-10 rounded-xl flex items-center justify-center bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all border border-white/5 active:scale-90"
+          className="h-10 w-10 rounded-xl flex items-center justify-center transition-all active:scale-90 border"
+          style={{ background: "var(--app-surface)", borderColor: "var(--app-border)", color: "var(--app-text-muted)" }}
           aria-label="Toggle Menu"
         >
           <Menu size={20} />
@@ -67,18 +72,19 @@ export function GlobalHeader() {
   )
 }
 
-/** Mobile bottom nav */
 export function MobileBottomNav() {
   const { pathname } = useLocation()
-
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 h-20 md:hidden px-2 pb-safe bg-[#060614]/92 backdrop-blur-2xl border-t border-white/5 flex items-center justify-around shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 h-20 md:hidden px-2 flex items-center justify-around backdrop-blur-2xl border-t shadow-xl"
+      style={{ background: "var(--app-nav-bg)", borderColor: "var(--app-border)" }}
+    >
       {MOBILE_ITEMS.map((item) => {
         const active = pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url))
         return (
           <Link key={item.url} to={item.url}
-            className={cn("flex flex-col items-center justify-center gap-1 transition-all relative px-3 py-1",
-              active ? "text-cyan-400" : "text-slate-500")}
+            className="flex flex-col items-center justify-center gap-1 transition-all relative px-3 py-1"
+            style={{ color: active ? "#22d3ee" : "var(--app-text-faint)" }}
           >
             <div className="relative">
               <item.icon size={22}
@@ -103,23 +109,19 @@ export function MobileBottomNav() {
   )
 }
 
-/** Sidebar inner */
 function SidebarContentInner() {
   const { pathname } = useLocation()
   const { state } = useSidebar()
   const collapsed = state === "collapsed"
   const { theme, setTheme } = useTheme()
-
-  // Determine current resolved theme for icon display
   const isDark = theme !== "light"
-
-  const handleThemeToggle = () => {
-    setTheme(isDark ? "light" : "dark")
-  }
 
   return (
     <>
-      <SidebarHeader className="h-20 flex items-center px-4 border-b border-white/5">
+      <SidebarHeader
+        className="h-20 flex items-center px-4 border-b"
+        style={{ borderColor: "var(--app-border)" }}
+      >
         <Link to="/" className="flex items-center gap-3">
           <div className="h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-400 flex items-center justify-center text-white font-black text-xs shadow-lg shadow-blue-500/20">
             JIL
@@ -128,10 +130,10 @@ function SidebarContentInner() {
             {!collapsed && (
               <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
                 className="overflow-hidden whitespace-nowrap">
-                <p className="text-sm font-black text-white leading-none tracking-tight" style={{ fontFamily: "'Cinzel', serif" }}>
+                <p className="text-sm font-black leading-none tracking-tight" style={{ color: "var(--app-text)" }}>
                   Repentance &amp; Holiness
                 </p>
-                <p className="text-[10px] font-bold text-cyan-400/70 leading-none mt-1 uppercase tracking-widest">Ministry</p>
+                <p className="text-[10px] font-bold text-cyan-500/80 leading-none mt-1 uppercase tracking-widest">Ministry</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -145,14 +147,15 @@ function SidebarContentInner() {
             return (
               <SidebarMenuItem key={item.url}>
                 <SidebarMenuButton asChild isActive={active} tooltip={item.title}
-                  className={cn("h-11 rounded-xl transition-all duration-200",
+                  className={cn("h-11 rounded-xl transition-all duration-200 border",
                     active
-                      ? "bg-gradient-to-r from-blue-600/20 to-cyan-500/20 text-cyan-400 border border-cyan-500/20"
-                      : "text-slate-400 hover:bg-white/5 hover:text-white border border-transparent"
+                      ? "bg-gradient-to-r from-blue-600/20 to-cyan-500/20 text-cyan-400 border-cyan-500/20"
+                      : "border-transparent hover:text-white"
                   )}
+                  style={!active ? { color: "var(--app-text-muted)" } : {}}
                 >
                   <Link to={item.url}>
-                    <item.icon size={20} className={active ? "text-cyan-400" : "text-slate-500"} />
+                    <item.icon size={20} style={{ color: active ? "#22d3ee" : "var(--app-text-faint)" }} />
                     <span className="font-bold tracking-wide">{item.title}</span>
                     {item.badge === "LIVE" && !collapsed && (
                       <div className="ml-auto flex items-center gap-1.5 bg-red-500/10 text-red-400 px-2 py-0.5 rounded-full text-[9px] font-black border border-red-500/20">
@@ -167,16 +170,21 @@ function SidebarContentInner() {
         </SidebarMenu>
       </SidebarContent>
 
-      {/* ─── Theme toggle in footer ─── */}
-      <SidebarFooter className="p-4 border-t border-white/5">
+      {/* Theme toggle — sidebar footer */}
+      <SidebarFooter className="p-4 border-t" style={{ borderColor: "var(--app-border)" }}>
         <SidebarMenuButton
-          onClick={handleThemeToggle}
-          className="h-11 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/8 border border-white/5 gap-3 cursor-pointer"
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          className="h-11 rounded-xl border cursor-pointer transition-colors"
+          style={{
+            background: "var(--app-surface)",
+            borderColor: "var(--app-border)",
+            color: "var(--app-text-muted)",
+          }}
           tooltip={isDark ? "Switch to Light" : "Switch to Dark"}
         >
           {isDark
             ? <Sun size={18} className="text-amber-400 shrink-0" />
-            : <Moon size={18} className="text-blue-400 shrink-0" />}
+            : <Moon size={18} className="text-blue-600 shrink-0" />}
           <span className="font-bold">{isDark ? "Light Mode" : "Dark Mode"}</span>
         </SidebarMenuButton>
       </SidebarFooter>
@@ -187,7 +195,11 @@ function SidebarContentInner() {
 export function AppSidebar() {
   return (
     <>
-      <Sidebar collapsible="icon" className="bg-[#060611] border-r border-white/5 shadow-2xl z-50">
+      <Sidebar
+        collapsible="icon"
+        className="border-r shadow-2xl z-50"
+        style={{ background: "var(--app-sidebar-bg)", borderColor: "var(--app-border)" } as React.CSSProperties}
+      >
         <SidebarContentInner />
       </Sidebar>
       <GlobalHeader />

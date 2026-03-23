@@ -94,8 +94,8 @@ export default function GalleryPage() {
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-3xl border border-white/5 p-5"
-          style={{ background: "linear-gradient(145deg, #060614, #0a0a20, #0d1535)" }}
+          className="rounded-3xl border p-5"
+          style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}
         >
           <div className="relative z-10">
             <div className="mb-1 flex items-center gap-2">
@@ -104,8 +104,8 @@ export default function GalleryPage() {
               </div>
               <span className="text-[10px] font-black tracking-widest text-cyan-400 uppercase">Photo Gallery</span>
             </div>
-            <h1 className="text-2xl font-black text-white" style={{ fontFamily: "'Cinzel', serif" }}>Gallery</h1>
-            <p className="mt-1 text-xs text-slate-500">5,100+ ministry photos</p>
+            <h1 className="text-2xl font-black" style={{ color: "var(--app-text)", fontFamily: "'Cinzel', serif" }}>Gallery</h1>
+            <p className="mt-1 text-xs" style={{ color: "var(--app-text-muted)" }}>5,100+ ministry photos</p>
           </div>
         </motion.div>
 

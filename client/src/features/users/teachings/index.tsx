@@ -52,21 +52,17 @@ export default function TeachingsPage() {
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-3xl border border-white/5 p-5"
-          style={{ background: "linear-gradient(145deg, #060614, #0a0a20, #0d1535)" }}
+          className="rounded-3xl border p-5"
+          style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}
         >
-          <div className="pointer-events-none absolute inset-0 opacity-[0.03]"
-            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect x='27' y='4' width='6' height='52' fill='white'/%3E%3Crect x='8' y='18' width='44' height='6' fill='white'/%3E%3C/svg%3E")`, backgroundSize: "60px 60px" }} />
-          <div className="relative z-10">
-            <div className="mb-1 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600/20 border border-indigo-500/20">
-                <BookOpen size={16} className="text-indigo-300" />
-              </div>
-              <span className="text-[10px] font-black tracking-widest text-indigo-300 uppercase">Word of God</span>
+          <div className="mb-1 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600/20 border border-indigo-500/20">
+              <BookOpen size={16} className="text-indigo-300" />
             </div>
-            <h1 className="text-2xl font-black text-white" style={{ fontFamily: "'Cinzel', serif" }}>Teachings</h1>
-            <p className="mt-1 text-xs text-slate-500">3,200+ messages from the Word of God</p>
+            <span className="text-[10px] font-black tracking-widest text-indigo-300 uppercase">Word of God</span>
           </div>
+          <h1 className="text-2xl font-black" style={{ color: "var(--app-text)", fontFamily: "'Cinzel', serif" }}>Teachings</h1>
+          <p className="mt-1 text-xs" style={{ color: "var(--app-text-muted)" }}>3,200+ messages from the Word of God</p>
         </motion.div>
 
         {/* Search & Filter */}
@@ -137,30 +133,33 @@ export default function TeachingsPage() {
             {filtered.map((t, i) => {
               const isSaved = saved.has(t.id)
               const isLiked = liked.has(t.id)
+              const toggleLike = () => setLiked(s => { const n = new Set(s); if (isLiked) { n.delete(t.id) } else { n.add(t.id) } return n })
+              const toggleSave = () => setSaved(s => { const n = new Set(s); if (isSaved) { n.delete(t.id) } else { n.add(t.id) } return n })
               return (
                 <motion.div key={t.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.04 }}
-                  className="flex items-center gap-3 rounded-2xl border border-white/5 bg-white/3 p-3 hover:bg-white/5 transition-colors"
+                  className="flex items-center gap-3 rounded-2xl border p-3 transition-colors"
+                  style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-blue-700 shadow">
                     <BookOpen size={16} className="text-white" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-white">{t.title}</p>
-                    <p className="text-[11px] text-slate-500">{t.speaker}</p>
+                    <p className="truncate text-sm font-semibold" style={{ color: "var(--app-text)" }}>{t.title}</p>
+                    <p className="text-[11px]" style={{ color: "var(--app-text-muted)" }}>{t.speaker}</p>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
-                    <span className="flex items-center gap-1 text-[10px] text-slate-500"><Eye size={9} />{t.views}</span>
-                    <span className="flex items-center gap-1 text-[10px] text-slate-600"><Clock size={9} />{t.duration}</span>
+                    <span className="flex items-center gap-1 text-[10px]" style={{ color: "var(--app-text-muted)" }}><Eye size={9} />{t.views}</span>
+                    <span className="flex items-center gap-1 text-[10px]" style={{ color: "var(--app-text-faint)" }}><Clock size={9} />{t.duration}</span>
                   </div>
                   <div className="flex items-center gap-1.5 ml-1">
-                    <button onClick={() => setLiked(s => { const n = new Set(s); isLiked ? n.delete(t.id) : n.add(t.id); return n })}
+                    <button onClick={toggleLike}
                       className={`p-1.5 rounded-lg transition-colors ${isLiked ? "text-red-400" : "text-slate-600 hover:text-white"}`}>
                       <Heart size={13} fill={isLiked ? "currentColor" : "none"} />
                     </button>
-                    <button onClick={() => setSaved(s => { const n = new Set(s); isSaved ? n.delete(t.id) : n.add(t.id); return n })}
+                    <button onClick={toggleSave}
                       className={`p-1.5 rounded-lg transition-colors ${isSaved ? "text-cyan-400" : "text-slate-600 hover:text-cyan-400"}`}>
                       <Bookmark size={13} fill={isSaved ? "currentColor" : "none"} />
                     </button>

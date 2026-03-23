@@ -34,12 +34,10 @@ export default function AboutPage() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-3xl border border-white/5 p-6"
-          style={{ background: "linear-gradient(145deg, #060614, #0a0a20, #0f1535)" }}
+          className="rounded-3xl border p-6"
+          style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}
         >
-          <div className="pointer-events-none absolute inset-0 opacity-[0.03]"
-            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect x='27' y='4' width='6' height='52' fill='white'/%3E%3Crect x='8' y='18' width='44' height='6' fill='white'/%3E%3C/svg%3E")`, backgroundSize: "60px 60px" }} />
-          <div className="relative z-10 flex items-center gap-4">
+          <div className="flex items-center gap-4">
             <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-white/10 shadow-lg">
               <img src="/images/logo.png" alt="JIL Logo" className="h-full w-full object-cover"
                 onError={(e) => { e.currentTarget.style.display = "none" }} />
@@ -53,7 +51,7 @@ export default function AboutPage() {
               <p className="mt-1 text-xs text-slate-500">Nakuru, Kenya · Worldwide</p>
             </div>
           </div>
-          <p className="relative z-10 mt-4 text-sm leading-relaxed text-slate-400">
+          <p className="mt-4 text-sm leading-relaxed" style={{ color: "var(--app-text-muted)" }}>
             Drawing souls to Jesus Christ through uncompromising Gospel preaching, Spirit-filled worship, prophetic ministry, and media outreach across East Africa and beyond.
           </p>
         </motion.div>
@@ -66,13 +64,14 @@ export default function AboutPage() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.07 }}
-              className="rounded-2xl border border-white/5 bg-white/3 p-4 text-center"
+              className="rounded-2xl border p-4 text-center"
+              style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}
             >
               <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600/15">
                 <Icon size={15} className="text-cyan-400" />
               </div>
-              <p className="text-lg font-black text-white">{value}</p>
-              <p className="mt-0.5 text-[10px] text-slate-500">{label}</p>
+              <p className="text-lg font-black" style={{ color: "var(--app-text)" }}>{value}</p>
+              <p className="mt-0.5 text-[10px]" style={{ color: "var(--app-text-muted)" }}>{label}</p>
             </motion.div>
           ))}
         </div>
@@ -117,7 +116,7 @@ export default function AboutPage() {
                   <span className="rounded-full border border-red-500/30 bg-red-500/10 px-2 py-px text-[9px] font-black text-red-400">LIVE</span>
                 </div>
                 <p className="text-sm font-bold text-white">Broadcasting 24/7 Worldwide</p>
-                <p className="mt-1 text-xs text-slate-500">95.3 · 105.9 FM — Nakuru, Kenya</p>
+                <p className="mt-1 text-xs text-slate-500">105.3, 105.9 FM — Nakuru, Kenya</p>
               </div>
               <ChevronRight size={20} className="text-slate-600" />
             </div>

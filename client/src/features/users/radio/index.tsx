@@ -355,7 +355,7 @@ export default function RadioPlayer() {
         <div className="text-sm leading-relaxed text-slate-400">
           <p className="mb-4 font-medium text-indigo-200"><strong>Jesus Is Lord Radio</strong> — 24/7 Christian broadcast from Nakuru, Kenya.</p>
           {[
-            ["Frequencies", "95.3 · 105.9 FM"],
+            ["Frequencies", "105.3 · 105.9 FM"],
             ["Format", "Christian / Gospel"],
             ["Broadcast", "24/7 Live"],
             ["Ministry", "Repentance & Holiness"],
