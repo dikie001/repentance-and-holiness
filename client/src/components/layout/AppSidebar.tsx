@@ -8,25 +8,6 @@
 
 "use client"
 
-import { cn } from "@/lib/utils"
-import { motion, AnimatePresence } from "framer-motion"
-import {
-  Bell,
-  BookOpenText,
-  Flame,
-  House,
-  ImagePlay,
-  Music4,
-  RadioTower,
-  Settings2,
-  Sparkles,
-  UsersRound,
-  type LucideIcon,
-  Search,
-  Menu,
-  X
-} from "lucide-react"
-import { Link, useLocation } from "react-router-dom"
 import {
   Sidebar,
   SidebarContent,
@@ -35,9 +16,24 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar
 } from "@/components/ui/sidebar"
+import { cn } from "@/lib/utils"
+import { AnimatePresence, motion } from "framer-motion"
+import {
+  Bell,
+  BookOpenText,
+  Flame,
+  House,
+  ImagePlay,
+  Menu,
+  Music4,
+  RadioTower,
+  Settings2,
+  UsersRound,
+  type LucideIcon
+} from "lucide-react"
+import { Link, useLocation } from "react-router-dom"
 
 /* ─────────────────────────────────────────────────────────────
    Data
@@ -77,7 +73,7 @@ function LiveDot() {
 
 /** ── Global Top Header ──────────────────────────────────────── */
 export function GlobalHeader() {
-  const { toggleSidebar, openMobile, setOpenMobile, isMobile } = useSidebar()
+  const { toggleSidebar } = useSidebar()
   
   return (
     <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-16 bg-[#060614]/60 backdrop-blur-xl border-b border-white/5 md:left-[var(--sidebar-width)] md:data-[state=collapsed]:left-[var(--sidebar-width-icon)] transition-all duration-200">

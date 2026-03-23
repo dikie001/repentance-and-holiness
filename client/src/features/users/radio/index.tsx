@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect, useCallback, useMemo } from "react"
+import { cn } from "@/lib/utils"
 import {
   Play,
   Pause,
@@ -398,16 +399,16 @@ export default function RadioPlayer() {
   )
 
   // Recording
-  const startRecording = async () => {
+  const startRecording = useCallback(async () => {
     try {
       const stream = ensureAudioContext()
       recChunks.current = []
       recDuration.current = 0
-
+ 
       const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
         ? "audio/webm;codecs=opus"
         : "audio/webm"
-
+ 
       const recorder = new MediaRecorder(stream, { mimeType })
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) recChunks.current.push(e.data)
@@ -423,12 +424,12 @@ export default function RadioPlayer() {
           ...prev,
         ])
       }
-
+ 
       recorder.start(1000)
       recRef.current = recorder
       setRecording(true)
       setRecSeconds(0)
-
+ 
       recTimer.current = window.setInterval(() => {
         recDuration.current++
         setRecSeconds(recDuration.current)
@@ -436,14 +437,14 @@ export default function RadioPlayer() {
     } catch (err: any) {
       setError(`Recording failed: ${err?.message || "Unknown error"}`)
     }
-  }
+  }, [ensureAudioContext])
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
     recRef.current?.stop()
     if (recTimer.current) clearInterval(recTimer.current)
     setRecording(false)
-  }
-
+  }, [])
+ 
   const deleteRec = (index: number) => {
     setRecordings((prev) => {
       const next = [...prev]
@@ -452,8 +453,8 @@ export default function RadioPlayer() {
       return next
     })
   }
-
-  const share = async () => {
+ 
+  const share = useCallback(async () => {
     const data = { title: "Jesus Is Lord Radio", url: STREAMS[streamIdx].url }
     if (navigator.share) {
       navigator.share(data).catch(() => {})
@@ -462,28 +463,8 @@ export default function RadioPlayer() {
         await navigator.clipboard.writeText(data.url)
       } catch {}
     }
-  }
+  }, [streamIdx])
 
-  const menuItems = [
-    {
-      icon: <Server size={20} />,
-      label: "Sources",
-      action: () => setSheet("sources"),
-    },
-    {
-      icon: <Mic size={20} />,
-      label: recording ? `Stop (${fmt(recSeconds)})` : "Record",
-      action: recording ? stopRecording : startRecording,
-      color: recording ? "text-red-400" : "",
-    },
-    {
-      icon: <Download size={20} />,
-      label: `Clips (${recordings.length})`,
-      action: () => setSheet("record"),
-    },
-    { icon: <Share2 size={20} />, label: "Share", action: share },
-    { icon: <Info size={20} />, label: "Info", action: () => setSheet("info") },
-  ]
 
   return (
     <>
@@ -492,72 +473,17 @@ export default function RadioPlayer() {
         rel="stylesheet"
       />
 
-      <div className="font-barlow relative flex h-svh flex-col overflow-hidden bg-gradient-to-br from-[#060614] via-[#0a0a1e] to-[#060610] text-white">
+      <div className="font-barlow relative flex h-full flex-col overflow-hidden bg-gradient-to-br from-[#060614] via-[#0a0a1e] to-[#060610] text-white">
         {/* Ambient glow */}
         <div className="bg-gradient-radial pointer-events-none absolute -top-20 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full from-blue-500/12 to-transparent" />
 
         {/* Header */}
-        <header className="relative z-10 flex items-center justify-between px-4.5 py-3.5">
-          <div className="flex items-center gap-2.5">
-            <div className="font-barlow-condensed grid h-10.5 w-10.5 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-400 text-sm font-bold tracking-wide shadow-lg shadow-cyan-500/40">
-              JIL
-            </div>
-            <div>
-              <div className="text-[15px] leading-none font-extrabold">
-                Jesus Is Lord
-              </div>
-              <div className="mt-0.5 text-xs font-semibold text-cyan-400">
-                Global Radio
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center gap-1.5 rounded-full border border-red-600/35 bg-red-900/15 px-3 py-1 text-xs font-extrabold tracking-wider text-red-400">
-              <div
-                className={`h-2 w-2 rounded-full bg-red-500 ${playing ? "animate-pulse" : ""}`}
-              />
-              LIVE
-            </div>
-
-            <div className="relative">
-              <button
-                onClick={() => setMenuOpen((o) => !o)}
-                className={`grid h-10.5 w-10.5 place-items-center rounded-xl border border-white/10 text-neutral-400 transition-colors ${
-                  menuOpen ? "bg-white/12" : "bg-white/7 hover:bg-white/10"
-                }`}
-              >
-                <MoreVertical size={22} />
-              </button>
-
-              {menuOpen && (
-                <div className="animate-fade-up absolute top-full right-0 z-30 mt-2.5 min-w-[210px] rounded-xl border border-white/10 bg-[#0f0f24] py-2 shadow-2xl">
-                  {menuItems.map((item) => (
-                    <button
-                      key={item.label}
-                      onClick={() => {
-                        item.action()
-                        setMenuOpen(false)
-                      }}
-                      className={`flex w-full items-center gap-3.5 rounded-lg px-3.5 py-2.5 text-sm font-semibold transition-colors hover:bg-white/7 ${item.color || "text-indigo-100"}`}
-                    >
-                      {item.icon}
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-
-        {/* Main content */}
-        <main className="flex flex-1 flex-col items-center overflow-hidden px-5 pb-5">
+        <main className="flex flex-1 flex-col items-center overflow-hidden px-5 pt-8 pb-5">
           {/* Artwork + title */}
-          <div className="mt-[2vh] w-full text-center">
-            <div className="relative mx-auto mb-2 w-fit">
+          <div className="w-full text-center">
+            <div className="relative mx-auto mb-4 w-fit">
               <div
-                className={`aspect-square w-[min(56vw,220px)] overflow-hidden rounded-full border-4 border-white/12 transition-all duration-700 ${
+                className={`aspect-square w-[min(54vw,200px)] overflow-hidden rounded-full border-4 border-white/12 transition-all duration-700 ${
                   playing
                     ? "animate-pulse-slow shadow-[0_0_0_12px_rgba(0,140,255,0.15),0_20px_60px_rgba(0,100,255,0.4)]"
                     : "shadow-xl shadow-black/50"
@@ -575,9 +501,9 @@ export default function RadioPlayer() {
               </div>
 
               <div
-                className={`absolute -bottom-2.5 left-1/2 -translate-x-1/2 rounded-full border-2 border-white/15 px-4 py-1.5 text-xs font-black tracking-widest whitespace-nowrap uppercase ${
+                className={`absolute -bottom-2.5 left-1/2 -translate-x-1/2 rounded-full border-2 border-white/15 px-4 py-1.5 text-[10px] font-black tracking-widest whitespace-nowrap uppercase ${
                   playing
-                    ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white"
+                    ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.5)]"
                     : "bg-neutral-800 text-white/90"
                 }`}
               >
@@ -585,41 +511,106 @@ export default function RadioPlayer() {
               </div>
             </div>
 
-            <h1 className="mt-4.5 mb-1 text-2xl leading-tight font-black tracking-tight">
-              Jesus Is Lord Radio
-            </h1>
-            <p className="text-sm font-semibold text-slate-400">
-              Repentance & Holiness · {listeners} listening
-            </p>
+            <div className="mt-8 flex flex-col items-center gap-2">
+              <div className="flex items-center gap-2 text-2xl font-black tracking-tight">
+                <h1>Jesus Is Lord Radio</h1>
+                <div className="flex items-center gap-1.5 rounded-full border border-red-600/35 bg-red-900/15 px-2 py-0.5 text-[9px] font-black tracking-widest text-red-400 uppercase">
+                  <div className={`h-1.5 w-1.5 rounded-full bg-red-500 ${playing ? "animate-pulse" : ""}`} />
+                  LIVE
+                </div>
+              </div>
+              <p className="text-sm font-semibold text-slate-400">
+                Repentance & Holiness · {listeners} listening
+              </p>
+            </div>
           </div>
 
           {/* EQ */}
-          <div className="mt-4 w-full max-w-md">
+          <div className="mt-6 w-full max-w-md">
             <SegmentedEQ analyserRef={analyserRef} playing={playing} />
           </div>
 
           {/* Controls */}
-          <div className="mt-auto flex w-full flex-col gap-5 pb-[env(safe-area-inset-bottom,16px)]">
-            <div className="flex items-center justify-center gap-9">
+          <div className="mt-auto flex w-full flex-col gap-6 pb-[env(safe-area-inset-bottom,16px)]">
+            <div className="flex items-center justify-center gap-7">
+              {/* Ellipses Menu on the left of controls for symmetry or right? User said "near the controls" */}
+              <div className="relative">
+                <button
+                  onClick={() => setMenuOpen((o) => !o)}
+                  className={`grid h-12 w-12 place-items-center rounded-2xl border border-white/10 text-neutral-400 transition-all ${
+                    menuOpen ? "bg-white/15 text-white" : "bg-white/5 hover:bg-white/10"
+                  }`}
+                >
+                  <MoreVertical size={22} />
+                </button>
+
+                {menuOpen && (
+                  <div className="animate-fade-up absolute bottom-full left-0 z-30 mb-4 min-w-[210px] rounded-2xl border border-white/10 bg-[#0f0f24]/95 backdrop-blur-xl py-2 shadow-2xl overflow-hidden">
+                    <button
+                      onClick={() => { setSheet("sources"); setMenuOpen(false); }}
+                      className="flex w-full items-center gap-3.5 px-3.5 py-3 text-sm font-bold text-indigo-100 transition-colors hover:bg-white/7"
+                    >
+                      <Server size={20} />
+                      Sources
+                    </button>
+                    <button
+                      onClick={() => { 
+                        if (recording) stopRecording(); 
+                        else startRecording(); 
+                        setMenuOpen(false); 
+                      }}
+                      className={cn(
+                        "flex w-full items-center gap-3.5 px-3.5 py-3 text-sm font-bold transition-colors hover:bg-white/7",
+                        recording ? "text-red-400" : "text-indigo-100"
+                      )}
+                    >
+                      <Mic size={20} />
+                      {recording ? `Stop (${fmt(recSeconds)})` : "Record"}
+                    </button>
+                    <button
+                      onClick={() => { setSheet("record"); setMenuOpen(false); }}
+                      className="flex w-full items-center gap-3.5 px-3.5 py-3 text-sm font-bold text-indigo-100 transition-colors hover:bg-white/7"
+                    >
+                      <Download size={20} />
+                      Clips ({recordings.length})
+                    </button>
+                    <button
+                      onClick={() => { share(); setMenuOpen(false); }}
+                      className="flex w-full items-center gap-3.5 px-3.5 py-3 text-sm font-bold text-indigo-100 transition-colors hover:bg-white/7"
+                    >
+                      <Share2 size={20} />
+                      Share
+                    </button>
+                    <button
+                      onClick={() => { setSheet("info"); setMenuOpen(false); }}
+                      className="flex w-full items-center gap-3.5 px-3.5 py-3 text-sm font-bold text-indigo-100 transition-colors hover:bg-white/7"
+                    >
+                      <Info size={20} />
+                      Info
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={() =>
                   switchStream(
                     (streamIdx - 1 + STREAMS.length) % STREAMS.length
                   )
                 }
-                className="text-blue-400 transition-colors hover:text-blue-300"
+                className="text-blue-400/80 transition-colors hover:text-blue-300 active:scale-95"
               >
-                <SkipBack size={30} fill="currentColor" />
+                <SkipBack size={32} fill="currentColor" />
               </button>
 
               <button
                 onClick={togglePlay}
                 disabled={loading}
-                className={`grid h-22 w-22 place-items-center rounded-full border-none bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg transition-all duration-300 ${
+                className={`grid h-24 w-24 place-items-center rounded-full border-none bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg transition-all duration-300 ${
                   playing
                     ? "shadow-[0_0_0_8px_rgba(0,140,255,0.2),0_12px_40px_rgba(0,140,255,0.5)]"
                     : "shadow-[0_10px_36px_rgba(0,100,255,0.4)]"
-                } ${loading ? "opacity-70" : "hover:scale-105"}`}
+                } ${loading ? "opacity-70" : "hover:scale-105 active:scale-95"}`}
               >
                 {loading ? (
                   <Loader2 size={44} className="animate-spin text-white" />
@@ -637,10 +628,13 @@ export default function RadioPlayer() {
 
               <button
                 onClick={() => switchStream((streamIdx + 1) % STREAMS.length)}
-                className="text-blue-400 transition-colors hover:text-blue-300"
+                className="text-blue-400/80 transition-colors hover:text-blue-300 active:scale-95"
               >
-                <SkipForward size={30} fill="currentColor" />
+                <SkipForward size={32} fill="currentColor" />
               </button>
+
+              {/* Added symmetry spacer or another button? Let's keep it clean as requested. */}
+              <div className="w-12" /> 
             </div>
 
             {/* Volume */}
