@@ -117,27 +117,54 @@
     --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ── App-Wide Theme Tokens ────────────────────────────────── */
+:root {
+  /* Light mode */
+  --app-bg:           #eef1ff;
+  --app-surface:      rgba(0, 10, 80, 0.04);
+  --app-card:         rgba(0, 10, 80, 0.05);
+  --app-card-hover:   rgba(0, 10, 80, 0.08);
+  --app-border:       rgba(0, 10, 80, 0.08);
+  --app-header-bg:    rgba(238, 241, 255, 0.82);
+  --app-sidebar-bg:   rgba(232, 236, 255, 0.72);
+  --app-nav-bg:       rgba(238, 241, 255, 0.95);
+  --app-text:         #0f1535;
+  --app-text-muted:   #64748b;
+  --app-text-faint:   #a0aec0;
+}
+.dark {
+  /* Dark / Radio mode */
+  --app-bg:           #060614;
+  --app-surface:      rgba(255, 255, 255, 0.03);
+  --app-card:         rgba(255, 255, 255, 0.04);
+  --app-card-hover:   rgba(255, 255, 255, 0.07);
+  --app-border:       rgba(255, 255, 255, 0.06);
+  --app-header-bg:    rgba(6, 6, 20, 0.72);
+  --app-sidebar-bg:   rgba(6, 6, 17, 0.72);
+  --app-nav-bg:       rgba(6, 6, 20, 0.94);
+  --app-text:         #ffffff;
+  --app-text-muted:   #94a3b8;
+  --app-text-faint:   #475569;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
-    @apply bg-background text-foreground;
-    }
+    background: var(--app-bg);
+    color: var(--app-text);
+    @apply font-sans;
+  }
   html {
     @apply font-sans;
-    }
+  }
 }
 
-/* ADDED */
 @layer utilities {
-  .animate-spin-slow {
-    animation: spin 28s linear infinite;
-  }
-  .animate-pulse-slow {
-    animation: pulse 3.2s infinite;
-  }
-  .animate-fade-up {
-    animation: fadeUp 0.18s ease;
-  }
+  .animate-spin-slow  { animation: spin 28s linear infinite; }
+  .animate-pulse-slow { animation: pulse 3.2s infinite; }
+  .animate-fade-up    { animation: fadeUp 0.18s ease; }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { scrollbar-width: none; }
 }
