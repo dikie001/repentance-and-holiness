@@ -532,13 +532,18 @@ export default function RadioPlayer() {
 
           {/* Controls */}
           <div className="mt-auto flex w-full flex-col gap-6 pb-[env(safe-area-inset-bottom,16px)]">
-            <div className="flex items-center justify-center gap-6 sm:gap-8">
-              {/* Ellipses Menu */}
-              <div className="relative shrink-0">
+            <div className="flex items-center justify-between px-2 sm:px-6">
+              
+              {/* Left Side: Ellipses Menu */}
+              <div className="relative shrink-0 flex items-center justify-start w-14">
                 <button
                   onClick={() => setMenuOpen((o) => !o)}
+                  className={cn(
+                    "grid h-12 w-12 place-items-center rounded-full text-slate-400 transition-all",
+                    menuOpen ? "bg-white/10 text-white" : "hover:bg-white/5 hover:text-white active:scale-95"
+                  )}
                 >
-                  <MoreVertical size={20} />
+                  <MoreVertical size={24} />
                 </button>
 
                 {menuOpen && (
@@ -549,20 +554,6 @@ export default function RadioPlayer() {
                     >
                       <Server size={20} />
                       Sources
-                    </button>
-                    <button
-                      onClick={() => { 
-                        if (recording) stopRecording(); 
-                        else startRecording(); 
-                        setMenuOpen(false); 
-                      }}
-                      className={cn(
-                        "flex w-full items-center gap-3.5 px-3.5 py-3 text-sm font-bold transition-colors hover:bg-white/7",
-                        recording ? "text-red-400" : "text-indigo-100"
-                      )}
-                    >
-                      <Mic size={20} />
-                      {recording ? `Stop (${fmt(recSeconds)})` : "Record"}
                     </button>
                     <button
                       onClick={() => { setSheet("record"); setMenuOpen(false); }}
@@ -589,48 +580,67 @@ export default function RadioPlayer() {
                 )}
               </div>
 
-              <button
-                onClick={() =>
-                  switchStream(
-                    (streamIdx - 1 + STREAMS.length) % STREAMS.length
-                  )
-                }
-                className="text-blue-400/80 transition-colors hover:text-blue-300 active:scale-95 shrink-0"
-              >
-                <SkipBack size={32} fill="currentColor" />
-              </button>
+              {/* Center: Playback Controls */}
+              <div className="flex items-center justify-center gap-4 sm:gap-6 shrink-0 relative z-10 w-full max-w-[200px]">
+                <button
+                  onClick={() =>
+                    switchStream(
+                      (streamIdx - 1 + STREAMS.length) % STREAMS.length
+                    )
+                  }
+                  className="text-blue-400/80 transition-colors hover:text-blue-300 active:scale-95 shrink-0"
+                >
+                  <SkipBack size={32} fill="currentColor" />
+                </button>
 
-              <button
-                onClick={togglePlay}
-                disabled={loading}
-                className={cn(
-                  "grid h-24 w-24 shrink-0 aspect-square place-items-center rounded-full border-none bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg transition-all duration-300",
-                  playing
-                    ? "shadow-[0_0_0_8px_rgba(0,140,255,0.2),0_12px_40px_rgba(0,140,255,0.5)]"
-                    : "shadow-[0_10px_36px_rgba(0,100,255,0.4)]",
-                  loading ? "opacity-70" : "hover:scale-105 active:scale-95"
-                )}
-              >
-                {loading ? (
-                  <Loader2 size={44} className="animate-spin text-white" />
-                ) : playing ? (
-                  <Pause size={46} fill="white" color="white" />
-                ) : (
-                  <Play
-                    size={46}
-                    fill="white"
-                    color="white"
-                    className="ml-1.5"
-                  />
-                )}
-              </button>
+                <button
+                  onClick={togglePlay}
+                  disabled={loading}
+                  className={cn(
+                    "grid h-[80px] w-[80px] sm:h-[88px] sm:w-[88px] shrink-0 aspect-square place-items-center rounded-full border-none bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg transition-all duration-300",
+                    playing
+                      ? "shadow-[0_0_0_6px_rgba(0,140,255,0.2),0_12px_40px_rgba(0,140,255,0.5)]"
+                      : "shadow-[0_10px_36px_rgba(0,100,255,0.4)]",
+                    loading ? "opacity-70" : "hover:scale-105 active:scale-95"
+                  )}
+                >
+                  {loading ? (
+                    <Loader2 size={36} className="animate-spin text-white" />
+                  ) : playing ? (
+                    <Pause size={38} sm={{size: 42}} fill="white" color="white" />
+                  ) : (
+                    <Play
+                      size={38}
+                      sm={{size: 42}}
+                      fill="white"
+                      color="white"
+                      className="ml-1.5"
+                    />
+                  )}
+                </button>
 
-              <button
-                onClick={() => switchStream((streamIdx + 1) % STREAMS.length)}
-                className="text-blue-400/80 transition-colors hover:text-blue-300 active:scale-95 shrink-0"
-              >
-                <SkipForward size={32} fill="currentColor" />
-              </button>
+                <button
+                  onClick={() => switchStream((streamIdx + 1) % STREAMS.length)}
+                  className="text-blue-400/80 transition-colors hover:text-blue-300 active:scale-95 shrink-0"
+                >
+                  <SkipForward size={32} fill="currentColor" />
+                </button>
+              </div>
+
+              {/* Right Side: Record Button */}
+              <div className="shrink-0 flex items-center justify-end w-14">
+                <button
+                  onClick={recording ? stopRecording : startRecording}
+                  className={cn(
+                    "grid h-12 w-12 place-items-center rounded-full transition-all text-slate-400",
+                    recording 
+                      ? "bg-red-500/10 text-red-500 animate-pulse outline outline-1 outline-red-500/30" 
+                      : "hover:bg-white/5 hover:text-white active:scale-95"
+                  )}
+                >
+                  <Mic size={24} className={recording ? "animate-bounce shadow-[0_0_15px_rgba(239,68,68,0.3)]" : ""} />
+                </button>
+              </div>
             </div>
 
             {/* Volume */}
