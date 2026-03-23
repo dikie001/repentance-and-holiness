@@ -110,73 +110,23 @@ function SegmentedEQ({ analyserRef, playing }: {
   return <canvas ref={canvasRef} width={EQ_W} height={EQ_H} className="mx-auto block h-auto w-full bg-transparent" />
 }
 
-/* ── Recording type ────────────────────────────────────────── */
-interface Recording { url: string; name: string; dur: number }
 
 /* ── Main component ────────────────────────────────────────── */
 export default function RadioPlayer() {
   // Pull shared state from context
   const {
-    playing, loading, error: ctxError,
+    playing, loading,
     streamIdx, volume, muted,
     listeners, analyserRef,
     togglePlay, switchStream,
     setVolume, setMuted,
+    // Global recording state
+    recording, recordings,
+    startRecording, stopRecording, deleteRecording,
   } = useRadio()
 
-  // Local-only state
-  const [recordings, setRecordings] = useState<Recording[]>([])
-  const [recording,  setRecording]  = useState(false)
   const [sheet,      setSheet]      = useState<"sources" | "record" | "info" | null>(null)
   const [menuOpen,   setMenuOpen]   = useState(false)
-
-  const recRef      = useRef<MediaRecorder | null>(null)
-  const recChunks   = useRef<Blob[]>([])
-  const recTimer    = useRef<number | null>(null)
-  const recDuration = useRef(0)
-
-  const startRecording = useCallback(async () => {
-    try {
-      // We need a MediaStream from the analyser. Build one from a destination node.
-      if (!analyserRef.current) { setLocalError("Start radio first"); return }
-      const ctx = analyserRef.current.context
-      const dest = ctx.createMediaStreamDestination()
-      analyserRef.current.connect(dest)
-
-      recChunks.current = []
-      recDuration.current = 0
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : "audio/webm"
-      const recorder = new MediaRecorder(dest.stream, { mimeType })
-      recorder.ondataavailable = (e) => { if (e.data.size > 0) recChunks.current.push(e.data) }
-      recorder.onstop = () => {
-        const blob = new Blob(recChunks.current, { type: "audio/webm" })
-        setRecordings(prev => [{ url: URL.createObjectURL(blob), name: `Clip ${new Date().toLocaleTimeString([], { hour12: false })}`, dur: recDuration.current }, ...prev])
-      }
-      recorder.start(1000)
-      recRef.current = recorder
-      setRecording(true)
-      toast.custom(() => <RadioToast message="Recording started" />)
-      recTimer.current = window.setInterval(() => { recDuration.current++ }, 1000)
-    } catch (err) {
-      toast.custom(() => <RadioToast message="Failed to start recording" variant="danger" />, { position: "top-center" })
-    }
-  }, [analyserRef])
-
-  const stopRecording = useCallback(() => {
-    recRef.current?.stop()
-    if (recTimer.current) clearInterval(recTimer.current)
-    setRecording(false)
-    toast.custom(() => <RadioToast message="Recording saved to Clips" />)
-  }, [])
-
-  const deleteRec = (index: number) => {
-    setRecordings(prev => {
-      const next = [...prev]
-      URL.revokeObjectURL(next[index].url)
-      next.splice(index, 1)
-      return next
-    })
-  }
 
   const share = useCallback(async () => {
     const data = { title: "Jesus Is Lord Radio", url: STREAMS[streamIdx].url }
@@ -342,7 +292,7 @@ export default function RadioPlayer() {
                     className="grid place-items-center rounded-lg bg-cyan-900/12 p-2.5 text-cyan-400 hover:bg-cyan-900/20 transition-colors">
                     <Download size={18} />
                   </a>
-                  <button onClick={() => deleteRec(idx)}
+                   <button onClick={() => deleteRecording(idx)}
                     className="grid place-items-center rounded-lg bg-red-900/12 p-2.5 text-red-400 hover:bg-red-900/20 transition-colors">
                     <Trash2 size={18} />
                   </button>

@@ -4,15 +4,21 @@
  */
 import { Link } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { Play, Pause, Loader2, VolumeX, Volume2, X } from "lucide-react"
+import { Play, Pause, Loader2, VolumeX, Volume2, X, Square } from "lucide-react"
 import { useRadio } from "@/context/RadioContext"
 import { useState } from "react"
 
 export function MiniPlayer() {
-  const { playing, loading, togglePlay, muted, setMuted, volume, error } = useRadio()
+  const { 
+    playing, loading, togglePlay, muted, setMuted, volume, error,
+    recording, stopRecording, recDuration 
+  } = useRadio()
   const [dismissed, setDismissed] = useState(false)
 
-  const visible = !dismissed && (playing || loading || !!error)
+  const visible = !dismissed && (playing || loading || !!error || recording)
+
+  const fmt = (s: number) =>
+    `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`
 
   return (
     <AnimatePresence>
@@ -50,7 +56,15 @@ export function MiniPlayer() {
                 style={{ color: "var(--app-text)" }}>
                 Jesus Is Lord Radio
               </Link>
-              <p className="text-[10px]" style={{ color: "var(--app-text-muted)" }}>105.3 · 105.9 FM</p>
+              <p className="text-[10px]" style={{ color: "var(--app-text-muted)" }}>
+                {recording ? (
+                  <span className="flex items-center gap-1 font-bold text-red-500 animate-pulse">
+                    RECORDING {fmt(recDuration)}
+                  </span>
+                ) : (
+                  "105.3 · 105.9 FM"
+                )}
+              </p>
             </div>
 
             {/* Mute */}
@@ -61,13 +75,21 @@ export function MiniPlayer() {
             </button>
 
             {/* Play/Pause */}
-            <button onClick={togglePlay} disabled={loading}
-              className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-500/25 transition-transform active:scale-90 disabled:opacity-60">
-              {loading
-                ? <Loader2 size={16} className="animate-spin text-white" />
-                : playing ? <Pause size={16} className="text-white" />
-                  : <Play size={16} className="ml-0.5 text-white" />}
-            </button>
+            <div className="flex items-center gap-2 relative z-10">
+              {recording && (
+                <button onClick={stopRecording}
+                  className="grid h-9 w-9 place-items-center rounded-full bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 transition-all active:scale-90">
+                  <Square size={16} fill="currentColor" />
+                </button>
+              )}
+              <button onClick={togglePlay} disabled={loading}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-500/25 transition-transform active:scale-90 disabled:opacity-60">
+                {loading
+                  ? <Loader2 size={16} className="animate-spin text-white" />
+                  : playing ? <Pause size={16} className="text-white" />
+                    : <Play size={16} className="ml-0.5 text-white" />}
+              </button>
+            </div>
 
             {/* Dismiss */}
             <button onClick={() => setDismissed(true)}

@@ -31,6 +31,8 @@ export const STREAMS = [
   { id: "backup-3", label: "Backup 3",    sub: "Streema",   url: "https://s3.radio.co/s97f38db97/listen" },
 ]
 
+export interface Recording { url: string; name: string; dur: number }
+
 interface RadioState {
   playing: boolean
   loading: boolean
@@ -40,10 +42,18 @@ interface RadioState {
   muted: boolean
   listeners: number
   analyserRef: React.MutableRefObject<AnalyserNode | null>
+  // Recording state
+  recording: boolean
+  recordings: Recording[]
+  recDuration: number
+  // Methods
   togglePlay: () => void
   switchStream: (idx: number, auto?: boolean) => void
   setVolume: (v: number) => void
   setMuted: (m: boolean) => void
+  startRecording: () => Promise<void>
+  stopRecording: () => void
+  deleteRecording: (idx: number) => void
 }
 
 const RadioContext = createContext<RadioState | null>(null)
@@ -56,12 +66,23 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const [volume, setVolumeState]  = useState(82)
   const [muted, setMutedState]    = useState(false)
   const [listeners, setListeners] = useState(48)
+  
+  // Recording State
+  const [recording, setRecording]   = useState(false)
+  const [recordings, setRecordings] = useState<Recording[]>([])
+  const [recDuration, setRecDuration] = useState(0)
 
   const audioRef    = useRef<HTMLAudioElement | null>(null)
   const ctxRef      = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const gainRef     = useRef<GainNode | null>(null)
   const srcRef      = useRef<MediaElementAudioSourceNode | null>(null)
+  
+  // Recording Refs
+  const recRef      = useRef<MediaRecorder | null>(null)
+  const recChunks   = useRef<Blob[]>([])
+  const recTimer    = useRef<number | null>(null)
+  const recDurationRef = useRef(0)
 
   const streamIdxRef = useRef(streamIdx)
   const failedAttemptsRef = useRef(0)
@@ -91,7 +112,11 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     a.volume = volume / 100
     a.load()
 
-    return () => { a.pause(); a.src = "" }
+    return () => { 
+      a.pause(); 
+      a.src = "";
+      if (recTimer.current) clearInterval(recTimer.current);
+    }
   }, [])
 
   /* ── Fake listeners count ─── */
@@ -221,10 +246,84 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const setVolume = useCallback((v: number) => setVolumeState(v), [])
   const setMuted  = useCallback((m: boolean) => setMutedState(m), [])
 
+  const startRecording = useCallback(async () => {
+    try {
+      if (!analyserRef.current) {
+        toast.custom(() => <RadioToast message="Start radio first" variant="danger" />, { position: "top-center" })
+        return
+      }
+      
+      const ctx = analyserRef.current.context as AudioContext
+      const dest = ctx.createMediaStreamDestination()
+      analyserRef.current.connect(dest)
+
+      recChunks.current = []
+      recDurationRef.current = 0
+      setRecDuration(0)
+      
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : "audio/webm"
+      const recorder = new MediaRecorder(dest.stream, { mimeType })
+      
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) recChunks.current.push(e.data)
+      }
+      
+      recorder.onstop = () => {
+        const blob = new Blob(recChunks.current, { type: "audio/webm" })
+        setRecordings(prev => [
+          { 
+            url: URL.createObjectURL(blob), 
+            name: `Clip ${new Date().toLocaleTimeString([], { hour12: false })}`, 
+            dur: recDurationRef.current 
+          }, 
+          ...prev
+        ])
+      }
+
+      recorder.start(1000)
+      recRef.current = recorder
+      setRecording(true)
+      
+      toast.custom(() => <RadioToast message="Recording started" />)
+      
+      recTimer.current = window.setInterval(() => {
+        recDurationRef.current++
+        setRecDuration(recDurationRef.current)
+      }, 1000)
+    } catch {
+      toast.custom(() => <RadioToast message="Failed to start recording" variant="danger" />, { position: "top-center" })
+    }
+  }, [])
+
+  const stopRecording = useCallback(() => {
+    if (recRef.current && recRef.current.state !== "inactive") {
+      recRef.current.stop()
+    }
+    if (recTimer.current) {
+      clearInterval(recTimer.current)
+      recTimer.current = null
+    }
+    setRecording(false)
+    toast.custom(() => <RadioToast message="Recording saved to Clips" />)
+  }, [])
+
+  const deleteRecording = useCallback((idx: number) => {
+    setRecordings(prev => {
+      const next = [...prev]
+      if (next[idx]) {
+        URL.revokeObjectURL(next[idx].url)
+        next.splice(idx, 1)
+      }
+      return next
+    })
+  }, [])
+
   return (
     <RadioContext.Provider value={{
       playing, loading, error, streamIdx, volume, muted, listeners,
       analyserRef, togglePlay, switchStream, setVolume, setMuted,
+      recording, recordings, recDuration,
+      startRecording, stopRecording, deleteRecording,
     }}>
       {children}
     </RadioContext.Provider>
