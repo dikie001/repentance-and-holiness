@@ -68,38 +68,44 @@ export default function TeachingsPage() {
         {/* Search & Filter */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600" />
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "var(--app-text-muted)" }} />
             <input
               type="text" placeholder="Search teachings..."
               value={search} onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-white/8 bg-white/4 py-2.5 pl-9 pr-4 text-sm text-white placeholder-slate-600 outline-none focus:border-indigo-500/40 transition-colors"
+              className="w-full rounded-xl border py-2.5 pl-9 pr-4 text-sm outline-none transition-colors"
+              style={{ background: "var(--app-card)", borderColor: "var(--app-border)", color: "var(--app-text)" }}
             />
           </div>
-          <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/8 bg-white/4 text-slate-400 hover:text-white transition-colors">
+          <button className="flex h-10 w-10 items-center justify-center rounded-xl border transition-colors shadow-sm"
+            style={{ background: "var(--app-card)", borderColor: "var(--app-border)", color: "var(--app-text-muted)" }}>
             <Filter size={16} />
           </button>
         </div>
 
         {/* Speaker filter */}
         <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-          {FILTERS.map(f => (
-            <button key={f} onClick={() => setActiveFilter(f)}
-              className={`shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-black transition-all ${
-                activeFilter === f
-                  ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-500/20"
-                  : "border border-white/8 bg-white/3 text-slate-400 hover:text-white"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
+          {FILTERS.map(f => {
+            const isActive = activeFilter === f
+            return (
+              <button key={f} onClick={() => setActiveFilter(f)}
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-black transition-all border ${
+                  isActive
+                    ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-500/20 border-transparent"
+                    : ""
+                }`}
+                style={!isActive ? { background: "var(--app-card)", borderColor: "var(--app-border)", color: "var(--app-text-muted)" } : {}}
+              >
+                {f}
+              </button>
+            )
+          })}
         </div>
 
         {/* Series */}
         <div>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-black text-white">Teaching Series</h2>
-            <button className="flex items-center gap-0.5 text-[11px] font-bold text-cyan-400">
+            <h2 className="text-sm font-black" style={{ color: "var(--app-text)" }}>Teaching Series</h2>
+            <button className="flex items-center gap-0.5 text-[11px] font-bold text-cyan-500">
               See all <ChevronRight size={12} />
             </button>
           </div>
@@ -110,17 +116,17 @@ export default function TeachingsPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.08 }}
                 whileHover={{ scale: 1.02 }}
-                className={`shrink-0 w-64 rounded-2xl bg-gradient-to-br ${s.gradient} border border-white/5 p-4`}
+                className={`shrink-0 w-64 rounded-2xl bg-gradient-to-br ${s.gradient} shadow-md p-4`}
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="rounded-full border border-white/10 bg-white/10 px-2.5 py-0.5 text-[10px] font-black text-white">
+                  <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-black text-white mix-blend-overlay">
                     {s.count} parts
                   </span>
-                  <Play size={13} className="text-white/50" />
+                  <Play size={14} className="text-white mix-blend-overlay" />
                 </div>
-                <h3 className="mb-1 text-sm font-black text-white">{s.title}</h3>
-                <p className="mb-2 line-clamp-2 text-[10px] leading-relaxed text-white/50">{s.desc}</p>
-                <p className="text-[10px] font-bold text-white/60">{s.speaker}</p>
+                <h3 className="mb-1 text-[15px] font-black text-white">{s.title}</h3>
+                <p className="mb-2 line-clamp-2 text-[11px] leading-relaxed text-white/70 font-medium">{s.desc}</p>
+                <p className="text-[10px] font-bold text-white/50">{s.speaker}</p>
               </motion.div>
             ))}
           </div>
@@ -128,7 +134,7 @@ export default function TeachingsPage() {
 
         {/* All Teachings */}
         <div>
-          <h2 className="mb-3 text-sm font-black text-white">All Teachings</h2>
+          <h2 className="mb-3 text-sm font-black" style={{ color: "var(--app-text)" }}>All Teachings</h2>
           <div className="space-y-2">
             {filtered.map((t, i) => {
               const isSaved = saved.has(t.id)

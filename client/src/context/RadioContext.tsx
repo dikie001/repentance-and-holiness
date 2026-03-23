@@ -131,7 +131,9 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     a.load()
     try { ensureCtx() } catch { /* */ }
     a.play().catch(() => setError("Tap play to start"))
-    toast.success(`Switched to ${STREAMS[idx].label}`)
+    toast.success(`Switched to ${STREAMS[idx].label}`, {
+      icon: <img src="/images/radio-logo.png" alt="" className="w-5 h-5 rounded-full object-cover shadow border border-white/20" />
+    })
   }, [ensureCtx])
 
   const setVolume = useCallback((v: number) => setVolumeState(v), [])

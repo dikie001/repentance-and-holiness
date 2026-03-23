@@ -87,11 +87,13 @@ function UploadModal({ tab, onClose }: UploadModalProps) {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 40 }}
-        className="w-full max-w-lg rounded-3xl border border-white/8 bg-[#0d0d1a] p-6 shadow-2xl"
+        className="w-full max-w-lg rounded-3xl border p-6 shadow-2xl"
+        style={{ background: "var(--app-surface)", borderColor: "var(--app-border)" }}
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-black text-white">Add New {tab.charAt(0).toUpperCase() + tab.slice(1, -1)}</h2>
-          <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full bg-white/8 text-slate-400 hover:text-white transition-colors">
+          <h2 className="text-lg font-black" style={{ color: "var(--app-text)" }}>Add New {tab.charAt(0).toUpperCase() + tab.slice(1, -1)}</h2>
+          <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full transition-colors border shadow-sm"
+            style={{ background: "var(--app-card)", borderColor: "var(--app-border)", color: "var(--app-text-muted)" }}>
             <X size={18} />
           </button>
         </div>
@@ -102,18 +104,19 @@ function UploadModal({ tab, onClose }: UploadModalProps) {
           onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
           onDragLeave={() => setDragging(false)}
           onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f) }}
-          className={`mb-4 flex flex-col items-center justify-center gap-3 cursor-pointer rounded-2xl border-2 border-dashed p-8 transition-all ${dragging ? "border-cyan-400 bg-cyan-400/5" : "border-white/10 hover:border-white/20 bg-white/2"}`}
+          className={`mb-4 flex flex-col items-center justify-center gap-3 cursor-pointer rounded-2xl border-2 border-dashed p-8 transition-all ${dragging ? "border-cyan-400 bg-cyan-400/5" : ""}`}
+          style={!dragging ? { borderColor: "var(--app-border)", background: "var(--app-card)" } : {}}
         >
           <input ref={fileRef} type="file" accept={accept[tab]} className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-500/20">
             <Upload size={22} className="text-white" />
           </div>
           {fileName ? (
             <p className="text-sm font-semibold text-cyan-400">{fileName}</p>
           ) : (
             <>
-              <p className="text-sm font-semibold text-slate-300">Drop file here or click to browse</p>
-              <p className="text-xs text-slate-600">{tab === "gallery" ? "Images: JPG, PNG, WebP" : "Audio/Video: MP3, MP4, WebM"}</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--app-text)" }}>Drop file here or click to browse</p>
+              <p className="text-xs" style={{ color: "var(--app-text-muted)" }}>{tab === "gallery" ? "Images: JPG, PNG, WebP" : "Audio/Video: MP3, MP4, WebM"}</p>
             </>
           )}
         </div>
@@ -125,19 +128,22 @@ function UploadModal({ tab, onClose }: UploadModalProps) {
             placeholder="Title *"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full rounded-xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-cyan-500/50 transition-colors"
+            className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-colors"
+            style={{ background: "var(--app-card)", borderColor: "var(--app-border)", color: "var(--app-text)" }}
           />
           <textarea
             placeholder="Description (optional)"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            className="w-full resize-none rounded-xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-cyan-500/50 transition-colors"
+            className="w-full resize-none rounded-xl border px-4 py-3 text-sm outline-none transition-colors"
+            style={{ background: "var(--app-card)", borderColor: "var(--app-border)", color: "var(--app-text)" }}
           />
         </div>
 
         <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 rounded-xl border border-white/8 bg-white/4 py-3 text-sm font-bold text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="flex-1 rounded-xl border py-3 text-sm font-bold transition-colors"
+            style={{ background: "var(--app-card)", borderColor: "var(--app-border)", color: "var(--app-text-muted)" }}>
             Cancel
           </button>
           <motion.button
@@ -157,34 +163,35 @@ function SongCard({ s, i }: { s: (typeof SONGS)[0]; i: number }) {
   const [liked, setLiked] = useState(false)
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: i * 0.05 }}
-      className="flex items-center gap-3 rounded-2xl border border-white/5 bg-white/3 p-3 hover:bg-white/5 transition-colors"
-    >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500">
-        <Music2 size={16} className="text-white" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-white">{s.title}</p>
-        <p className="text-[11px] text-slate-500">{s.artist}</p>
-      </div>
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        <span className="text-[10px] text-slate-500">{s.plays} plays</span>
-        <span className="flex items-center gap-1 text-[10px] text-slate-600"><Clock size={9} />{s.duration}</span>
-      </div>
-      <div className="flex gap-1.5 ml-1">
-        <button onClick={() => setLiked(!liked)} className={`p-1.5 rounded-lg transition-colors ${liked ? "text-red-400" : "text-slate-600 hover:text-white"}`}>
-          <Heart size={13} fill={liked ? "currentColor" : "none"} />
-        </button>
-        <button className="p-1.5 rounded-lg text-slate-600 hover:text-cyan-400 transition-colors">
-          <Play size={13} />
-        </button>
-        <button className="p-1.5 rounded-lg text-slate-600 hover:text-white transition-colors">
-          <MoreVertical size={13} />
-        </button>
-      </div>
-    </motion.div>
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: i * 0.05 }}
+        className="flex items-center gap-4 rounded-2xl border p-3.5 transition-colors shadow-sm"
+        style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}
+      >
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 shadow-md shadow-blue-500/20">
+          <Music2 size={18} className="text-white" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[15px] font-semibold" style={{ color: "var(--app-text)" }}>{s.title}</p>
+          <p className="text-[11px] font-medium mt-0.5" style={{ color: "var(--app-text-muted)" }}>{s.artist}</p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1.5 hidden xs:flex">
+          <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: "var(--app-text-muted)" }}>{s.plays} plays</span>
+          <span className="flex items-center gap-1 text-[10px] font-medium" style={{ color: "var(--app-text-faint)" }}><Clock size={10} />{s.duration}</span>
+        </div>
+        <div className="flex items-center gap-1 ml-1 sm:ml-4">
+          <button onClick={() => setLiked(!liked)} className={`p-2 rounded-xl transition-colors ${liked ? "text-red-400 bg-red-400/10" : "hover:bg-black/5 dark:hover:bg-white/5"}`} style={!liked ? { color: "var(--app-text-muted)" } : {}}>
+            <Heart size={14} fill={liked ? "currentColor" : "none"} />
+          </button>
+          <button className="p-2 rounded-xl hover:text-cyan-400 hover:bg-cyan-400/10 transition-colors" style={{ color: "var(--app-text-muted)" }}>
+            <Play size={14} />
+          </button>
+          <button className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors" style={{ color: "var(--app-text-muted)" }}>
+            <MoreVertical size={14} />
+          </button>
+        </div>
+      </motion.div>
   )
 }
 
@@ -194,22 +201,24 @@ function VideoCard({ v, i }: { v: (typeof VIDEOS)[0]; i: number }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: i * 0.05 }}
-      className="rounded-2xl border border-white/5 bg-white/3 overflow-hidden"
+      className="rounded-2xl border overflow-hidden shadow-sm"
+      style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}
     >
-      <div className="relative aspect-video bg-gradient-to-br from-blue-900/40 to-indigo-900/40 flex items-center justify-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 backdrop-blur">
-          <Play size={20} className="text-white ml-0.5" />
+      <div className="relative aspect-video bg-gradient-to-br from-blue-900/50 to-indigo-900/50 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-black/10 mix-blend-overlay" />
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-md shadow-lg shadow-black/20 z-10 hover:scale-105 active:scale-95 transition-transform cursor-pointer">
+          <Play size={22} className="text-white ml-1" />
         </div>
-        <span className="absolute bottom-2 right-2 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white">{v.duration}</span>
+        <span className="absolute bottom-2 right-2 rounded-md bg-black/70 backdrop-blur-md px-2 py-1 text-[10px] font-bold text-white z-10">{v.duration}</span>
       </div>
-      <div className="p-3">
-        <p className="mb-1 text-sm font-semibold text-white leading-snug">{v.title}</p>
-        <p className="text-[11px] text-slate-500">{v.speaker}</p>
-        <div className="mt-2 flex items-center justify-between">
-          <span className="flex items-center gap-1 text-[10px] text-slate-600"><Eye size={9} />{v.views}</span>
-          <div className="flex gap-2">
-            <button className="text-slate-600 hover:text-white transition-colors"><Share2 size={13} /></button>
-            <button className="text-slate-600 hover:text-cyan-400 transition-colors"><Download size={13} /></button>
+      <div className="p-4">
+        <p className="mb-1 text-[15px] font-semibold leading-snug" style={{ color: "var(--app-text)" }}>{v.title}</p>
+        <p className="text-[11px] font-medium" style={{ color: "var(--app-text-muted)" }}>{v.speaker}</p>
+        <div className="mt-3 pt-3 flex items-center justify-between border-t" style={{ borderColor: "var(--app-border)" }}>
+          <span className="flex items-center gap-1.5 text-[11px] font-bold tracking-wide uppercase" style={{ color: "var(--app-text-faint)" }}><Eye size={12} />{v.views}</span>
+          <div className="flex gap-1">
+            <button className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors" style={{ color: "var(--app-text-muted)" }}><Share2 size={14} /></button>
+            <button className="p-1.5 rounded-lg hover:text-cyan-500 hover:bg-cyan-500/10 transition-colors" style={{ color: "var(--app-text-muted)" }}><Download size={14} /></button>
           </div>
         </div>
       </div>
@@ -224,25 +233,26 @@ function TeachingCard({ t, i }: { t: (typeof TEACHINGS)[0]; i: number }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: i * 0.05 }}
-      className="flex items-center gap-3 rounded-2xl border border-white/5 bg-white/3 p-3 hover:bg-white/5 transition-colors"
+      className="flex items-center gap-4 rounded-2xl border p-3.5 transition-colors shadow-sm"
+      style={{ background: "var(--app-card)", borderColor: "var(--app-border)" }}
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-blue-700">
-        <BookOpen size={16} className="text-white" />
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-blue-700 shadow-md shadow-indigo-500/20">
+        <BookOpen size={18} className="text-white" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-white">{t.title}</p>
-        <p className="text-[11px] text-slate-500">{t.speaker}</p>
+        <p className="truncate text-[15px] font-semibold" style={{ color: "var(--app-text)" }}>{t.title}</p>
+        <p className="text-[11px] mt-0.5" style={{ color: "var(--app-text-muted)" }}>{t.speaker}</p>
       </div>
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        <span className="flex items-center gap-1 text-[10px] text-slate-500"><Eye size={9} />{t.views}</span>
-        <span className="flex items-center gap-1 text-[10px] text-slate-600"><Clock size={9} />{t.duration}</span>
+      <div className="flex shrink-0 flex-col items-end gap-1.5 hidden xs:flex">
+        <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--app-text-muted)" }}><Eye size={10} />{t.views}</span>
+        <span className="flex items-center gap-1 text-[10px] font-medium" style={{ color: "var(--app-text-faint)" }}><Clock size={10} />{t.duration}</span>
       </div>
-      <div className="flex gap-1.5 ml-1">
-        <button onClick={() => setLiked(!liked)} className={`p-1.5 rounded-lg transition-colors ${liked ? "text-red-400" : "text-slate-600 hover:text-white"}`}>
-          <Heart size={13} fill={liked ? "currentColor" : "none"} />
+      <div className="flex items-center gap-1 ml-1 sm:ml-4">
+        <button onClick={() => setLiked(!liked)} className={`p-2 rounded-xl transition-colors ${liked ? "text-red-400 bg-red-400/10" : "hover:bg-black/5 dark:hover:bg-white/5"}`} style={!liked ? { color: "var(--app-text-muted)" } : {}}>
+          <Heart size={14} fill={liked ? "currentColor" : "none"} />
         </button>
-        <button className="p-1.5 rounded-lg text-slate-600 hover:text-cyan-400 transition-colors">
-          <Play size={13} />
+        <button className="p-2 rounded-xl hover:text-cyan-500 hover:bg-cyan-500/10 transition-colors" style={{ color: "var(--app-text-muted)" }}>
+          <Play size={14} />
         </button>
       </div>
     </motion.div>
@@ -256,14 +266,14 @@ function GalleryCard({ g, i }: { g: (typeof GALLERY_ITEMS)[0]; i: number }) {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: i * 0.06 }}
       whileHover={{ scale: 1.02 }}
-      className={`relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br ${GALLERY_GRADS[i % GALLERY_GRADS.length]} cursor-pointer border border-white/5`}
+      className={`relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br ${GALLERY_GRADS[i % GALLERY_GRADS.length]} cursor-pointer shadow-md`}
     >
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-        <ImageIcon size={28} className="text-white/30" />
+        <ImageIcon size={32} className="text-white/20" />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent flex flex-col justify-end p-3">
-        <p className="text-xs font-bold text-white">{g.title}</p>
-        <p className="text-[10px] text-slate-400">{g.count} photos · {g.date}</p>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4">
+        <p className="text-sm font-bold text-white mb-0.5">{g.title}</p>
+        <p className="text-[11px] font-medium text-white/60">{g.count} photos · {g.date}</p>
       </div>
     </motion.div>
   )
@@ -286,8 +296,8 @@ export default function MediaPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-black text-white">Media Library</h1>
-            <p className="text-xs text-slate-500">13,000+ spirit-filled resources</p>
+            <h1 className="text-xl font-black tracking-tight" style={{ color: "var(--app-text)" }}>Media Library</h1>
+            <p className="text-xs font-medium" style={{ color: "var(--app-text-muted)" }}>13,000+ spirit-filled resources</p>
           </div>
           <motion.button
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}
@@ -301,37 +311,43 @@ export default function MediaPage() {
         {/* Search */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600" />
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "var(--app-text-muted)" }} />
             <input
               type="text"
               placeholder="Search media..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-white/8 bg-white/4 py-2.5 pl-9 pr-4 text-sm text-white placeholder-slate-600 outline-none focus:border-cyan-500/40 transition-colors"
+              className="w-full rounded-xl border py-2.5 pl-9 pr-4 text-sm outline-none transition-colors"
+              style={{ background: "var(--app-card)", borderColor: "var(--app-border)", color: "var(--app-text)" }}
             />
           </div>
-          <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/8 bg-white/4 text-slate-400 hover:text-white transition-colors">
+          <button className="flex h-10 w-10 items-center justify-center rounded-xl border transition-colors shadow-sm"
+            style={{ background: "var(--app-card)", borderColor: "var(--app-border)", color: "var(--app-text-muted)" }}>
             <Filter size={16} />
           </button>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-          {TABS.map((tab) => (
-            <motion.button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              whileTap={{ scale: 0.97 }}
-              className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-black transition-all ${
-                activeTab === tab.id
-                  ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/20"
-                  : "border border-white/8 bg-white/3 text-slate-400 hover:text-white"
-              }`}
-            >
-              <tab.icon size={14} />
-              {tab.label}
-            </motion.button>
-          ))}
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id
+            return (
+              <motion.button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                whileTap={{ scale: 0.97 }}
+                className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-black transition-all border ${
+                  isActive
+                    ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/20 border-transparent"
+                    : ""
+                }`}
+                style={!isActive ? { background: "var(--app-card)", borderColor: "var(--app-border)", color: "var(--app-text-muted)" } : {}}
+              >
+                <tab.icon size={14} />
+                {tab.label}
+              </motion.button>
+            )
+          })}
         </div>
 
         {/* Tab content */}

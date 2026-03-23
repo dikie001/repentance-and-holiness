@@ -30,11 +30,13 @@ function Sheet({ open, onClose, title, children }: {
   return (
     <div onClick={(e) => e.target === e.currentTarget && onClose()}
       className="fixed inset-0 z-[200] flex items-end bg-black/70 backdrop-blur-lg">
-      <div className="max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-t-[28px] border border-b-0 border-white/7 bg-[#0d0d1a] shadow-2xl">
+      <div className="max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-t-[28px] border border-b-0 shadow-2xl"
+           style={{ background: "var(--app-surface)", borderColor: "var(--app-border)" }}>
         <div className="mx-auto mt-4.5 h-1.5 w-11 rounded-full bg-neutral-700" />
         <div className="flex items-center justify-between px-6 pt-4 pb-2">
-          <span className="text-xl font-extrabold text-white">{title}</span>
-          <button onClick={onClose} className="grid h-10 w-10 place-items-center rounded-full bg-white/8 text-neutral-400 hover:bg-white/12 transition-colors">
+          <span className="text-xl font-extrabold" style={{ color: "var(--app-text)" }}>{title}</span>
+          <button onClick={onClose} className="grid h-10 w-10 place-items-center rounded-full transition-colors border"
+                  style={{ background: "var(--app-card)", borderColor: "var(--app-border)", color: "var(--app-text-muted)" }}>
             <X size={22} />
           </button>
         </div>
@@ -156,12 +158,16 @@ export default function RadioPlayer() {
       recorder.start(1000)
       recRef.current = recorder
       setRecording(true)
-      toast.success("Recording started")
+      toast.success("Recording started", {
+        icon: <img src="/images/radio-logo.png" alt="" className="w-5 h-5 rounded-full object-cover shadow border border-white/20" />
+      })
       recTimer.current = window.setInterval(() => { recDuration.current++ }, 1000)
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error"
       setLocalError(`Recording failed: ${msg}`)
-      toast.error("Failed to start recording")
+      toast.error("Failed to start recording", {
+        icon: <img src="/images/radio-logo.png" alt="" className="w-5 h-5 rounded-full object-cover shadow border border-white/20" />
+      })
     }
   }, [analyserRef])
 
@@ -169,7 +175,9 @@ export default function RadioPlayer() {
     recRef.current?.stop()
     if (recTimer.current) clearInterval(recTimer.current)
     setRecording(false)
-    toast.success("Recording saved to Clips")
+    toast.success("Recording saved to Clips", {
+      icon: <img src="/images/radio-logo.png" alt="" className="w-5 h-5 rounded-full object-cover shadow border border-white/20" />
+    })
   }, [])
 
   const deleteRec = (index: number) => {
@@ -184,7 +192,14 @@ export default function RadioPlayer() {
   const share = useCallback(async () => {
     const data = { title: "Jesus Is Lord Radio", url: STREAMS[streamIdx].url }
     if (navigator.share) { navigator.share(data).catch(() => {}) }
-    else { try { await navigator.clipboard.writeText(data.url); toast.success("Link copied!") } catch { /* */ } }
+    else {
+      try {
+        await navigator.clipboard.writeText(data.url);
+        toast.success("Link copied!", {
+          icon: <img src="/images/radio-logo.png" alt="" className="w-5 h-5 rounded-full object-cover shadow border border-white/20" />
+        })
+      } catch { /* */ }
+    }
   }, [streamIdx])
 
   return (
@@ -312,11 +327,12 @@ export default function RadioPlayer() {
       <Sheet open={sheet === "sources"} onClose={() => setSheet(null)} title="Audio Sources">
         {STREAMS.map((s, i) => (
           <div key={s.id} onClick={() => switchStream(i)}
-            className="flex cursor-pointer items-center gap-4 border-b border-white/6 py-4 hover:bg-white/3 transition-colors">
-            <div className={`h-2.5 w-2.5 rounded-full ${i === streamIdx ? "bg-cyan-400 shadow-[0_0_8px] shadow-cyan-400" : "bg-neutral-700"}`} />
+            className="flex cursor-pointer items-center gap-4 border-b py-4 hover:opacity-80 transition-opacity"
+            style={{ borderColor: "var(--app-border)" }}>
+            <div className={`h-2.5 w-2.5 rounded-full ${i === streamIdx ? "bg-cyan-400 shadow-[0_0_8px] shadow-cyan-400" : "bg-neutral-500"}`} />
             <div className="flex-1">
-              <div className="text-[15px] font-bold text-indigo-100">{s.label}</div>
-              <div className="text-xs text-slate-500">{s.sub}</div>
+              <div className="text-[15px] font-bold" style={{ color: "var(--app-text)" }}>{s.label}</div>
+              <div className="text-xs" style={{ color: "var(--app-text-muted)" }}>{s.sub}</div>
             </div>
             {i === streamIdx && <span className="rounded-full border border-cyan-500/30 bg-cyan-900/15 px-3.5 py-1 text-xs font-extrabold text-cyan-400">ACTIVE</span>}
           </div>
@@ -326,13 +342,13 @@ export default function RadioPlayer() {
       {/* Clips sheet */}
       <Sheet open={sheet === "record"} onClose={() => setSheet(null)} title="Recordings">
         {recordings.length === 0
-          ? <p className="py-10 text-center text-[15px] text-slate-600">No recordings yet. Tap the mic button to record.</p>
+          ? <p className="py-10 text-center text-[15px]" style={{ color: "var(--app-text-muted)" }}>No recordings yet. Tap the mic button to record.</p>
           : recordings.map((r, idx) => (
-            <div key={idx} className="flex flex-col gap-2.5 border-b border-white/6 py-4">
+            <div key={idx} className="flex flex-col gap-2.5 border-b py-4" style={{ borderColor: "var(--app-border)" }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-[15px] font-semibold text-indigo-100">{r.name}</div>
-                  <div className="text-xs text-slate-500">Duration: {fmt(r.dur)}</div>
+                  <div className="text-[15px] font-semibold" style={{ color: "var(--app-text)" }}>{r.name}</div>
+                  <div className="text-xs" style={{ color: "var(--app-text-muted)" }}>Duration: {fmt(r.dur)}</div>
                 </div>
                 <div className="flex gap-2.5">
                   <a href={r.url} download={`${r.name}.webm`}
@@ -352,8 +368,8 @@ export default function RadioPlayer() {
 
       {/* Info sheet */}
       <Sheet open={sheet === "info"} onClose={() => setSheet(null)} title="Station Info">
-        <div className="text-sm leading-relaxed text-slate-400">
-          <p className="mb-4 font-medium text-indigo-200"><strong>Jesus Is Lord Radio</strong> — 24/7 Christian broadcast from Nakuru, Kenya.</p>
+        <div className="text-sm leading-relaxed" style={{ color: "var(--app-text-muted)" }}>
+          <p className="mb-4 font-medium" style={{ color: "var(--app-text)" }}><strong>Jesus Is Lord Radio</strong> — 24/7 Christian broadcast from Nakuru, Kenya.</p>
           {[
             ["Frequencies", "105.3 · 105.9 FM"],
             ["Format", "Christian / Gospel"],
@@ -362,9 +378,9 @@ export default function RadioPlayer() {
             ["Location", "Nakuru, Kenya"],
             ["Listeners", `${listeners} online`],
           ].map(([k, v]) => (
-            <div key={k} className="flex items-center justify-between border-b border-white/5 py-2.5">
+            <div key={k} className="flex items-center justify-between border-b py-2.5" style={{ borderColor: "var(--app-border)" }}>
               <span>{k}</span>
-              <span className="font-bold text-cyan-400">{v}</span>
+              <span className="font-bold text-cyan-500">{v}</span>
             </div>
           ))}
         </div>

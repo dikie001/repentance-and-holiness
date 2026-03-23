@@ -111,7 +111,7 @@ export function MobileBottomNav() {
 
 function SidebarContentInner() {
   const { pathname } = useLocation()
-  const { state } = useSidebar()
+  const { state, setOpenMobile } = useSidebar()
   const collapsed = state === "collapsed"
   const { theme, setTheme } = useTheme()
   const isDark = theme !== "light"
@@ -147,6 +147,7 @@ function SidebarContentInner() {
             return (
               <SidebarMenuItem key={item.url}>
                 <SidebarMenuButton asChild isActive={active} tooltip={item.title}
+                  onClick={() => setOpenMobile(false)}
                   className={cn("h-11 rounded-xl transition-all duration-200 border",
                     active
                       ? "bg-gradient-to-r from-blue-600/20 to-cyan-500/20 text-cyan-400 border-cyan-500/20"
