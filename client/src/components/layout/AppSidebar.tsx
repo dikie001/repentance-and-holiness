@@ -50,14 +50,21 @@ export function GlobalHeader() {
       className="fixed top-0 left-0 right-0 z-40 flex h-16 items-center justify-between px-4 backdrop-blur-xl border-b md:left-[var(--sidebar-width)] transition-all duration-200"
       style={{ background: "var(--app-header-bg)", borderColor: "var(--app-border)" }}
     >
-      <Link to="/" className="flex items-center gap-2.5 group">
-        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg shadow-md group-active:scale-95 transition-transform">
-          <img src="/images/logo.png" alt="JIL Logo" className="h-full w-full object-cover" />
+      <Link to="/" className="flex items-center gap-3 group">
+        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-white/10 shadow-lg group-active:scale-95 transition-all duration-300 ring-1 ring-black/5 dark:ring-white/5 bg-white/5">
+          <img src="/images/logo.png" alt="JIL Logo" className="h-full w-full object-cover transition-transform group-hover:scale-110" />
         </div>
-        <p className="hidden sm:block text-xs sm:text-sm font-black leading-tight uppercase tracking-tight" style={{ color: "var(--app-text)" }}>
-          Repentance &amp; Holiness
-        </p>
+        <div className="flex flex-col justify-center">
+          <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.15em] opacity-60 leading-tight hidden sm:block" style={{ color: "var(--app-text)" }}>
+             Ministry of
+          </p>
+          <p className="text-sm sm:text-base md:text-lg font-black leading-none tracking-tighter uppercase" style={{ color: "var(--app-text)" }}>
+            Repentance <span className="text-cyan-500">&amp;</span> Holiness
+          </p>
+        </div>
+
       </Link>
+
 
       <div className="flex items-center gap-2">
         <button
