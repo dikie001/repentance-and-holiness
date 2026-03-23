@@ -16,13 +16,13 @@ import { Link, useLocation } from "react-router-dom"
 type NavItem = { title: string; url: string; icon: LucideIcon; badge?: string }
 
 const NAV_ITEMS: NavItem[] = [
-  { title: "Home",       url: "/",                     icon: House                        },
-  { title: "Radio",      url: "/jesus-is-lord-radio",  icon: RadioTower, badge: "LIVE"  },
-  { title: "Media",      url: "/media",                icon: Music4                      },
-  { title: "Teachings",  url: "/teachings",            icon: BookOpenText                },
-  { title: "Prophecies", url: "/prophecies",           icon: Flame                       },
-  { title: "Gallery",    url: "/gallery",              icon: ImagePlay                   },
-  { title: "About",      url: "/about",                icon: UsersRound                  },
+  { title: "Home",       url: "/",                    icon: House                       },
+  { title: "Radio",      url: "/jesus-is-lord-radio", icon: RadioTower, badge: "LIVE"  },
+  { title: "Media",      url: "/media",               icon: Music4                     },
+  { title: "Teachings",  url: "/teachings",           icon: BookOpenText               },
+  { title: "Prophecies", url: "/prophecies",          icon: Flame                      },
+  { title: "Gallery",    url: "/gallery",             icon: ImagePlay                  },
+  { title: "About",      url: "/about",               icon: UsersRound                 },
 ]
 
 const MOBILE_ITEMS = NAV_ITEMS.slice(0, 5)
@@ -36,20 +36,7 @@ function LiveDot() {
   )
 }
 
-function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
-  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
-  return (
-    <button
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 text-slate-400 hover:text-white transition-colors border border-white/5"
-      aria-label="Toggle theme"
-    >
-      {isDark ? <Sun size={16} /> : <Moon size={16} />}
-    </button>
-  )
-}
-
+/** Header — no theme toggle here; theme lives in sidebar footer */
 export function GlobalHeader() {
   const { toggleSidebar } = useSidebar()
 
@@ -59,13 +46,12 @@ export function GlobalHeader() {
         <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg shadow-lg shadow-blue-500/20 group-active:scale-95 transition-transform">
           <img src="/images/logo.png" alt="JIL Logo" className="h-full w-full object-cover" />
         </div>
-        <p className="text-xs sm:text-sm font-black text-white leading-tight uppercase tracking-tight hidden sm:block" style={{ fontFamily: "'Cinzel', serif" }}>
+        <p className="hidden sm:block text-xs sm:text-sm font-black text-white leading-tight uppercase tracking-tight" style={{ fontFamily: "'Cinzel', serif" }}>
           Repentance &amp; Holiness
         </p>
       </Link>
 
       <div className="flex items-center gap-2">
-        <ThemeToggle />
         <button className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 text-slate-400 hover:text-white transition-colors border border-white/5">
           <Bell size={16} />
         </button>
@@ -81,6 +67,7 @@ export function GlobalHeader() {
   )
 }
 
+/** Mobile bottom nav */
 export function MobileBottomNav() {
   const { pathname } = useLocation()
 
@@ -89,17 +76,12 @@ export function MobileBottomNav() {
       {MOBILE_ITEMS.map((item) => {
         const active = pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url))
         return (
-          <Link
-            key={item.url}
-            to={item.url}
-            className={cn(
-              "flex flex-col items-center justify-center gap-1 transition-all relative px-3 py-1",
-              active ? "text-cyan-400" : "text-slate-500"
-            )}
+          <Link key={item.url} to={item.url}
+            className={cn("flex flex-col items-center justify-center gap-1 transition-all relative px-3 py-1",
+              active ? "text-cyan-400" : "text-slate-500")}
           >
             <div className="relative">
-              <item.icon
-                size={22}
+              <item.icon size={22}
                 className={cn("transition-all duration-300", active && "scale-110 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]")}
                 strokeWidth={active ? 2.5 : 2}
               />
@@ -107,8 +89,7 @@ export function MobileBottomNav() {
                 <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500 animate-pulse" />
               )}
               {active && (
-                <motion.div
-                  layoutId="bottomNavDot"
+                <motion.div layoutId="bottomNavDot"
                   className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]"
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
@@ -122,12 +103,19 @@ export function MobileBottomNav() {
   )
 }
 
+/** Sidebar inner */
 function SidebarContentInner() {
   const { pathname } = useLocation()
   const { state } = useSidebar()
   const collapsed = state === "collapsed"
   const { theme, setTheme } = useTheme()
-  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+
+  // Determine current resolved theme for icon display
+  const isDark = theme !== "light"
+
+  const handleThemeToggle = () => {
+    setTheme(isDark ? "light" : "dark")
+  }
 
   return (
     <>
@@ -138,12 +126,8 @@ function SidebarContentInner() {
           </div>
           <AnimatePresence>
             {!collapsed && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                className="overflow-hidden whitespace-nowrap"
-              >
+              <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
+                className="overflow-hidden whitespace-nowrap">
                 <p className="text-sm font-black text-white leading-none tracking-tight" style={{ fontFamily: "'Cinzel', serif" }}>
                   Repentance &amp; Holiness
                 </p>
@@ -160,10 +144,8 @@ function SidebarContentInner() {
             const active = pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url))
             return (
               <SidebarMenuItem key={item.url}>
-                <SidebarMenuButton
-                  asChild isActive={active} tooltip={item.title}
-                  className={cn(
-                    "h-11 rounded-xl transition-all duration-200",
+                <SidebarMenuButton asChild isActive={active} tooltip={item.title}
+                  className={cn("h-11 rounded-xl transition-all duration-200",
                     active
                       ? "bg-gradient-to-r from-blue-600/20 to-cyan-500/20 text-cyan-400 border border-cyan-500/20"
                       : "text-slate-400 hover:bg-white/5 hover:text-white border border-transparent"
@@ -185,13 +167,16 @@ function SidebarContentInner() {
         </SidebarMenu>
       </SidebarContent>
 
+      {/* ─── Theme toggle in footer ─── */}
       <SidebarFooter className="p-4 border-t border-white/5">
         <SidebarMenuButton
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-          className="h-11 rounded-xl bg-white/5 text-slate-400 hover:text-white border border-white/5 gap-3"
-          tooltip={isDark ? "Light mode" : "Dark mode"}
+          onClick={handleThemeToggle}
+          className="h-11 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/8 border border-white/5 gap-3 cursor-pointer"
+          tooltip={isDark ? "Switch to Light" : "Switch to Dark"}
         >
-          {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          {isDark
+            ? <Sun size={18} className="text-amber-400 shrink-0" />
+            : <Moon size={18} className="text-blue-400 shrink-0" />}
           <span className="font-bold">{isDark ? "Light Mode" : "Dark Mode"}</span>
         </SidebarMenuButton>
       </SidebarFooter>
