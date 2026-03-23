@@ -207,17 +207,21 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     isCORSFallbackRef.current = false
     a.crossOrigin = "anonymous"
     
-    try { srcRef.current?.disconnect() } catch { /* */ }
-    srcRef.current = null; gainRef.current = null; analyserRef.current = null
+    // Do NOT reset srcRef.current here. It's tied to the audio element 'a', 
+    // and can only be created once. If we reset it to null, ensureCtx() 
+    // will fail when it tries to recreate it.
+    
     a.pause()
     a.src = STREAMS[idx].url
     setStreamIdx(idx)
     setError(null)
     setLoading(true)
     a.load()
+    
+    // ensureCtx will handle resuming/reconnecting if needed
     try { ensureCtx() } catch { /* */ }
+    
     a.play().catch(() => {
-      // If play() fails immediately, it might be a user gesture issue (but handled by toast)
       if (!auto) toast.custom(() => <RadioToast message="Tap play to start" variant="danger" />, { position: "top-center" })
     })
     if (!auto) {

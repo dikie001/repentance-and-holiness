@@ -52,8 +52,8 @@ function Sheet({ open, onClose, title, children }: {
 /* ── Segmented EQ ──────────────────────────────────────────── */
 const EQ_W = 600, EQ_H = 160
 
-function SegmentedEQ({ analyserRef, playing }: {
-  analyserRef: React.MutableRefObject<AnalyserNode | null>; playing: boolean
+function SegmentedEQ({ analyserRef, playing, isDark }: {
+  analyserRef: React.MutableRefObject<AnalyserNode | null>; playing: boolean; isDark: boolean
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef   = useRef<number | null>(null)
@@ -75,6 +75,8 @@ function SegmentedEQ({ analyserRef, playing }: {
       const hi = Math.round(MIN_BIN * Math.pow(MAX_BIN / MIN_BIN, (b + 1) / BAR_COUNT))
       return [lo, Math.max(lo + 1, hi)] as [number, number]
     })
+    const emptyColor = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,10,80,0.05)"
+
     const draw = () => {
       animRef.current = requestAnimationFrame(draw)
       const levels = new Float32Array(BAR_COUNT)
@@ -93,8 +95,6 @@ function SegmentedEQ({ analyserRef, playing }: {
         for (let b = 0; b < BAR_COUNT; b++) { smoothRef.current[b] *= 0.85; levels[b] = smoothRef.current[b] }
       }
       ctx.clearRect(0, 0, W, H)
-      const isDark = document.documentElement.classList.contains("dark")
-      const emptyColor = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,10,80,0.05)"
       
       for (let b = 0; b < BAR_COUNT; b++) {
         const filledSegs = Math.round(levels[b] * SEGMENTS)
@@ -111,7 +111,7 @@ function SegmentedEQ({ analyserRef, playing }: {
     }
     draw()
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current) }
-  }, [playing, analyserRef])
+  }, [playing, analyserRef, isDark])
 
   return <canvas ref={canvasRef} width={EQ_W} height={EQ_H} className="mx-auto block h-auto w-full bg-transparent" />
 }
@@ -194,7 +194,7 @@ export default function RadioPlayer() {
 
           {/* EQ */}
           <div className="mt-6 w-full max-w-md">
-            <SegmentedEQ analyserRef={analyserRef} playing={playing} />
+            <SegmentedEQ analyserRef={analyserRef} playing={playing} isDark={isDark} />
           </div>
 
           {/* Controls */}
