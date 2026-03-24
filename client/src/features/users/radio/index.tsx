@@ -159,7 +159,7 @@ function SegmentedEQ({
 
           let sum = 0
           for (let b = start; b < end; b++) sum += data[b]
-          const raw = (sum / (end - start)) / 255
+          const raw = sum / (end - start) / 255
           energy += raw
 
           const previous = smoothRef.current[i]
