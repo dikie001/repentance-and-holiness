@@ -80,7 +80,7 @@ export function AppLayout() {
                           </div>
 
                           <div
-                            className={cn("w-full", cardMode && "p-1 md:p-2")}
+                            className="w-full"
                           >
                             <Outlet />
                           </div>

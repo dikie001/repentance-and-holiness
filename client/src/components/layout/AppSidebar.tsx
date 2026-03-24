@@ -307,7 +307,7 @@ function SidebarContentInner() {
                   className={cn(
                     "h-11 rounded-xl border transition-all duration-200",
                     active
-                      ? "border-cyan-500/20 bg-cyan-500/10 text-cyan-400 shadow-md"
+                      ? "border-cyan-500/40 bg-blue-600 text-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.3)] backdrop-blur-sm"
                       : "border-transparent hover:bg-white/5 hover:text-white"
                   )}
                   style={!active ? { color: "var(--app-text-muted)" } : {}}

@@ -38,7 +38,7 @@ export function MiniPlayer() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed right-4 bottom-24 left-4 z-40 md:right-8 md:bottom-6 md:left-auto md:w-80"
+          className="fixed right-4 bottom-24 left-4 z-40 md:right-8 md:bottom-8 md:left-auto md:w-80 lg:bottom-12 lg:hidden"
         >
           <div
             className="relative flex items-center gap-3 overflow-hidden rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-xl"

@@ -99,6 +99,8 @@ function SegmentedEQ({
   analyserRef: React.MutableRefObject<AnalyserNode | null>
   playing: boolean
 }) {
+  const { theme } = useTheme()
+  const isDark = theme !== "light"
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<number | null>(null)
   const smoothRef = useRef<Float32Array>(new Float32Array(0))
@@ -132,7 +134,12 @@ function SegmentedEQ({
     const resizeObserver = new ResizeObserver(resizeCanvas)
     resizeObserver.observe(canvas)
 
-    const colorAt = (t: number) => `hsl(${(300 + t * 420) % 360}, 98%, 56%)`
+    const colorAt = (t: number) => {
+      // Reduce saturation and lightness for subtle, elegant spectrum
+      const sat = isDark ? 85 : 65
+      const light = isDark ? 52 : 48
+      return `hsl(${(300 + t * 300) % 360}, ${sat}%, ${light}%)`
+    }
 
     const sampleBand = (
       data: Uint8Array,
@@ -462,26 +469,18 @@ export default function RadioPlayer() {
 
       <div
         className={cn(
-          "font-barlow relative flex h-full flex-col  overflow-hidden transition-colors duration-500",
+          "font-barlow relative flex h-full flex-col overflow-hidden transition-colors duration-500",
           isDark
             ? "bg-gradient-to-br from-[#060614] via-[#0a0a1e] to-[#060610] text-white"
             : "bg-[#eef1ff] text-[#0f1535]"
         )}
       >
-        {/* Ambient glow */}
-        <div
-          className="pointer-events-none absolute -top-20 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full opacity-60"
-          style={{
-            background: isDark
-              ? "radial-gradient(circle,rgba(0,100,255,.12) 0%,transparent 70%)"
-              : "radial-gradient(circle,rgba(59,130,246,.15) 0%,transparent 70%)",
-          }}
-        />
+  
 
-        <main className="flex flex-1 flex-col  items-center overflow-hidden px-4 pt-8 pb-4">
+        <main className="flex flex-1 flex-col items-center overflow-hidden">
           {/* Artwork */}
-          <div className="w-full text-center">
-            <div className="relative mx-auto mb-4 w-fit">
+          <div className="w-full pt-6 text-center">
+            <div className="relative mx-auto mb-3 w-fit">
               <div
                 className={cn(
                   "aspect-square w-[min(54vw,200px)] overflow-hidden rounded-full border-4 transition-all duration-700",
@@ -505,7 +504,7 @@ export default function RadioPlayer() {
               </div>
             </div>
 
-            <div className="mt-8 flex flex-col items-center gap-2">
+            <div className="mt-6 flex flex-col items-center gap-2">
               <div className="flex items-center gap-2 text-2xl font-black tracking-tight">
                 <h1>Jesus Is Lord Radio</h1>
                 {playing && (
@@ -538,13 +537,13 @@ export default function RadioPlayer() {
           </div>
 
           {/* EQ */}
-          <div className="mt-6 lg:mt-4 w-full max-w-3xl">
+          <div className="mt-4 w-full max-w-2xl flex-shrink-0 overflow-hidden">
             <SegmentedEQ analyserRef={analyserRef} playing={playing} />
           </div>
 
           {/* Controls */}
           <div className="mt-auto flex w-full flex-col gap-6 pb-[env(safe-area-inset-bottom,16px)]">
-            <div className="mt-4 flex items-center justify-center gap-1 px-2 sm:gap-4 sm:px-6">
+            <div className="mt-4 flex items-center justify-center gap-1 px-4 sm:gap-4 sm:px-6">
               {/* Ellipses menu */}
               <div className="relative flex shrink-0 items-center">
                 <button
@@ -715,7 +714,7 @@ export default function RadioPlayer() {
             </div>
 
             {/* Volume */}
-            <div className="flex items-center gap-3 px-2">
+            <div className="flex items-center gap-3 px-4">
               <button
                 onClick={() => setMuted(!muted)}
                 className={muted ? "text-neutral-500" : "text-cyan-500"}
