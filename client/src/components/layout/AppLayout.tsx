@@ -44,8 +44,8 @@ export function AppLayout() {
                 <div className="relative flex h-full w-full overflow-hidden md:rounded-xl">
                   <AppSidebar />
                   <SidebarInset className="relative flex w-full flex-col overflow-hidden bg-transparent">
-                    <main className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden pt-8 pb-6">
-                      <div className="w-full">
+                    <main className="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto pt-8 pb-24 md:pb-6">
+                      <div className="w-full px-4 sm:px-6">
                         <div
                           className={cn(
                             "mx-auto w-full",
@@ -83,3 +83,4 @@ export function AppLayout() {
     </RadioProvider>
   )
 }
+

@@ -94,9 +94,11 @@ function Sheet({
 function SegmentedEQ({
   analyserRef,
   playing,
+  analyserReady,
 }: {
   analyserRef: React.MutableRefObject<AnalyserNode | null>
   playing: boolean
+  analyserReady: number
 }) {
   const { theme } = useTheme()
   const isDark = theme !== "light"
@@ -365,7 +367,7 @@ function SegmentedEQ({
       resizeObserver.disconnect()
       if (animRef.current) cancelAnimationFrame(animRef.current)
     }
-  }, [playing, analyserRef])
+  }, [playing, analyserRef, analyserReady, isDark])
 
   return (
     <div className="overflow-hidden">
@@ -388,6 +390,7 @@ export default function RadioPlayer() {
     muted,
     listeners,
     analyserRef,
+    analyserReady,
     togglePlay,
     switchStream,
     setVolume,
@@ -406,7 +409,7 @@ export default function RadioPlayer() {
   >(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [sleepEndAt, setSleepEndAt] = useState<number | null>(null)
-  const [sleepNowMs, setSleepNowMs] = useState(Date.now())
+  const [sleepNowMs, setSleepNowMs] = useState(() => Date.now())
   const [pauseConfirm, setPauseConfirm] = useState(false)
 
   const handlePlayPause = useCallback(() => {
@@ -535,7 +538,7 @@ export default function RadioPlayer() {
 
           {/* EQ */}
           <div className="mt-4 w-full max-w-2xl shrink-0 overflow-hidden">
-            <SegmentedEQ analyserRef={analyserRef} playing={playing} />
+            <SegmentedEQ analyserRef={analyserRef} playing={playing} analyserReady={analyserReady} />
           </div>
 
           {/* Controls */}

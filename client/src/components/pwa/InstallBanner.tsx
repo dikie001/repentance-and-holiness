@@ -105,7 +105,10 @@ export function InstallBanner() {
       <button
         onClick={dismiss}
         className="grid h-8 w-8 place-items-center rounded-lg border transition-colors hover:bg-white/8"
-        style={{ borderColor: "var(--app-border)", color: "var(--app-text-muted)" }}
+        style={{
+          borderColor: "var(--app-border)",
+          color: "var(--app-text-muted)",
+        }}
         aria-label="Dismiss install banner"
       >
         <X size={16} />

@@ -94,9 +94,11 @@ export function GlobalHeader() {
               />
             </div>
           )}
-          <div className={`${state === "expanded" && "lg:ml-4"} flex flex-col justify-center`}>
+          <div
+            className={`${state === "expanded" && "lg:ml-4"} flex flex-col justify-center`}
+          >
             <p
-              className={` hidden text-[10px] leading-tight font-black tracking-[0.15em] uppercase opacity-60 sm:block sm:text-[11px]`}
+              className={`hidden text-[10px] leading-tight font-black tracking-[0.15em] uppercase opacity-60 sm:block sm:text-[11px]`}
               style={{ color: "var(--app-text)" }}
             >
               Ministry of
