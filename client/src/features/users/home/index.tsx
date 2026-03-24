@@ -11,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { useRadio } from "@/context/RadioContext"
+import { Download, Smartphone } from "lucide-react"
 
 /* ── Static media feed data ─────────────────────────────────── */
 const TRENDING = [
@@ -106,6 +107,21 @@ const TYPE_BADGE: Record<string, string> = {
   Prophecy: "border-amber-500/40 bg-amber-500/10 text-amber-300",
   Video: "border-cyan-500/40 bg-cyan-500/10 text-cyan-300",
 }
+
+const MOBILE_APPS = [
+  {
+    name: "iOS App",
+    platform: "App Store",
+    icon: Download,
+    url: "https://apps.apple.com",
+  },
+  {
+    name: "Android App",
+    platform: "Play Store",
+    icon: Smartphone,
+    url: "https://play.google.com/store",
+  },
+]
 
 function EqBars({ active }: { active: boolean }) {
   return (
@@ -245,7 +261,6 @@ export default function HomePage() {
           Nakuru, Kenya
         </p>
       </motion.div>
-
       {/* Live Radio card */}
       <section>
         <div className="mb-2 flex items-center justify-between">
@@ -265,7 +280,6 @@ export default function HomePage() {
         </div>
         <LiveRadioCard />
       </section>
-
       {/* Trending — horizontal card scroll */}
       <section>
         <div className="mb-3 flex items-center justify-between">
@@ -337,7 +351,6 @@ export default function HomePage() {
           })}
         </div>
       </section>
-
       {/* Recently Added — vertical list */}
       <section>
         <div className="mb-3 flex items-center justify-between">
@@ -403,6 +416,57 @@ export default function HomePage() {
           })}
         </div>
       </section>
+      {/* Mobile Apps Section */}
+      <section>
+        <p
+          className="mb-3 text-[11px] font-black tracking-widest uppercase"
+          style={{ color: "var(--app-text-faint)" }}
+        >
+          Get the App
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {MOBILE_APPS.map((app, idx) => {
+            const Icon = app.icon
+            return (
+              <motion.a
+                key={idx}
+                href={app.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 + idx * 0.1 }}
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.96 }}
+                className="flex flex-col items-center justify-center gap-2.5 rounded-xl border px-4 py-5 text-center transition-all hover:border-blue-400/50"
+                style={{
+                  background:
+                    "linear-gradient(135deg, var(--app-card) 0%, rgba(59, 130, 246, 0.04) 100%)",
+                  borderColor: "var(--app-border)",
+                }}
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600/20 to-cyan-500/20">
+                  <Icon size={20} style={{ color: "var(--app-text)" }} />
+                </div>
+                <div>
+                  <p
+                    className="text-sm leading-tight font-bold"
+                    style={{ color: "var(--app-text)" }}
+                  >
+                    {app.name}
+                  </p>
+                  <p
+                    className="mt-1 text-[10px]"
+                    style={{ color: "var(--app-text-muted)" }}
+                  >
+                    {app.platform}
+                  </p>
+                </div>
+              </motion.a>
+            )
+          })}
+        </div>
+      </section>{" "}
     </div>
   )
 }

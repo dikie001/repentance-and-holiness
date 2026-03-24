@@ -192,7 +192,6 @@ export function MobileBottomNav() {
                       background:
                         "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)",
                       color: "white",
-                      border: "4px solid var(--app-bg)",
                     }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   >

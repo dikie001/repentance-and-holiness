@@ -164,7 +164,6 @@ function SegmentedEQ({
         Math.max(MIN_BARS, Math.floor(width / barPitch))
       )
       const barCount = barCountRaw % 2 === 0 ? barCountRaw : barCountRaw - 1
-      const halfBars = Math.max(2, Math.floor(barCount / 2))
 
       if (smoothRef.current.length !== barCount) {
         smoothRef.current = new Float32Array(barCount)
@@ -215,55 +214,54 @@ function SegmentedEQ({
         }
         centroid =
           spectralMass > 0 ? centroid / spectralMass : maxSpectralBin * 0.3
-        const centroidNorm = Math.min(1, centroid / maxSpectralBin)
 
         const minBin = 3
         const maxBin = Math.min(freqDataRef.current.length - 1, maxSpectralBin)
+        const centroidNorm = Math.min(1, centroid / Math.max(1, maxSpectralBin))
         const noiseGate = 0.04 + rms * 0.07
         const now = performance.now()
 
-        for (let i = 0; i < halfBars; i++) {
-          const edgeT = i / Math.max(1, halfBars - 1)
-          const centerWeight = Math.pow(1 - edgeT, 0.6)
+        for (let i = 0; i < barCount; i++) {
+          const barT = i / Math.max(1, barCount - 1)
+          const distFromCenter = Math.abs(barT - 0.5)
+          const centerWeight = Math.pow(1 - distFromCenter, 0.7)
 
-          // Focus low-mid bins so both left and right bars stay lively.
-          const freqT = Math.pow(edgeT, 1.45) * (0.68 + centroidNorm * 0.2)
-          const bin = Math.floor(minBin + freqT * (maxBin - minBin))
-          const radius = 1 + Math.floor(2 + edgeT * 6)
+          // Keep the spectrum musically active by biasing toward low-mid bands.
+          const barPhase = (i * 0.41 + barT * 1.3) % 1
+          const baseT = Math.pow(barT, 1.55)
+          const freqT = Math.min(
+            1,
+            baseT * 0.7 + barPhase * 0.15 + centroidNorm * 0.12
+          )
+          const activeMaxBin = Math.floor(minBin + (maxBin - minBin) * 0.74)
+          const bin = Math.floor(
+            minBin +
+              freqT * (activeMaxBin - minBin) +
+              Math.sin(phaseRef.current[i]) * 5
+          )
+          const radius = 1 + Math.floor(1.5 + distFromCenter * 8)
+          const offset = Math.floor(
+            Math.sin(phaseRef.current[i] * 0.5 + i * 0.11) * 3
+          )
+          const rawValue = sampleBand(freqDataRef.current, bin, radius, offset)
 
-          const leftRaw = sampleBand(freqDataRef.current, bin, radius, -1)
-          const rightRaw = sampleBand(freqDataRef.current, bin, radius, 2)
+          // Staggered dynamics: each bar has slightly different attack/release
+          const indexStagger =
+            Math.sin((i * 0.19 + now * 0.00015) % Math.PI) * 0.1
+          const attack = 0.50 + centerWeight * 0.2 + indexStagger
+          const release = 0.15 + centerWeight * 0.14 + indexStagger * 0.4
 
-          const leftIndex = halfBars - 1 - i
-          const rightIndex = halfBars + i
+          const prev = smoothRef.current[i]
+          const edgeFloor = 0.004 + (1 - centerWeight) * 0.005
+          const target = Math.max(
+            edgeFloor,
+            Math.max(0, rawValue - noiseGate) * (0.44 + 1.35 * centerWeight)
+          )
 
-          const leftPulse =
-            (Math.sin(now * 0.0048 + phaseRef.current[leftIndex]) + 1) * 0.5
-          const rightPulse =
-            (Math.sin(now * 0.0041 + phaseRef.current[rightIndex]) + 1) * 0.5
-
-          const leftTarget =
-            Math.max(0, leftRaw - noiseGate) * (0.45 + 1.2 * centerWeight) +
-            leftPulse * 0.03 * centerWeight
-          const rightTarget =
-            Math.max(0, rightRaw - noiseGate) * (0.45 + 1.2 * centerWeight) +
-            rightPulse * 0.03 * centerWeight
-
-          const leftPrev = smoothRef.current[leftIndex]
-          const rightPrev = smoothRef.current[rightIndex]
-          const leftAttack = 0.56 - edgeT * 0.12
-          const leftRelease = 0.18 - edgeT * 0.08
-          const rightAttack = 0.54 - edgeT * 0.14
-          const rightRelease = 0.19 - edgeT * 0.08
-
-          smoothRef.current[leftIndex] =
-            leftTarget > leftPrev
-              ? leftPrev + (leftTarget - leftPrev) * leftAttack
-              : leftPrev + (leftTarget - leftPrev) * leftRelease
-          smoothRef.current[rightIndex] =
-            rightTarget > rightPrev
-              ? rightPrev + (rightTarget - rightPrev) * rightAttack
-              : rightPrev + (rightTarget - rightPrev) * rightRelease
+          smoothRef.current[i] =
+            target > prev
+              ? prev + (target - prev) * attack
+              : prev + (target - prev) * release
         }
       } else {
         for (let i = 0; i < smoothRef.current.length; i++) {

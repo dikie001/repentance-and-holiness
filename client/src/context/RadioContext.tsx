@@ -434,6 +434,11 @@ export function RadioProvider({ children }: { children: ReactNode }) {
         isCORSFallbackRef.current = true
         a.crossOrigin = null
         a.load()
+        try {
+          ensureCtx()
+        } catch {
+          /* */
+        }
         a.play().catch(() => {}) // Audio only now
         return
       }
@@ -448,7 +453,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
         notify("Stream failed - try another server", "danger")
       }
     }
-  }, [switchStream, notify])
+  }, [switchStream, notify, ensureCtx])
 
   const setVolume = useCallback((v: number) => setVolumeState(v), [])
   const setMuted = useCallback((m: boolean) => setMutedState(m), [])
