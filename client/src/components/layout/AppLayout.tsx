@@ -8,17 +8,23 @@ import { NotificationSheet } from "@/components/notifications/NotificationSheet"
 import { MiniPlayer } from "./MiniPlayer"
 import { InstallBanner } from "@/components/pwa/InstallBanner"
 import { cn } from "@/lib/utils"
+import NetworkNotFoundModal from "../networkNotFoundModal"
+import { useNetworkStatus } from "@/hooks/use-network"
+
 
 export function AppLayout() {
   const location = useLocation()
   const isRadioRoute = location.pathname.startsWith("/jesus-is-lord-radio")
   const useCardShell = true
+  const isOnline = useNetworkStatus()
 
   return (
     <RadioProvider>
       <NotificationProvider>
         <TooltipProvider>
           <SidebarProvider>
+
+            <NetworkNotFoundModal isVisible={!isOnline} />
             <div
               className={cn(
                 "h-screen w-full overflow-hidden",
