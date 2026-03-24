@@ -14,7 +14,6 @@ import {
   X,
   Download,
   Trash2,
-  Share2,
   Info,
   Server,
   Mic,
@@ -418,28 +417,6 @@ export default function RadioPlayer() {
     togglePlay()
   }, [playing, recording, togglePlay])
 
-  const share = useCallback(async () => {
-    const appUrl =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : "https://repentance-and-holiness.org"
-    const data = {
-      title: "Repentance & Holiness App",
-      text: "Install and listen on the Repentance & Holiness app",
-      url: appUrl,
-    }
-    if (navigator.share) {
-      navigator.share(data).catch(() => {})
-    } else {
-      try {
-        await navigator.clipboard.writeText(data.url)
-        notify("App link copied!", "success")
-      } catch {
-        /* */
-      }
-    }
-  }, [notify])
-
   const { theme } = useTheme()
   const isDark = theme !== "light"
 
@@ -604,14 +581,6 @@ export default function RadioPlayer() {
                         label: `Clips (${recordings.length})`,
                         action: () => {
                           setSheet("record")
-                          setMenuOpen(false)
-                        },
-                      },
-                      {
-                        icon: Share2,
-                        label: "Share App",
-                        action: () => {
-                          share()
                           setMenuOpen(false)
                         },
                       },

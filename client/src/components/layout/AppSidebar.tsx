@@ -16,12 +16,14 @@ import { motion } from "framer-motion"
 import {
   Bell,
   BookOpenText,
+  Copy,
   House,
   ImagePlay,
   Moon,
   Music4,
   PanelLeft,
   RadioTower,
+  Share2,
   Sun,
   UsersRound,
   Menu, // <-- Added Menu icon for mobile
@@ -29,6 +31,7 @@ import {
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { useNotifications } from "@/context/NotificationContext"
+import { toast } from "sonner"
 
 type NavItem = { title: string; url: string; icon: LucideIcon; badge?: string }
 
@@ -242,6 +245,28 @@ function SidebarContentInner() {
   const collapsed = state === "collapsed"
   const { theme, setTheme } = useTheme()
   const isDark = theme !== "light"
+  const canShare =
+    typeof navigator !== "undefined" && typeof navigator.share === "function"
+
+  const onShareApp = async () => {
+    const data = {
+      title: "Repentance & Holiness App",
+      text: "Install and listen on the Repentance & Holiness app",
+      url: window.location.origin,
+    }
+
+    if (canShare) {
+      await navigator.share(data).catch(() => undefined)
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(data.url)
+      toast.success("App link copied to clipboard")
+    } catch {
+      toast.error("Unable to copy app link")
+    }
+  }
 
   return (
     <>
@@ -339,6 +364,24 @@ function SidebarContentInner() {
         className="border-t p-4"
         style={{ borderColor: "var(--app-border)" }}
       >
+        <SidebarMenuButton
+          onClick={onShareApp}
+          tooltip="Share App"
+          className="mb-2 h-11 w-full cursor-pointer rounded-xl border transition-colors hover:bg-white/5"
+          style={{
+            background: "var(--app-surface)",
+            borderColor: "var(--app-border)",
+            color: "var(--app-text-muted)",
+          }}
+        >
+          {canShare ? (
+            <Share2 size={18} className="shrink-0 text-cyan-400" />
+          ) : (
+            <Copy size={18} className="shrink-0 text-cyan-400" />
+          )}
+          <span className="font-bold">Share App</span>
+        </SidebarMenuButton>
+
         <SidebarMenuButton
           onClick={() => setTheme(isDark ? "light" : "dark")}
           tooltip={isDark ? "Switch to Light" : "Switch to Dark"}

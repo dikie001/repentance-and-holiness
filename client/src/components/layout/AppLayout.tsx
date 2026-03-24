@@ -6,6 +6,7 @@ import { RadioProvider } from "@/context/RadioContext"
 import { NotificationProvider } from "@/context/NotificationContext"
 import { NotificationSheet } from "@/components/notifications/NotificationSheet"
 import { MiniPlayer } from "./MiniPlayer"
+import { InstallBanner } from "@/components/pwa/InstallBanner"
 import { cn } from "@/lib/utils"
 
 type LayoutViewMode = "card" | "full"
@@ -64,6 +65,7 @@ export function AppLayout() {
                           </div>
 
                           <div className="w-full">
+                            <InstallBanner />
                             <Outlet />
                           </div>
                         </div>
