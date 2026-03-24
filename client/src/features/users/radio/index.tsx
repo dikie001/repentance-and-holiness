@@ -30,41 +30,10 @@ const fmt = (s: number) =>
     .toString()
     .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`
 
-/* ── Bar EQ colours ────────────────────────────────────────── */
-const BAR_COLORS = [
-  "#ff00ff",
-  "#e000ff",
-  "#c400ff",
-  "#a800ff",
-  "#8c00ff",
-  "#6600ff",
-  "#4400ff",
-  "#2200ff",
-  "#0044ff",
-  "#0088ff",
-  "#00aaff",
-  "#00ccff",
-  "#00eeff",
-  "#00ff88",
-  "#00ff44",
-  "#44ff00",
-  "#88ff00",
-  "#ccff00",
-  "#ffee00",
-  "#ffcc00",
-  "#ffaa00",
-  "#ff8800",
-  "#ff6600",
-  "#ff4400",
-  "#ff2200",
-  "#ff0000",
-  "#ff0033",
-  "#ff0066",
-  "#ff0099",
-  "#ff00cc",
-]
-const SEGMENTS = 16
-const BAR_COUNT = 30
+/* ── Spectrum EQ settings ──────────────────────────────────── */
+const EQ_W = 980
+const EQ_H = 220
+const BAR_COUNT = 44
 
 /* ── Bottom Sheet ──────────────────────────────────────────── */
 function Sheet({
@@ -125,103 +94,157 @@ function Sheet({
   )
 }
 
-/* ── Segmented EQ ──────────────────────────────────────────── */
-const EQ_W = 600,
-  EQ_H = 160
-
 function SegmentedEQ({
   analyserRef,
   playing,
-  isDark,
 }: {
   analyserRef: React.MutableRefObject<AnalyserNode | null>
   playing: boolean
-  isDark: boolean
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<number | null>(null)
   const smoothRef = useRef<Float32Array>(new Float32Array(BAR_COUNT))
+  const phaseRef = useRef(0)
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext("2d")
     if (!ctx) return
-    const W = EQ_W,
-      H = EQ_H
-    const SEG_GAP = 2,
-      BAR_GAP = 3
-    const BAR_W = Math.floor((W - (BAR_COUNT - 1) * BAR_GAP) / BAR_COUNT)
-    const BAR_STEP = BAR_W + BAR_GAP
-    const SEG_H = Math.floor((H - (SEGMENTS - 1) * SEG_GAP) / SEGMENTS)
-    const MIN_BIN = 2,
-      MAX_BIN = 60
-    const barBins = Array.from({ length: BAR_COUNT }, (_, b) => {
-      const lo = Math.round(
-        MIN_BIN * Math.pow(MAX_BIN / MIN_BIN, b / BAR_COUNT)
-      )
-      const hi = Math.round(
-        MIN_BIN * Math.pow(MAX_BIN / MIN_BIN, (b + 1) / BAR_COUNT)
-      )
-      return [lo, Math.max(lo + 1, hi)] as [number, number]
-    })
-    const emptyColor = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,10,80,0.05)"
+    const W = EQ_W
+    const H = EQ_H
+    const centerY = H * 0.5
+
+    const colorAt = (t: number) => {
+      // Left-to-right rainbow progression close to the reference style.
+      if (t < 0.34) {
+        const p = t / 0.34
+        const hue = 74 + (188 - 74) * p
+        return `hsl(${hue}, 98%, 58%)`
+      }
+      if (t < 0.7) {
+        const p = (t - 0.34) / 0.36
+        const hue = 188 + (244 - 188) * p
+        return `hsl(${hue}, 98%, 60%)`
+      }
+      const p = (t - 0.7) / 0.3
+      const hue = 244 + (312 - 244) * p
+      return `hsl(${hue}, 98%, 62%)`
+    }
 
     const draw = () => {
       animRef.current = requestAnimationFrame(draw)
+
+      phaseRef.current += 0.018
       const levels = new Float32Array(BAR_COUNT)
+      let energy = 0
+
       if (playing && analyserRef.current) {
         const data = new Uint8Array(analyserRef.current.frequencyBinCount)
         analyserRef.current.getByteFrequencyData(data)
-        for (let b = 0; b < BAR_COUNT; b++) {
-          const [start, end] = barBins[b]
+
+        const minBin = 2
+        const maxBin = Math.min(220, data.length - 1)
+        for (let i = 0; i < BAR_COUNT; i++) {
+          const t0 = i / BAR_COUNT
+          const t1 = (i + 1) / BAR_COUNT
+          const start = Math.max(
+            minBin,
+            Math.floor(minBin * Math.pow(maxBin / minBin, t0))
+          )
+          const end = Math.max(
+            start + 1,
+            Math.floor(minBin * Math.pow(maxBin / minBin, t1))
+          )
+
           let sum = 0
-          for (let i = start; i < end; i++) sum += data[i]
-          const raw = sum / (end - start) < 8 ? 0 : sum / (end - start) / 255
-          smoothRef.current[b] =
-            raw > smoothRef.current[b] ? raw : smoothRef.current[b] * 0.5
-          levels[b] = smoothRef.current[b]
+          for (let b = start; b < end; b++) sum += data[b]
+          const raw = (sum / (end - start)) / 255
+          energy += raw
+
+          const previous = smoothRef.current[i]
+          const attack = 0.62
+          const release = 0.2
+          const eased =
+            raw > previous
+              ? previous + (raw - previous) * attack
+              : previous + (raw - previous) * release
+
+          smoothRef.current[i] = eased
+          levels[i] = eased
         }
       } else {
-        for (let b = 0; b < BAR_COUNT; b++) {
-          smoothRef.current[b] *= 0.85
-          levels[b] = smoothRef.current[b]
+        for (let i = 0; i < BAR_COUNT; i++) {
+          smoothRef.current[i] *= 0.9
+          levels[i] = smoothRef.current[i]
         }
       }
+
+      const avgEnergy = energy / Math.max(1, BAR_COUNT)
+      const glowBoost = Math.min(1, avgEnergy * 2.4)
+
       ctx.clearRect(0, 0, W, H)
 
-      for (let b = 0; b < BAR_COUNT; b++) {
-        const filledSegs = Math.round(levels[b] * SEGMENTS)
-        const color = BAR_COLORS[b % BAR_COLORS.length]
-        const x = b * BAR_STEP
-        for (let s = 0; s < SEGMENTS; s++) {
-          const y = H - (s + 1) * (SEG_H + SEG_GAP) + SEG_GAP
-          if (s < filledSegs) {
-            ctx.shadowColor = color
-            ctx.shadowBlur = 8
-            ctx.fillStyle = color
-          } else {
-            ctx.shadowBlur = 0
-            ctx.fillStyle = emptyColor
-          }
-          ctx.fillRect(x, y, BAR_W, SEG_H)
-        }
+      // Pure black studio-like background.
+      ctx.fillStyle = "#000000"
+      ctx.fillRect(0, 0, W, H)
+
+      const contentW = W * 0.78
+      const startX = (W - contentW) / 2
+      const step = contentW / (BAR_COUNT - 1)
+      const lineW = Math.max(2.4, step * 0.34)
+      const maxHalf = H * 0.39
+      const minHalf = 10
+
+      for (let i = 0; i < BAR_COUNT; i++) {
+        const x = startX + i * step
+        const t = i / (BAR_COUNT - 1)
+        const c = colorAt(t)
+
+        const shaped = Math.pow(levels[i], 0.72)
+        const breathing = Math.sin(phaseRef.current * 6 + i * 0.3) * 1.2
+        const half = minHalf + shaped * maxHalf + breathing
+
+        // Glow stroke.
+        ctx.strokeStyle = c
+        ctx.lineWidth = lineW + 2.2
+        ctx.lineCap = "round"
+        ctx.shadowColor = c
+        ctx.shadowBlur = 16 + glowBoost * 16
+        ctx.beginPath()
+        ctx.moveTo(x, centerY - half)
+        ctx.lineTo(x, centerY + half)
+        ctx.stroke()
+
+        // Bright core stroke.
         ctx.shadowBlur = 0
+        ctx.lineWidth = Math.max(1.3, lineW - 0.7)
+        ctx.strokeStyle = "rgba(255,255,255,0.9)"
+        ctx.beginPath()
+        ctx.moveTo(x, centerY - half)
+        ctx.lineTo(x, centerY + half)
+        ctx.stroke()
       }
     }
+
     draw()
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current)
     }
-  }, [playing, analyserRef, isDark])
+  }, [playing, analyserRef])
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={EQ_W}
-      height={EQ_H}
-      className="mx-auto block h-auto w-full bg-transparent"
-    />
+    <div
+      className="overflow-hidden rounded-2xl border"
+      style={{ borderColor: "rgba(255,255,255,0.12)" }}
+    >
+      <canvas
+        ref={canvasRef}
+        width={EQ_W}
+        height={EQ_H}
+        className="mx-auto block h-auto w-full bg-black"
+      />
+    </div>
   )
 }
 
@@ -281,16 +304,19 @@ export default function RadioPlayer() {
   const sleepMinutes = Math.floor(sleepRemainingMs / 60000)
   const sleepSeconds = Math.floor((sleepRemainingMs % 60000) / 1000)
 
-  const setSleepTimer = useCallback((minutes: number) => {
-    if (minutes <= 0) {
-      setSleepEndAt(null)
-      notify("Sleep timer cleared")
-      return
-    }
-    const endAt = Date.now() + minutes * 60_000
-    setSleepEndAt(endAt)
-    notify(`Sleep timer set: ${minutes} min`, "success")
-  }, [notify])
+  const setSleepTimer = useCallback(
+    (minutes: number) => {
+      if (minutes <= 0) {
+        setSleepEndAt(null)
+        notify("Sleep timer cleared")
+        return
+      }
+      const endAt = Date.now() + minutes * 60_000
+      setSleepEndAt(endAt)
+      notify(`Sleep timer set: ${minutes} min`, "success")
+    },
+    [notify]
+  )
 
   useEffect(() => {
     if (!sleepEndAt) return
@@ -314,7 +340,10 @@ export default function RadioPlayer() {
       if (typeof window !== "undefined") {
         window.localStorage.setItem("rh-radio-favorite", next ? "1" : "0")
       }
-      notify(next ? "Added to Favorites" : "Removed from Favorites", next ? "success" : "default")
+      notify(
+        next ? "Added to Favorites" : "Removed from Favorites",
+        next ? "success" : "default"
+      )
       return next
     })
   }, [notify])
@@ -419,11 +448,7 @@ export default function RadioPlayer() {
 
           {/* EQ */}
           <div className="mt-6 w-full max-w-md">
-            <SegmentedEQ
-              analyserRef={analyserRef}
-              playing={playing}
-              isDark={isDark}
-            />
+            <SegmentedEQ analyserRef={analyserRef} playing={playing} />
           </div>
 
           {/* Controls */}

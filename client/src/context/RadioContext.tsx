@@ -549,7 +549,10 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       {children}
       {inlineToast && (
         <div className="pointer-events-none fixed top-4 left-1/2 z-[500] -translate-x-1/2 px-3">
-          <RadioToast message={inlineToast.message} variant={inlineToast.variant} />
+          <RadioToast
+            message={inlineToast.message}
+            variant={inlineToast.variant}
+          />
         </div>
       )}
     </RadioContext.Provider>
