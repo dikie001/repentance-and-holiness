@@ -469,7 +469,7 @@ export default function RadioPlayer() {
             : "bg-[#eef1ff] text-[#0f1535]"
         )}
       >
-        <main className="flex flex-1 flex-col items-center justify-between px-4 py-8 sm:px-6 lg:px-8 lg:mt-4">
+        <main className="flex flex-1 flex-col items-center justify-between px-4 mt-16  py-12 sm:px-6 lg:px-8 lg:mt-4">
           {/* Artwork */}
           <div className="w-full pt-3 text-center sm:pt-4">
             <div className="relative mx-auto mb-3 w-fit">

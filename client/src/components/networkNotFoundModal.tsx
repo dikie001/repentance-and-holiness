@@ -5,14 +5,95 @@ interface NetworkNotFoundModalProps {
   onRetry?: () => void
 }
 
+const troubleshootSteps = [
+  {
+    icon: (
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+        <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+        <circle cx="12" cy="20" r="1" />
+      </svg>
+    ),
+    text: "Make sure your Wi-Fi or mobile data is turned on",
+  },
+  {
+    icon: (
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="2" y="2" width="20" height="8" rx="2" />
+        <rect x="2" y="14" width="20" height="8" rx="2" />
+        <line x1="6" y1="6" x2="6.01" y2="6" />
+        <line x1="6" y1="18" x2="6.01" y2="18" />
+      </svg>
+    ),
+    text: "Restart your router or modem",
+  },
+  {
+    icon: (
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polyline points="17 1 21 5 17 9" />
+        <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+        <polyline points="7 23 3 19 7 15" />
+        <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+      </svg>
+    ),
+    text: "Switch between Wi-Fi and mobile data",
+  },
+  {
+    icon: (
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 2a10 10 0 0 1 10 10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    ),
+    text: "Toggle Airplane Mode off and on again",
+  },
+]
+
 export default function NetworkNotFoundModal({
   isVisible,
   onRetry,
 }: NetworkNotFoundModalProps) {
   const [isRetrying, setIsRetrying] = useState(false)
   const [dots, setDots] = useState("")
+  const [expanded, setExpanded] = useState(false)
 
-  // Animate dots when retrying
   useEffect(() => {
     if (!isRetrying) return
     const interval = setInterval(() => {
@@ -32,179 +113,110 @@ export default function NetworkNotFoundModal({
   if (!isVisible) return null
 
   return (
-    // Backdrop — covers everything beneath
-    <div className="fixed inset-0 z-55 flex items-center justify-center">
-      {/* Blurred dark overlay */}
-      <div className="absolute inset-0 bg-[#070b14]/80 backdrop-blur-md" />
+    <div className="fixed inset-0 z-55 flex items-center justify-center px-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-slate-950" />
 
-      {/* Animated radial glow behind the card */}
-      <div
-        className="pointer-events-none absolute h-[480px] w-[480px] rounded-full opacity-20 blur-3xl"
-        style={{
-          background:
-            "radial-gradient(circle, #1a6fff 0%, #0d3a8a 40%, transparent 70%)",
-        }}
-      />
+      {/* Glow */}
+      <div className="pointer-events-none absolute h-96 w-96 rounded-full bg-blue-600 opacity-10 blur-3xl" />
 
-      {/* Modal Card */}
-      <div
-        className="relative z-10 w-[360px] overflow-hidden rounded-2xl shadow-2xl"
-        style={{
-          background: "linear-gradient(160deg, #0f1628 0%, #0a0f1e 100%)",
-          border: "1px solid rgba(59, 130, 246, 0.2)",
-          boxShadow:
-            "0 0 0 1px rgba(59,130,246,0.08), 0 32px 64px rgba(0,0,0,0.6), 0 0 80px rgba(29,78,216,0.12)",
-        }}
-      >
+      {/* Card */}
+      <div className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl border border-blue-900/40 bg-gradient-to-b from-slate-900 to-slate-950 shadow-2xl shadow-black/60">
         {/* Top accent bar */}
-        <div
-          className="h-[2px] w-full"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, #3b82f6, #06b6d4, transparent)",
-          }}
-        />
+        <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-blue-500 to-cyan-400" />
 
-        <div className="flex flex-col items-center px-8 py-8 text-center">
-          {/* Icon container */}
-          <div className="relative mb-6">
-            {/* Outer pulse ring */}
-            <div
-              className="absolute inset-0 animate-ping rounded-full opacity-20"
-              style={{ background: "rgba(59,130,246,0.4)" }}
+        <div className="flex flex-col items-center px-6 pt-7 pb-6 text-center">
+          {/* App logo */}
+        <div></div>
+
+          {/* Network error illustration */}
+          <div className="relative mb-4">
+            <div className="absolute inset-0 rounded-full bg-blue-600/10 blur-2xl" />
+            <img
+              src="/images/net-error.png"
+              alt="No internet"
+              className="relative h-28 w-28 object-contain opacity-90"
             />
-            {/* Icon bg */}
-            <div
-              className="relative flex h-20 w-20 items-center justify-center rounded-full"
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(29,78,216,0.3), rgba(7,15,30,0.8))",
-                border: "1px solid rgba(59,130,246,0.3)",
-                boxShadow: "0 0 30px rgba(59,130,246,0.15)",
-              }}
-            >
-              {/* Wifi-off SVG icon */}
-              <svg
-                width="38"
-                height="38"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="url(#iconGrad)"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <defs>
-                  <linearGradient
-                    id="iconGrad"
-                    x1="0%"
-                    y1="0%"
-                    x2="100%"
-                    y2="100%"
-                  >
-                    <stop offset="0%" stopColor="#60a5fa" />
-                    <stop offset="100%" stopColor="#06b6d4" />
-                  </linearGradient>
-                </defs>
-                {/* Wifi arcs with slash */}
-                <line x1="1" y1="1" x2="23" y2="23" />
-                <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" />
-                <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39" />
-                <path d="M10.71 5.05A16 16 0 0 1 22.56 9" />
-                <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88" />
-                <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
-                <circle
-                  cx="12"
-                  cy="20"
-                  r="1"
-                  fill="url(#iconGrad)"
-                  stroke="none"
-                />
-              </svg>
-            </div>
           </div>
 
           {/* Title */}
-          <h2
-            className="mb-1 text-xl font-semibold tracking-wide"
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              color: "#e2e8f0",
-              letterSpacing: "0.01em",
-            }}
-          >
-            No Network Connection
+          <h2 className="mb-1 text-lg font-semibold tracking-wide text-slate-100">
+            No Internet Connection
           </h2>
 
-          {/* Subtitle */}
-          <p
-            className="mb-1 text-sm leading-relaxed"
-            style={{
-              color: "rgba(148,163,184,0.8)",
-              fontFamily: "'DM Sans', sans-serif",
-            }}
-          >
-            Unable to reach{" "}
-            <span style={{ color: "#60a5fa" }}>Jesus Is Lord Radio</span>.
-            <br />
-            Check your internet connection and try again.
+          {/* Description */}
+          <p className="text-sm leading-relaxed text-slate-400">
+            You're currently offline. Please check your connection to continue
+            streaming.
           </p>
 
           {/* Divider */}
-          <div
-            className="my-5 w-full"
-            style={{
-              height: "1px",
-              background:
-                "linear-gradient(90deg, transparent, rgba(59,130,246,0.2), transparent)",
-            }}
-          />
+          <div className="my-5 h-px w-full bg-gradient-to-r from-transparent via-blue-900/50 to-transparent" />
 
-          {/* Status indicator row */}
-          <div className="mb-6 flex w-full items-center justify-center gap-6">
-            {[
-              { label: "Signal", ok: false },
-              { label: "DNS", ok: false },
-              { label: "Server", ok: null },
-            ].map(({ label, ok }) => (
-              <div key={label} className="flex flex-col items-center gap-1.5">
-                <div
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{
-                    background:
-                      ok === null
-                        ? "rgba(148,163,184,0.3)"
-                        : ok
-                          ? "#22c55e"
-                          : "#ef4444",
-                    boxShadow:
-                      ok === false ? "0 0 6px rgba(239,68,68,0.5)" : "none",
-                  }}
-                />
-                <span
-                  className="text-[10px] tracking-widest uppercase"
-                  style={{ color: "rgba(148,163,184,0.5)" }}
-                >
-                  {label}
-                </span>
-              </div>
-            ))}
+          {/* Troubleshoot toggle */}
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="mb-3 flex items-center gap-1.5 text-xs font-medium tracking-wider text-blue-400 uppercase transition-colors hover:text-blue-300"
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            How to fix this
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={`transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          {/* Steps */}
+          <div
+            className={`w-full overflow-hidden transition-all duration-300 ease-in-out ${
+              expanded ? "mb-4 max-h-72 opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
+            <div className="divide-y divide-blue-900/20 rounded-xl border border-blue-900/30 bg-slate-900/60 text-left">
+              {troubleshootSteps.map((step, i) => (
+                <div key={i} className="flex items-start gap-3 px-4 py-3">
+                  <span className="mt-0.5 shrink-0 text-blue-400">
+                    {step.icon}
+                  </span>
+                  <p className="text-xs leading-relaxed text-slate-400">
+                    {step.text}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Retry button */}
           <button
             onClick={handleRetry}
             disabled={isRetrying}
-            className="w-full rounded-xl py-3 text-sm font-medium tracking-wide transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed"
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              background: isRetrying
-                ? "rgba(29,78,216,0.2)"
-                : "linear-gradient(135deg, #1d4ed8, #1e40af)",
-              color: isRetrying ? "rgba(148,163,184,0.6)" : "#e2e8f0",
-              border: "1px solid rgba(59,130,246,0.3)",
-              boxShadow: isRetrying ? "none" : "0 4px 20px rgba(29,78,216,0.3)",
-            }}
+            className={`w-full rounded-xl border py-3 text-sm font-medium tracking-wide transition-all duration-200 active:scale-[0.98] ${
+              isRetrying
+                ? "cursor-not-allowed border-blue-900/20 bg-blue-950/40 text-slate-500"
+                : "border-blue-700/40 bg-gradient-to-br from-blue-700 to-blue-800 text-slate-100 shadow-lg shadow-blue-900/30 hover:from-blue-600 hover:to-blue-700"
+            }`}
           >
             {isRetrying ? (
               <span className="flex items-center justify-center gap-2">
@@ -219,72 +231,24 @@ export default function NetworkNotFoundModal({
                 >
                   <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                 </svg>
-                Reconnecting{dots}
+                Retrying{dots}
               </span>
             ) : (
               "Try Again"
             )}
           </button>
 
-          {/* Help link */}
-          <p
-            className="mt-4 text-xs"
-            style={{
-              color: "rgba(100,116,139,0.7)",
-              fontFamily: "'DM Sans', sans-serif",
-            }}
-          >
+          <p className="mt-4 text-xs text-slate-600">
             Still having issues?{" "}
-            <span
-              className="cursor-pointer underline underline-offset-2"
-              style={{ color: "rgba(96,165,250,0.7)" }}
-            >
+            <span className="cursor-pointer text-blue-500/70 underline underline-offset-2 transition-colors hover:text-blue-400">
               Contact support
             </span>
           </p>
         </div>
 
         {/* Bottom accent bar */}
-        <div
-          className="h-[1px] w-full"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, rgba(59,130,246,0.15), transparent)",
-          }}
-        />
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-blue-900/30 to-transparent" />
       </div>
-    </div>
-  )
-}
-
-// ── Demo wrapper so you can preview it standalone ──────────────────────────
-export function Demo() {
-  const [show, setShow] = useState(true)
-
-  return (
-    <div
-      className="flex min-h-screen flex-col items-center justify-center gap-4"
-      style={{ background: "#070b14" }}
-    >
-      {/* Fake app background hint */}
-      <p className="text-xs tracking-widest text-slate-600 uppercase">
-        App content beneath
-      </p>
-
-      <button
-        onClick={() => setShow(true)}
-        className="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 transition-colors hover:border-blue-500"
-      >
-        Show Modal
-      </button>
-
-      <NetworkNotFoundModal
-        isVisible={show}
-        onRetry={() => {
-          console.log("Retrying...")
-          setShow(false)
-        }}
-      />
     </div>
   )
 }

@@ -24,7 +24,7 @@ export function AppLayout() {
         <TooltipProvider>
           <SidebarProvider>
 
-            <NetworkNotFoundModal isVisible={!isOnline} />
+            <NetworkNotFoundModal isVisible={isOnline} />
             <div
               className={cn(
                 "h-screen w-full overflow-hidden",
