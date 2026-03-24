@@ -172,6 +172,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const analyserRef = useRef<AnalyserNode | null>(null)
   const gainRef = useRef<GainNode | null>(null)
   const srcRef = useRef<MediaElementAudioSourceNode | null>(null)
+  const streamSrcRef = useRef<MediaStreamAudioSourceNode | null>(null)
 
   // Recording Refs
   const recRef = useRef<MediaRecorder | null>(null)
@@ -274,15 +275,44 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       ctx.resume().catch(() => {})
     }
 
-    // If we're in CORS fallback mode, only skip source creation but still create analyser
+    // If direct media source fails because of CORS, analyze the element output stream instead.
     if (isCORSFallbackRef.current) {
-      // Just ensure analyser is created for at least audio element frequency data
+      if (!streamSrcRef.current) {
+        const capture =
+          ((
+            a as HTMLAudioElement & {
+              captureStream?: () => MediaStream
+              mozCaptureStream?: () => MediaStream
+            }
+          ).captureStream?.() ||
+            (
+              a as HTMLAudioElement & {
+                captureStream?: () => MediaStream
+                mozCaptureStream?: () => MediaStream
+              }
+            ).mozCaptureStream?.()) ??
+          null
+
+        if (capture) {
+          streamSrcRef.current = ctx.createMediaStreamSource(capture)
+        }
+      }
+
       if (!analyserRef.current) {
         analyserRef.current = ctx.createAnalyser()
-        analyserRef.current.fftSize = 1024
-        analyserRef.current.smoothingTimeConstant = 0.75
-        analyserRef.current.connect(ctx.destination)
+        analyserRef.current.fftSize = 2048
+        analyserRef.current.smoothingTimeConstant = 0.65
       }
+
+      if (streamSrcRef.current) {
+        try {
+          streamSrcRef.current.disconnect()
+        } catch {
+          /* */
+        }
+        streamSrcRef.current.connect(analyserRef.current)
+      }
+
       return
     }
 
@@ -303,8 +333,8 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     }
     if (!analyserRef.current) {
       analyserRef.current = ctx.createAnalyser()
-      analyserRef.current.fftSize = 1024
-      analyserRef.current.smoothingTimeConstant = 0.75
+      analyserRef.current.fftSize = 2048
+      analyserRef.current.smoothingTimeConstant = 0.65
       gainRef.current.connect(analyserRef.current)
       analyserRef.current.connect(ctx.destination)
     }
@@ -358,9 +388,15 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       } catch {
         /* */
       }
+      try {
+        streamSrcRef.current?.disconnect()
+      } catch {
+        /* */
+      }
       // srcRef.current = null; // Do NOT reset this as earlier identified
       gainRef.current = null
       analyserRef.current = null
+      streamSrcRef.current = null
       a.pause()
       a.src = STREAMS[idx].url
       setStreamIdx(idx)

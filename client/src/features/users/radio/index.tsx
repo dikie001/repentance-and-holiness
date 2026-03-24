@@ -31,9 +31,8 @@ const fmt = (s: number) =>
     .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`
 
 /* ── Spectrum EQ settings ──────────────────────────────────── */
-const EQ_W = 980
-const EQ_H = 220
-const BAR_COUNT = 44
+const MIN_BARS = 56
+const MAX_BARS = 180
 
 /* ── Bottom Sheet ──────────────────────────────────────────── */
 function Sheet({
@@ -103,123 +102,205 @@ function SegmentedEQ({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<number | null>(null)
-  const smoothRef = useRef<Float32Array>(new Float32Array(BAR_COUNT))
-  const phaseRef = useRef(0)
+  const smoothRef = useRef<Float32Array>(new Float32Array(0))
+  const freqDataRef = useRef<Uint8Array>(new Uint8Array(0))
+  const timeDataRef = useRef<Uint8Array>(new Uint8Array(0))
+  const phaseRef = useRef<Float32Array>(new Float32Array(0))
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext("2d")
     if (!ctx) return
-    const W = EQ_W
-    const H = EQ_H
-    const centerY = H * 0.5
 
-    const colorAt = (t: number) => {
-      // Left-to-right rainbow progression close to the reference style.
-      if (t < 0.34) {
-        const p = t / 0.34
-        const hue = 74 + (188 - 74) * p
-        return `hsl(${hue}, 98%, 58%)`
+    const resizeCanvas = () => {
+      const width = Math.max(240, canvas.clientWidth)
+      const height = Math.max(120, canvas.clientHeight)
+      const dpr = Math.max(1, window.devicePixelRatio || 1)
+      const nextW = Math.floor(width * dpr)
+      const nextH = Math.floor(height * dpr)
+      if (canvas.width !== nextW || canvas.height !== nextH) {
+        canvas.width = nextW
+        canvas.height = nextH
       }
-      if (t < 0.7) {
-        const p = (t - 0.34) / 0.36
-        const hue = 188 + (244 - 188) * p
-        return `hsl(${hue}, 98%, 60%)`
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    }
+
+    resizeCanvas()
+    const resizeObserver = new ResizeObserver(resizeCanvas)
+    resizeObserver.observe(canvas)
+
+    const colorAt = (t: number) => `hsl(${(300 + t * 420) % 360}, 98%, 56%)`
+
+    const sampleBand = (
+      data: Uint8Array,
+      center: number,
+      radius: number,
+      offset: number
+    ) => {
+      const start = Math.max(0, center - radius + offset)
+      const end = Math.min(data.length - 1, center + radius + offset)
+      let sum = 0
+      let count = 0
+      for (let i = start; i <= end; i++) {
+        sum += data[i]
+        count++
       }
-      const p = (t - 0.7) / 0.3
-      const hue = 244 + (312 - 244) * p
-      return `hsl(${hue}, 98%, 62%)`
+      return count > 0 ? sum / count / 255 : 0
     }
 
     const draw = () => {
       animRef.current = requestAnimationFrame(draw)
 
-      phaseRef.current += 0.018
-      const levels = new Float32Array(BAR_COUNT)
-      let energy = 0
+      const width = Math.max(240, canvas.clientWidth)
+      const height = Math.max(120, canvas.clientHeight)
+      const centerY = height * 0.5
+      ctx.clearRect(0, 0, width, height)
 
+      const barPitch = Math.max(3.4, width / 152)
+      const barWidth = Math.max(1.2, barPitch * 0.4)
+      const barCountRaw = Math.min(
+        MAX_BARS,
+        Math.max(MIN_BARS, Math.floor(width / barPitch))
+      )
+      const barCount = barCountRaw % 2 === 0 ? barCountRaw : barCountRaw - 1
+      const halfBars = Math.max(2, Math.floor(barCount / 2))
+
+      if (smoothRef.current.length !== barCount) {
+        smoothRef.current = new Float32Array(barCount)
+      }
+      if (phaseRef.current.length !== barCount) {
+        const next = new Float32Array(barCount)
+        for (let i = 0; i < barCount; i++) {
+          next[i] = Math.random() * Math.PI * 2
+        }
+        phaseRef.current = next
+      }
+
+      let rms = 0
+      let centroid = 0
+      let spectralMass = 0
       if (playing && analyserRef.current) {
-        const data = new Uint8Array(analyserRef.current.frequencyBinCount)
-        analyserRef.current.getByteFrequencyData(data)
+        const analyser = analyserRef.current
 
-        const minBin = 2
-        const maxBin = Math.min(220, data.length - 1)
-        for (let i = 0; i < BAR_COUNT; i++) {
-          const t0 = i / BAR_COUNT
-          const t1 = (i + 1) / BAR_COUNT
-          const start = Math.max(
-            minBin,
-            Math.floor(minBin * Math.pow(maxBin / minBin, t0))
-          )
-          const end = Math.max(
-            start + 1,
-            Math.floor(minBin * Math.pow(maxBin / minBin, t1))
-          )
+        if (freqDataRef.current.length !== analyser.frequencyBinCount) {
+          freqDataRef.current = new Uint8Array(analyser.frequencyBinCount)
+        }
+        if (timeDataRef.current.length !== analyser.fftSize) {
+          timeDataRef.current = new Uint8Array(analyser.fftSize)
+        }
 
-          let sum = 0
-          for (let b = start; b < end; b++) sum += data[b]
-          const raw = sum / (end - start) / 255
-          energy += raw
+        analyser.getByteFrequencyData(
+          freqDataRef.current as unknown as Uint8Array<ArrayBuffer>
+        )
+        analyser.getByteTimeDomainData(
+          timeDataRef.current as unknown as Uint8Array<ArrayBuffer>
+        )
 
-          const previous = smoothRef.current[i]
-          const attack = 0.62
-          const release = 0.2
-          const eased =
-            raw > previous
-              ? previous + (raw - previous) * attack
-              : previous + (raw - previous) * release
+        for (let i = 0; i < timeDataRef.current.length; i++) {
+          const sample = (timeDataRef.current[i] - 128) / 128
+          rms += sample * sample
+        }
+        rms = Math.sqrt(rms / Math.max(1, timeDataRef.current.length))
 
-          smoothRef.current[i] = eased
-          levels[i] = eased
+        const maxSpectralBin = Math.max(
+          48,
+          Math.floor(freqDataRef.current.length * 0.6)
+        )
+
+        for (let i = 1; i < maxSpectralBin; i++) {
+          const n = freqDataRef.current[i] / 255
+          spectralMass += n
+          centroid += n * i
+        }
+        centroid =
+          spectralMass > 0 ? centroid / spectralMass : maxSpectralBin * 0.3
+        const centroidNorm = Math.min(1, centroid / maxSpectralBin)
+
+        const minBin = 3
+        const maxBin = Math.min(freqDataRef.current.length - 1, maxSpectralBin)
+        const noiseGate = 0.04 + rms * 0.07
+        const now = performance.now()
+
+        for (let i = 0; i < halfBars; i++) {
+          const edgeT = i / Math.max(1, halfBars - 1)
+          const centerWeight = Math.pow(1 - edgeT, 0.6)
+
+          // Focus low-mid bins so both left and right bars stay lively.
+          const freqT = Math.pow(edgeT, 1.45) * (0.68 + centroidNorm * 0.2)
+          const bin = Math.floor(minBin + freqT * (maxBin - minBin))
+          const radius = 1 + Math.floor(2 + edgeT * 6)
+
+          const leftRaw = sampleBand(freqDataRef.current, bin, radius, -1)
+          const rightRaw = sampleBand(freqDataRef.current, bin, radius, 2)
+
+          const leftIndex = halfBars - 1 - i
+          const rightIndex = halfBars + i
+
+          const leftPulse =
+            (Math.sin(now * 0.0048 + phaseRef.current[leftIndex]) + 1) * 0.5
+          const rightPulse =
+            (Math.sin(now * 0.0041 + phaseRef.current[rightIndex]) + 1) * 0.5
+
+          const leftTarget =
+            Math.max(0, leftRaw - noiseGate) * (0.45 + 1.2 * centerWeight) +
+            leftPulse * 0.03 * centerWeight
+          const rightTarget =
+            Math.max(0, rightRaw - noiseGate) * (0.45 + 1.2 * centerWeight) +
+            rightPulse * 0.03 * centerWeight
+
+          const leftPrev = smoothRef.current[leftIndex]
+          const rightPrev = smoothRef.current[rightIndex]
+          const leftAttack = 0.56 - edgeT * 0.12
+          const leftRelease = 0.18 - edgeT * 0.08
+          const rightAttack = 0.54 - edgeT * 0.14
+          const rightRelease = 0.19 - edgeT * 0.08
+
+          smoothRef.current[leftIndex] =
+            leftTarget > leftPrev
+              ? leftPrev + (leftTarget - leftPrev) * leftAttack
+              : leftPrev + (leftTarget - leftPrev) * leftRelease
+          smoothRef.current[rightIndex] =
+            rightTarget > rightPrev
+              ? rightPrev + (rightTarget - rightPrev) * rightAttack
+              : rightPrev + (rightTarget - rightPrev) * rightRelease
         }
       } else {
-        for (let i = 0; i < BAR_COUNT; i++) {
-          smoothRef.current[i] *= 0.9
-          levels[i] = smoothRef.current[i]
+        for (let i = 0; i < smoothRef.current.length; i++) {
+          smoothRef.current[i] *= 0.82
         }
       }
 
-      const avgEnergy = energy / Math.max(1, BAR_COUNT)
-      const glowBoost = Math.min(1, avgEnergy * 2.4)
+      const minHalf = 1
+      const maxHalf = height * 0.36
+      const energyScale = 0.45 + rms * 1.65
+      const glow = Math.min(1, rms * 6)
+      const span = Math.max(0, width - barPitch * (barCount - 1)) * 0.5
 
-      ctx.clearRect(0, 0, W, H)
+      for (let i = 0; i < barCount; i++) {
+        const x = span + i * barPitch
+        const t = i / Math.max(1, barCount - 1)
+        const edge = Math.abs((i / Math.max(1, barCount - 1)) * 2 - 1)
+        const centerWeight = Math.pow(1 - edge, 0.62)
+        const level = Math.pow(Math.max(0, smoothRef.current[i]), 0.88)
+        const half = Math.min(
+          maxHalf,
+          minHalf + level * maxHalf * energyScale * (0.32 + 0.9 * centerWeight)
+        )
+        const color = colorAt(t)
 
-      // Pure black studio-like background.
-      ctx.fillStyle = "#000000"
-      ctx.fillRect(0, 0, W, H)
-
-      const contentW = W * 0.78
-      const startX = (W - contentW) / 2
-      const step = contentW / (BAR_COUNT - 1)
-      const lineW = Math.max(2.4, step * 0.34)
-      const maxHalf = H * 0.39
-      const minHalf = 10
-
-      for (let i = 0; i < BAR_COUNT; i++) {
-        const x = startX + i * step
-        const t = i / (BAR_COUNT - 1)
-        const c = colorAt(t)
-
-        const shaped = Math.pow(levels[i], 0.72)
-        const breathing = Math.sin(phaseRef.current * 6 + i * 0.3) * 1.2
-        const half = minHalf + shaped * maxHalf + breathing
-
-        // Glow stroke.
-        ctx.strokeStyle = c
-        ctx.lineWidth = lineW + 2.2
         ctx.lineCap = "round"
-        ctx.shadowColor = c
-        ctx.shadowBlur = 16 + glowBoost * 16
+        ctx.strokeStyle = color
+        ctx.lineWidth = barWidth + 0.9
+        ctx.shadowColor = color
+        ctx.shadowBlur = 5 + glow * 12
         ctx.beginPath()
         ctx.moveTo(x, centerY - half)
         ctx.lineTo(x, centerY + half)
         ctx.stroke()
 
-        // Bright core stroke.
         ctx.shadowBlur = 0
-        ctx.lineWidth = Math.max(1.3, lineW - 0.7)
-        ctx.strokeStyle = "rgba(255,255,255,0.9)"
+        ctx.lineWidth = Math.max(0.9, barWidth - 0.45)
         ctx.beginPath()
         ctx.moveTo(x, centerY - half)
         ctx.lineTo(x, centerY + half)
@@ -229,20 +310,16 @@ function SegmentedEQ({
 
     draw()
     return () => {
+      resizeObserver.disconnect()
       if (animRef.current) cancelAnimationFrame(animRef.current)
     }
   }, [playing, analyserRef])
 
   return (
-    <div
-      className="overflow-hidden rounded-2xl border"
-      style={{ borderColor: "rgba(255,255,255,0.12)" }}
-    >
+    <div className="overflow-hidden">
       <canvas
         ref={canvasRef}
-        width={EQ_W}
-        height={EQ_H}
-        className="mx-auto block h-auto w-full bg-black"
+        className="mx-auto block h-[clamp(120px,22vw,190px)] w-full"
       />
     </div>
   )
@@ -447,7 +524,7 @@ export default function RadioPlayer() {
           </div>
 
           {/* EQ */}
-          <div className="mt-6 w-full max-w-md">
+          <div className="mt-6 w-full max-w-3xl">
             <SegmentedEQ analyserRef={analyserRef} playing={playing} />
           </div>
 

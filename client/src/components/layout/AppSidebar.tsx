@@ -66,7 +66,7 @@ export function GlobalHeader() {
 
   return (
     <header
-      className="fixed top-0 right-0 left-0 z-40 flex h-16 items-center justify-between border-b px-4 backdrop-blur-xl transition-all duration-200 md:left-[var(--sidebar-width)]"
+      className="fixed top-0 right-0 left-0 z-40 flex h-16 items-center justify-between border-b px-4 backdrop-blur-xl transition-all duration-200 md:left-(--sidebar-width"
       style={{
         background: "var(--app-header-bg)",
         borderColor: "var(--app-border)",
@@ -111,7 +111,7 @@ export function GlobalHeader() {
             className="transition-transform group-hover/bell:rotate-12"
           />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full border-2 border-slate-950 bg-blue-600 px-1 text-[9px] font-black text-white shadow-[0_0_8px_rgba(37,99,235,0.5)]">
+            <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full  bg-blue-600 px-1 text-[9px] font-black text-white shadow-[0_0_8px_rgba(37,99,235,0.5)]">
               {unreadCount}
             </span>
           )}
@@ -145,9 +145,9 @@ export function MobileBottomNav() {
   const idx = activeIndex === -1 ? 0 : activeIndex
 
   return (
-    <nav className="fixed right-0 bottom-0 left-0 z-50 h-[76px] backdrop-blur-md md:hidden">
+    <nav className="fixed right-0 bottom-0 left-0 z-50 h-19 backdrop-blur-md md:hidden">
       {/* Premium Background with Dynamic Notch */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[64px] overflow-visible">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 overflow-visible">
         <svg
           viewBox="0 0 300 64"
           preserveAspectRatio="none"
@@ -187,7 +187,7 @@ export function MobileBottomNav() {
                 {active ? (
                   <motion.div
                     layoutId="activeCircle"
-                    className="absolute -top-7 z-20 flex h-[54px] w-[54px] items-center justify-center rounded-full shadow-[0_12px_28px_-6px_rgba(6,182,212,0.45)]"
+                    className="absolute -top-7 z-20 flex h-14 w-14 items-center justify-center rounded-full shadow-[0_12px_28px_-6px_rgba(6,182,212,0.45)]"
                     style={{
                       background:
                         "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)",
@@ -236,7 +236,7 @@ function SidebarContentInner() {
         style={{ borderColor: "var(--app-border)" }}
       >
         <Link to="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-400 text-xs font-black text-white shadow-lg shadow-blue-500/20">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-blue-600 to-cyan-400 text-xs font-black text-white shadow-lg shadow-blue-500/20">
             JIL
           </div>
           <AnimatePresence>
@@ -343,7 +343,7 @@ export function AppSidebar() {
     <>
       <Sidebar
         collapsible="icon"
-        className="z-50 overflow-hidden border-r shadow-2xl backdrop-blur-xl transition-all duration-300 [&_[data-slot=sidebar-inner]]:bg-transparent"
+        className="z-50 overflow-hidden border-r shadow-2xl backdrop-blur-xl transition-all duration-300 **:data-[slot=sidebar-inner]:bg-transparent"
         style={
           {
             background: isDark
@@ -358,7 +358,7 @@ export function AppSidebar() {
         {/* Deep ambient glow - only in dark mode */}
         {isDark && (
           <div
-            className="pointer-events-none absolute -top-24 left-1/2 z-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full opacity-40"
+            className="pointer-events-none absolute -top-24 left-1/2 z-0 h-125 w-125 -translate-x-1/2 rounded-full opacity-40"
             style={{
               background:
                 "radial-gradient(circle,rgba(37,99,235,0.2) 0%,transparent 70%)",
