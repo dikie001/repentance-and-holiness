@@ -408,6 +408,15 @@ export default function RadioPlayer() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [sleepEndAt, setSleepEndAt] = useState<number | null>(null)
   const [sleepNowMs, setSleepNowMs] = useState(Date.now())
+  const [pauseConfirm, setPauseConfirm] = useState(false)
+
+  const handlePlayPause = useCallback(() => {
+    if (playing && recording) {
+      setPauseConfirm(true)
+      return
+    }
+    togglePlay()
+  }, [playing, recording, togglePlay])
 
   const share = useCallback(async () => {
     const data = { title: "Jesus Is Lord Radio", url: STREAMS[streamIdx].url }
@@ -475,8 +484,6 @@ export default function RadioPlayer() {
             : "bg-[#eef1ff] text-[#0f1535]"
         )}
       >
-  
-
         <main className="flex flex-1 flex-col items-center overflow-hidden">
           {/* Artwork */}
           <div className="w-full pt-6 text-center">
@@ -504,7 +511,7 @@ export default function RadioPlayer() {
               </div>
             </div>
 
-            <div className="mt-6 flex flex-col items-center gap-2">
+            <div className="mt-4 flex flex-col items-center gap-2">
               <div className="flex items-center gap-2 text-2xl font-black tracking-tight">
                 <h1>Jesus Is Lord Radio</h1>
                 {playing && (
@@ -648,7 +655,7 @@ export default function RadioPlayer() {
                 </button>
 
                 <button
-                  onClick={togglePlay}
+                  onClick={handlePlayPause}
                   disabled={loading}
                   className={cn(
                     "grid aspect-square h-[80px] w-[80px] shrink-0 place-items-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg transition-all duration-300 sm:h-[88px] sm:w-[88px]",
@@ -714,7 +721,7 @@ export default function RadioPlayer() {
             </div>
 
             {/* Volume */}
-            <div className="flex items-center gap-3 px-4">
+            <div className="flex items-center gap-3 px-4 mb-8">
               <button
                 onClick={() => setMuted(!muted)}
                 className={muted ? "text-neutral-500" : "text-cyan-500"}
@@ -926,6 +933,45 @@ export default function RadioPlayer() {
           >
             Clear Timer
           </button>
+        </div>
+      </Sheet>
+
+      {/* Pause while recording confirmation */}
+      <Sheet
+        open={pauseConfirm}
+        onClose={() => setPauseConfirm(false)}
+        title="Recording Active"
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-sm" style={{ color: "var(--app-text-muted)" }}>
+            You are currently recording. Pausing the radio will stop the
+            recording. Continue?
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setPauseConfirm(false)
+              }}
+              className="flex-1 rounded-xl border px-4 py-3 font-bold transition-colors"
+              style={{
+                borderColor: "var(--app-border)",
+                color: "var(--app-text)",
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                togglePlay()
+                stopRecording()
+                setPauseConfirm(false)
+                notify("Recording stopped", "success")
+              }}
+              className="flex-1 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 font-bold text-red-400 transition-colors hover:bg-red-500/20"
+            >
+              Pause & Stop
+            </button>
+          </div>
         </div>
       </Sheet>
     </>

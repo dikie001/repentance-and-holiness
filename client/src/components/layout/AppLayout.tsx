@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react"
 import { Outlet } from "react-router-dom"
 import { AppSidebar } from "./AppSidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -8,24 +7,11 @@ import { NotificationProvider } from "@/context/NotificationContext"
 import { NotificationSheet } from "@/components/notifications/NotificationSheet"
 import { MiniPlayer } from "./MiniPlayer"
 import { cn } from "@/lib/utils"
-import { Maximize2, PanelTop } from "lucide-react"
 
 type LayoutViewMode = "card" | "full"
 
-const VIEW_MODE_KEY = "rh-layout-view-mode"
-
 export function AppLayout() {
-  const [viewMode, setViewMode] = useState<LayoutViewMode>(() => {
-    if (typeof window === "undefined") return "card"
-    return window.localStorage.getItem(VIEW_MODE_KEY) === "full"
-      ? "full"
-      : "card"
-  })
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    window.localStorage.setItem(VIEW_MODE_KEY, viewMode)
-  }, [viewMode])
+  const viewMode: LayoutViewMode = "card"
 
   const cardMode = viewMode === "card"
 
@@ -57,8 +43,8 @@ export function AppLayout() {
                 <div className="relative flex h-full w-full overflow-hidden md:rounded-xl">
                   <AppSidebar />
                   <SidebarInset className="relative flex w-full flex-col overflow-hidden bg-transparent">
-                    <main className="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto pt-8 pb-16 md:pb-6">
-                      <div className="w-full ">
+                    <main className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden pt-8 pb-6">
+                      <div className="w-full">
                         <div
                           className={cn(
                             "mx-auto w-full",
@@ -74,14 +60,10 @@ export function AppLayout() {
                                 background: "var(--app-surface)",
                                 borderColor: "var(--app-border)",
                               }}
-                            >
-                    
-                            </div>
+                            ></div>
                           </div>
 
-                          <div
-                            className="w-full"
-                          >
+                          <div className="w-full">
                             <Outlet />
                           </div>
                         </div>

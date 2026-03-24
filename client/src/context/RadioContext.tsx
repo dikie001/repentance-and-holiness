@@ -176,7 +176,10 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [streamIdx, setStreamIdx] = useState(() =>
-    Math.min(Math.max(readStoredNumber(LS_KEYS.streamIdx, 0), 0), STREAMS.length - 1)
+    Math.min(
+      Math.max(readStoredNumber(LS_KEYS.streamIdx, 0), 0),
+      STREAMS.length - 1
+    )
   )
   const [volume, setVolumeState] = useState(() =>
     Math.min(Math.max(readStoredNumber(LS_KEYS.volume, 82), 0), 100)
@@ -493,6 +496,13 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!playing) return
 
+    // Ensure analyser is immediately available and wired
+    try {
+      ensureCtx()
+    } catch {
+      /* */
+    }
+
     // Self-heal analyser wiring for streams that start but expose delayed media graph data.
     const id = window.setInterval(() => {
       if (!analyserRef.current) {
@@ -502,7 +512,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
           /* */
         }
       }
-    }, 1200)
+    }, 300)
 
     return () => window.clearInterval(id)
   }, [playing, streamIdx, ensureCtx])
@@ -598,6 +608,11 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     try {
       if (!analyserRef.current) {
         notify("Start radio first", "danger")
+        return
+      }
+
+      if (!playing) {
+        notify("Radio must be playing to record", "danger")
         return
       }
 
