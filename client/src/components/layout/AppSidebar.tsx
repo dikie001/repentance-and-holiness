@@ -21,6 +21,8 @@ import {
   Menu,
   Moon,
   Music4,
+  PanelLeftClose,
+  PanelLeftOpen,
   RadioTower,
   Sun,
   UsersRound,
@@ -61,12 +63,13 @@ function LiveDot() {
 }
 
 export function GlobalHeader() {
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar, state } = useSidebar()
   const { unreadCount, setIsOpen } = useNotifications()
+  const isCollapsed = state === "collapsed"
 
   return (
     <header
-      className="md:left-(--sidebar-width fixed top-0 right-0 left-0 z-40 flex h-16 items-center justify-between border-b px-4 backdrop-blur-xl transition-all duration-200"
+      className="absolute top-0 right-0 left-0 z-40 flex h-16 items-center justify-between border-b px-3 backdrop-blur-xl transition-all duration-200 md:px-5"
       style={{
         background: "var(--app-header-bg)",
         borderColor: "var(--app-border)",
@@ -98,6 +101,25 @@ export function GlobalHeader() {
 
       <div className="flex items-center gap-2">
         <button
+          onClick={toggleSidebar}
+          className="hidden h-10 items-center justify-center gap-2 rounded-lg border px-3 transition-all active:scale-95 md:inline-flex"
+          style={{
+            background: "var(--app-surface)",
+            borderColor: "var(--app-border)",
+            color: "var(--app-text-muted)",
+          }}
+          aria-label="Toggle Sidebar"
+        >
+          {isCollapsed ? (
+            <PanelLeftOpen size={16} />
+          ) : (
+            <PanelLeftClose size={16} />
+          )}
+          <span className="text-[11px] font-bold tracking-wide uppercase">
+            {isCollapsed ? "Expand" : "Collapse"}
+          </span>
+        </button>
+        <button
           onClick={() => setIsOpen(true)}
           className="group/bell relative flex h-9 w-9 items-center justify-center rounded-xl border transition-colors"
           style={{
@@ -118,7 +140,7 @@ export function GlobalHeader() {
         </button>
         <button
           onClick={toggleSidebar}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border transition-all active:scale-90"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border transition-all active:scale-90 md:hidden"
           style={{
             background: "var(--app-surface)",
             borderColor: "var(--app-border)",
@@ -342,13 +364,15 @@ export function AppSidebar() {
     <>
       <Sidebar
         collapsible="icon"
-        className="z-50 overflow-hidden border-r shadow-2xl backdrop-blur-xl transition-all duration-300 **:data-[slot=sidebar-inner]:bg-transparent"
+        className="z-50 overflow-hidden border-r backdrop-blur-xl transition-all duration-300 **:data-[slot=sidebar-inner]:bg-transparent md:border-r"
         style={
           {
             background: isDark
               ? "linear-gradient(to bottom right, #060614, #0a0a1e, #060610)"
               : "var(--app-sidebar-bg)",
             borderColor: "var(--app-border)",
+            "--sidebar-width": "15rem",
+            "--sidebar-width-icon": "3.5rem",
             "--sidebar": "transparent",
             "--sidebar-background": "transparent",
           } as React.CSSProperties

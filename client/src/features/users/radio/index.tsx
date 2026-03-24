@@ -51,10 +51,10 @@ function Sheet({
   return createPortal(
     <div
       onClick={(e) => e.target === e.currentTarget && onClose()}
-      className="fixed inset-0 z-[200] flex items-end bg-black/70 backdrop-blur-lg"
+      className="fixed inset-0 z-[200] flex items-end justify-center bg-black/70 backdrop-blur-lg md:items-center"
     >
       <div
-        className="max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-t-[28px] border border-b-0 shadow-2xl"
+        className="max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-t-[28px] border border-b-0 shadow-2xl md:max-h-[82vh] md:rounded-2xl md:border"
         style={{
           background: isDark ? "var(--app-surface)" : "var(--app-nav-bg)",
           borderColor: "var(--app-border)",
@@ -235,7 +235,10 @@ function SegmentedEQ({
         }
         meanEnergy /= Math.max(1, maxSpectralBin - 1)
 
-        const targetNorm = Math.min(3.2, Math.max(0.85, 0.24 / (meanEnergy + 0.02)))
+        const targetNorm = Math.min(
+          3.2,
+          Math.max(0.85, 0.24 / (meanEnergy + 0.02))
+        )
         normRef.current += (targetNorm - normRef.current) * 0.08
 
         for (let i = 1; i < maxSpectralBin; i++) {
@@ -249,7 +252,10 @@ function SegmentedEQ({
         const minBin = 3
         const maxBin = Math.min(freqDataRef.current.length - 1, maxSpectralBin)
         const centroidNorm = Math.min(1, centroid / Math.max(1, maxSpectralBin))
-        const noiseGate = Math.max(0.012, 0.024 + rms * 0.045 - meanEnergy * 0.03)
+        const noiseGate = Math.max(
+          0.012,
+          0.024 + rms * 0.045 - meanEnergy * 0.03
+        )
         const now = performance.now()
 
         for (let i = 0; i < barCount; i++) {
@@ -278,7 +284,8 @@ function SegmentedEQ({
           )
           const rawValue = Math.min(
             1,
-            sampleBand(freqDataRef.current, bin, radius, offset) * normRef.current
+            sampleBand(freqDataRef.current, bin, radius, offset) *
+              normRef.current
           )
 
           // Staggered dynamics: each bar has slightly different attack/release
