@@ -455,14 +455,14 @@ export default function RadioPlayer() {
 
   return (
     <>
-      <link
+      {/* <link
         href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;900&display=swap"
         rel="stylesheet"
-      />
+      /> */}
 
       <div
         className={cn(
-          "font-barlow relative flex h-full flex-col overflow-hidden transition-colors duration-500",
+          "font-barlow relative flex h-full flex-col  overflow-hidden transition-colors duration-500",
           isDark
             ? "bg-gradient-to-br from-[#060614] via-[#0a0a1e] to-[#060610] text-white"
             : "bg-[#eef1ff] text-[#0f1535]"
@@ -478,7 +478,7 @@ export default function RadioPlayer() {
           }}
         />
 
-        <main className="flex flex-1 flex-col items-center overflow-hidden px-4 pt-8 pb-5">
+        <main className="flex flex-1 flex-col  items-center overflow-hidden px-4 pt-8 pb-4">
           {/* Artwork */}
           <div className="w-full text-center">
             <div className="relative mx-auto mb-4 w-fit">
@@ -538,7 +538,7 @@ export default function RadioPlayer() {
           </div>
 
           {/* EQ */}
-          <div className="mt-6 w-full max-w-3xl">
+          <div className="mt-6 lg:mt-4 w-full max-w-3xl">
             <SegmentedEQ analyserRef={analyserRef} playing={playing} />
           </div>
 

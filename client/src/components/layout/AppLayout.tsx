@@ -57,8 +57,8 @@ export function AppLayout() {
                 <div className="relative flex h-full w-full overflow-hidden md:rounded-xl">
                   <AppSidebar />
                   <SidebarInset className="relative flex w-full flex-col overflow-hidden bg-transparent">
-                    <main className="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto pt-16 pb-24 md:pb-6">
-                      <div className="w-full px-4 md:px-6 xl:px-8">
+                    <main className="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto pt-8 pb-16 md:pb-6">
+                      <div className="w-full ">
                         <div
                           className={cn(
                             "mx-auto w-full",
@@ -75,30 +75,7 @@ export function AppLayout() {
                                 borderColor: "var(--app-border)",
                               }}
                             >
-                              <button
-                                onClick={() => setViewMode("card")}
-                                className={cn(
-                                  "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors",
-                                  cardMode
-                                    ? "bg-blue-600 text-white"
-                                    : "text-slate-500 hover:bg-white/50"
-                                )}
-                                aria-label="Card view"
-                              >
-                                <PanelTop size={14} /> Card
-                              </button>
-                              <button
-                                onClick={() => setViewMode("full")}
-                                className={cn(
-                                  "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors",
-                                  !cardMode
-                                    ? "bg-blue-600 text-white"
-                                    : "text-slate-500 hover:bg-white/50"
-                                )}
-                                aria-label="Full width view"
-                              >
-                                <Maximize2 size={14} /> Full
-                              </button>
+                    
                             </div>
                           </div>
 
