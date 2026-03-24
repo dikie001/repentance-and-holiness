@@ -94,11 +94,9 @@ function Sheet({
 function SegmentedEQ({
   analyserRef,
   playing,
-  analyserReady,
 }: {
   analyserRef: React.MutableRefObject<AnalyserNode | null>
   playing: boolean
-  analyserReady: number
 }) {
   const { theme } = useTheme()
   const isDark = theme !== "light"
@@ -367,13 +365,13 @@ function SegmentedEQ({
       resizeObserver.disconnect()
       if (animRef.current) cancelAnimationFrame(animRef.current)
     }
-  }, [playing, analyserRef, analyserReady, isDark])
+  }, [playing, analyserRef, isDark])
 
   return (
     <div className="overflow-hidden">
       <canvas
         ref={canvasRef}
-        className="mx-auto block h-[clamp(120px,22vw,190px)] w-full"
+        className="mx-auto block h-[clamp(96px,18vh,170px)] w-full"
       />
     </div>
   )
@@ -390,7 +388,6 @@ export default function RadioPlayer() {
     muted,
     listeners,
     analyserRef,
-    analyserReady,
     togglePlay,
     switchStream,
     setVolume,
@@ -466,19 +463,19 @@ export default function RadioPlayer() {
 
       <div
         className={cn(
-          "font-barlow relative flex h-full flex-col overflow-hidden transition-colors duration-500",
+          "font-barlow relative flex h-full  flex-col overflow-hidden transition-colors duration-500",
           isDark
             ? "bg-gradient-to-br from-[#060614] via-[#0a0a1e] to-[#060610] text-white"
             : "bg-[#eef1ff] text-[#0f1535]"
         )}
       >
-        <main className="flex flex-1 flex-col items-center overflow-y-auto">
+        <main className="flex flex-1 flex-col items-center justify-between px-4 py-8 sm:px-6 lg:px-8">
           {/* Artwork */}
-          <div className="w-full pt-6 text-center">
+          <div className="w-full pt-3 text-center sm:pt-4">
             <div className="relative mx-auto mb-3 w-fit">
               <div
                 className={cn(
-                  "aspect-square w-[min(54vw,200px)] overflow-hidden rounded-full border-4 transition-all duration-700",
+                  "aspect-square w-[min(46vw,170px)] overflow-hidden rounded-full border-4 transition-all duration-700",
                   isDark ? "border-white/12" : "border-white/60 shadow-xl",
                   playing
                     ? "animate-pulse-slow shadow-[0_0_0_12px_rgba(0,140,255,0.15),0_20px_60px_rgba(0,100,255,0.4)]"
@@ -499,7 +496,7 @@ export default function RadioPlayer() {
               </div>
             </div>
 
-            <div className="mt-4 flex flex-col items-center gap-2">
+            <div className="mt-2 flex flex-col items-center gap-1.5">
               <div className="flex items-center gap-2 text-2xl font-black tracking-tight">
                 <h1>Jesus Is Lord Radio</h1>
                 {playing && (
@@ -537,13 +534,13 @@ export default function RadioPlayer() {
           </div>
 
           {/* EQ */}
-          <div className="mt-4 w-full max-w-2xl shrink-0 overflow-hidden">
-            <SegmentedEQ analyserRef={analyserRef} playing={playing} analyserReady={analyserReady} />
+          <div className="mt-2 w-full max-w-2xl shrink-0 overflow-hidden">
+            <SegmentedEQ analyserRef={analyserRef} playing={playing} />
           </div>
 
           {/* Controls */}
-          <div className="mt-auto flex w-full flex-col gap-6 pb-[max(env(safe-area-inset-bottom),24px)] lg:-mt-4">
-            <div className="mt-4 flex items-center justify-center gap-1 px-4 sm:gap-4 sm:px-6">
+          <div className="flex w-full flex-col gap-4 pb-[max(env(safe-area-inset-bottom),16px)]">
+            <div className="mt-2 flex items-center justify-center gap-1 px-4 sm:gap-4 sm:px-6">
               {/* Ellipses menu */}
               <div className="relative flex shrink-0 items-center">
                 <button
@@ -706,7 +703,7 @@ export default function RadioPlayer() {
             </div>
 
             {/* Volume */}
-            <div className="mb-8 flex items-center gap-3 px-4">
+            <div className="mb-2 flex items-center gap-3 px-4">
               <button
                 onClick={() => setMuted(!muted)}
                 className={muted ? "text-neutral-500" : "text-cyan-500"}

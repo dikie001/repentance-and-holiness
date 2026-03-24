@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom"
+import { Outlet, useLocation } from "react-router-dom"
 import { AppSidebar } from "./AppSidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
@@ -9,12 +9,10 @@ import { MiniPlayer } from "./MiniPlayer"
 import { InstallBanner } from "@/components/pwa/InstallBanner"
 import { cn } from "@/lib/utils"
 
-type LayoutViewMode = "card" | "full"
-
 export function AppLayout() {
-  const viewMode: LayoutViewMode = "card"
-
-  const cardMode = viewMode === "card"
+  const location = useLocation()
+  const isRadioRoute = location.pathname.startsWith("/jesus-is-lord-radio")
+  const useCardShell = true
 
   return (
     <RadioProvider>
@@ -22,18 +20,21 @@ export function AppLayout() {
         <TooltipProvider>
           <SidebarProvider>
             <div
-              className="h-screen w-full overflow-hidden px-0 md:px-6 xl:px-10"
+              className={cn(
+                "h-screen w-full overflow-hidden",
+                isRadioRoute ? "px-0" : "px-0 md:px-6 xl:px-10"
+              )}
               style={{ background: "var(--app-bg)", color: "var(--app-text)" }}
             >
               <div
                 className={cn(
                   "mx-auto h-full w-full overflow-hidden",
-                  cardMode
+                  useCardShell
                     ? "max-w-[1180px] md:my-3 md:h-[calc(100vh-24px)] md:rounded-xl md:border md:shadow-[0_20px_70px_-32px_rgba(15,23,42,0.45)]"
                     : ""
                 )}
                 style={
-                  cardMode
+                  useCardShell
                     ? {
                         background: "var(--app-card)",
                         borderColor: "var(--app-border)",
@@ -44,14 +45,26 @@ export function AppLayout() {
                 <div className="relative flex h-full w-full overflow-hidden md:rounded-xl">
                   <AppSidebar />
                   <SidebarInset className="relative flex w-full flex-col overflow-hidden bg-transparent">
-                    <main className="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto pt-8 pb-24 md:pb-6">
-                      <div className="w-full px-4 sm:px-6">
+                    <main
+                      className={cn(
+                        "relative flex min-h-0 w-full flex-1 flex-col",
+                        isRadioRoute
+                          ? "overflow-hidden pt-0 pb-0"
+                          : "overflow-y-auto pt-8 pb-24 md:pb-6"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "w-full",
+                          isRadioRoute ? "px-0" : "px-4 sm:px-6"
+                        )}
+                      >
                         <div
                           className={cn(
                             "mx-auto w-full",
-                            cardMode
-                              ? "max-w-4xl xl:max-w-6xl"
-                              : "max-w-[1400px]"
+                            isRadioRoute
+                              ? "max-w-none"
+                              : "max-w-4xl xl:max-w-6xl"
                           )}
                         >
                           <div className="hidden justify-end pt-2 pb-4 lg:flex">
@@ -83,4 +96,3 @@ export function AppLayout() {
     </RadioProvider>
   )
 }
-
