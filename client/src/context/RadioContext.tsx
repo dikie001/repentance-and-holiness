@@ -149,13 +149,41 @@ interface RadioState {
 
 const RadioContext = createContext<RadioState | null>(null)
 
+const LS_KEYS = {
+  streamIdx: "rh-radio-stream-idx",
+  volume: "rh-radio-volume",
+  muted: "rh-radio-muted",
+  shouldResume: "rh-radio-should-resume",
+} as const
+
+const readStoredNumber = (key: string, fallback: number) => {
+  if (typeof window === "undefined") return fallback
+  const raw = window.localStorage.getItem(key)
+  if (!raw) return fallback
+  const parsed = Number(raw)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+const readStoredBool = (key: string, fallback: boolean) => {
+  if (typeof window === "undefined") return fallback
+  const raw = window.localStorage.getItem(key)
+  if (raw === null) return fallback
+  return raw === "1"
+}
+
 export function RadioProvider({ children }: { children: ReactNode }) {
   const [playing, setPlaying] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [streamIdx, setStreamIdx] = useState(0)
-  const [volume, setVolumeState] = useState(82)
-  const [muted, setMutedState] = useState(false)
+  const [streamIdx, setStreamIdx] = useState(() =>
+    Math.min(Math.max(readStoredNumber(LS_KEYS.streamIdx, 0), 0), STREAMS.length - 1)
+  )
+  const [volume, setVolumeState] = useState(() =>
+    Math.min(Math.max(readStoredNumber(LS_KEYS.volume, 82), 0), 100)
+  )
+  const [muted, setMutedState] = useState(() =>
+    readStoredBool(LS_KEYS.muted, false)
+  )
   const [listeners, setListeners] = useState(48)
 
   // Recording State
@@ -185,10 +213,32 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const failedAttemptsRef = useRef(0)
   const isCORSFallbackRef = useRef(false)
   const handleErrorRef = useRef<() => void>(() => {})
+  const shouldResumeRef = useRef(readStoredBool(LS_KEYS.shouldResume, false))
 
   useEffect(() => {
     streamIdxRef.current = streamIdx
   }, [streamIdx])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    window.localStorage.setItem(LS_KEYS.streamIdx, String(streamIdx))
+  }, [streamIdx])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    window.localStorage.setItem(LS_KEYS.volume, String(volume))
+  }, [volume])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    window.localStorage.setItem(LS_KEYS.muted, muted ? "1" : "0")
+  }, [muted])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    shouldResumeRef.current = playing
+    window.localStorage.setItem(LS_KEYS.shouldResume, playing ? "1" : "0")
+  }, [playing])
 
   useEffect(() => {
     const a = new Audio()
@@ -211,9 +261,26 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     a.addEventListener("canplay", () => setLoading(false))
     a.addEventListener("error", () => handleErrorRef.current())
 
-    a.src = STREAMS[0].url
+    a.src = STREAMS[streamIdxRef.current].url
     a.volume = volume / 100
     a.load()
+
+    // Best effort restore when app is reopened. Browsers may still gate autoplay.
+    if (shouldResumeRef.current) {
+      setLoading(true)
+      try {
+        ensureCtx()
+      } catch {
+        /* */
+      }
+      a.play()
+        .then(() => {
+          notify(`Resumed: ${STREAMS[streamIdxRef.current].label}`, "success")
+        })
+        .catch(() => {
+          setLoading(false)
+        })
+    }
 
     return () => {
       a.pause()
@@ -474,6 +541,58 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
   const setVolume = useCallback((v: number) => setVolumeState(v), [])
   const setMuted = useCallback((m: boolean) => setMutedState(m), [])
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) {
+      return
+    }
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: "Jesus Is Lord Radio",
+      artist: "Repentance & Holiness",
+      album: STREAMS[streamIdx].label,
+      artwork: [
+        { src: "/images/radio-logo.png", sizes: "96x96", type: "image/png" },
+        {
+          src: "/images/radio-logo.png",
+          sizes: "192x192",
+          type: "image/png",
+        },
+      ],
+    })
+
+    navigator.mediaSession.playbackState = playing ? "playing" : "paused"
+
+    navigator.mediaSession.setActionHandler("play", () => {
+      const a = audioRef.current
+      if (!a) return
+      try {
+        ensureCtx()
+      } catch {
+        /* */
+      }
+      a.play().catch(() => {})
+    })
+    navigator.mediaSession.setActionHandler("pause", () => {
+      audioRef.current?.pause()
+    })
+    navigator.mediaSession.setActionHandler("previoustrack", () => {
+      const prev = (streamIdxRef.current - 1 + STREAMS.length) % STREAMS.length
+      switchStream(prev)
+    })
+    navigator.mediaSession.setActionHandler("nexttrack", () => {
+      const next = (streamIdxRef.current + 1) % STREAMS.length
+      switchStream(next)
+    })
+
+    return () => {
+      if (!("mediaSession" in navigator)) return
+      navigator.mediaSession.setActionHandler("play", null)
+      navigator.mediaSession.setActionHandler("pause", null)
+      navigator.mediaSession.setActionHandler("previoustrack", null)
+      navigator.mediaSession.setActionHandler("nexttrack", null)
+    }
+  }, [playing, streamIdx, switchStream, ensureCtx])
 
   const startRecording = useCallback(async () => {
     try {
