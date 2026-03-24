@@ -49,7 +49,7 @@ export function AppLayout() {
                           className={cn(
                             "mx-auto w-full",
                             cardMode
-                              ? "max-w-4xl xl:max-w-5xl"
+                              ? "max-w-4xl xl:max-w-6xl"
                               : "max-w-[1400px]"
                           )}
                         >

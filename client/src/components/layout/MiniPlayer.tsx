@@ -15,6 +15,7 @@ export function MiniPlayer() {
     togglePlay,
     muted,
     setMuted,
+    setVolume,
     volume,
     error,
     recording,
@@ -23,7 +24,7 @@ export function MiniPlayer() {
   } = useRadio()
   const [dismissed, setDismissed] = useState(false)
 
-  const visible = !dismissed && (playing || loading || !!error || recording)
+  const visible = !dismissed && (playing || !!error || recording)
 
   const fmt = (s: number) =>
     `${Math.floor(s / 60)
@@ -82,7 +83,7 @@ export function MiniPlayer() {
                       Live
                     </span>
                   </>
-                )}
+                )} 
               </div>
               <Link
                 to="/jesus-is-lord-radio"
@@ -105,18 +106,38 @@ export function MiniPlayer() {
               </p>
             </div>
 
-            {/* Mute */}
-            <button
-              onClick={() => setMuted(!muted)}
-              className="relative z-10 transition-colors hover:text-cyan-400"
-              style={{ color: "var(--app-text-faint)" }}
-            >
-              {muted || volume === 0 ? (
-                <VolumeX size={16} />
-              ) : (
-                <Volume2 size={16} />
-              )}
-            </button>
+            {/* Mute + Volume */}
+            <div className="relative z-10 flex min-w-0 items-center gap-2">
+              <button
+                onClick={() => setMuted(!muted)}
+                className="transition-colors hover:text-cyan-400"
+                style={{ color: "var(--app-text-faint)" }}
+              >
+                {muted || volume === 0 ? (
+                  <VolumeX size={16} />
+                ) : (
+                  <Volume2 size={16} />
+                )}
+              </button>
+              <div className="relative h-1 w-16 rounded-full bg-white/10">
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 transition-all duration-100"
+                  style={{ width: `${muted ? 0 : volume}%` }}
+                />
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={muted ? 0 : volume}
+                  onChange={(e) => {
+                    setMuted(false)
+                    setVolume(+e.target.value)
+                  }}
+                  className="absolute inset-0 w-full cursor-pointer opacity-0"
+                  aria-label="Mini player volume"
+                />
+              </div>
+            </div>
 
             {/* Play/Pause */}
             <div className="relative z-10 flex items-center gap-2">

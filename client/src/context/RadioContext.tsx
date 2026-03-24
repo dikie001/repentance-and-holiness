@@ -368,6 +368,12 @@ export function RadioProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // captureStream can be unavailable right when playback starts.
+      // Return and allow the self-heal loop to retry until it is ready.
+      if (!streamSrcRef.current) {
+        return
+      }
+
       if (!analyserRef.current) {
         analyserRef.current = ctx.createAnalyser()
         analyserRef.current.fftSize = 2048
@@ -446,11 +452,9 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       isCORSFallbackRef.current = false
       a.crossOrigin = "anonymous"
 
-      // Feedback immediately with a consistent ID to replace previous ones
+      // Only show connection toast during automatic recovery attempts.
       if (auto) {
         notify(`Source error - trying ${STREAMS[idx].label}...`, "danger")
-      } else {
-        notify(`Connecting to ${STREAMS[idx].label}...`)
       }
 
       try {
@@ -463,7 +467,8 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       } catch {
         /* */
       }
-      // srcRef.current = null; // Do NOT reset this as earlier identified
+      // Recreate the element source for a fresh analyser chain per stream.
+      srcRef.current = null
       gainRef.current = null
       analyserRef.current = null
       streamSrcRef.current = null
@@ -505,7 +510,10 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
     // Self-heal analyser wiring for streams that start but expose delayed media graph data.
     const id = window.setInterval(() => {
-      if (!analyserRef.current) {
+      const needsFallbackStream =
+        isCORSFallbackRef.current && !streamSrcRef.current
+
+      if (!analyserRef.current || needsFallbackStream) {
         try {
           ensureCtx()
         } catch {

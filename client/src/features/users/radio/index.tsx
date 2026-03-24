@@ -419,18 +419,26 @@ export default function RadioPlayer() {
   }, [playing, recording, togglePlay])
 
   const share = useCallback(async () => {
-    const data = { title: "Jesus Is Lord Radio", url: STREAMS[streamIdx].url }
+    const appUrl =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://repentance-and-holiness.org"
+    const data = {
+      title: "Repentance & Holiness App",
+      text: "Install and listen on the Repentance & Holiness app",
+      url: appUrl,
+    }
     if (navigator.share) {
       navigator.share(data).catch(() => {})
     } else {
       try {
         await navigator.clipboard.writeText(data.url)
-        notify("Link copied!", "success")
+        notify("App link copied!", "success")
       } catch {
         /* */
       }
     }
-  }, [streamIdx, notify])
+  }, [notify])
 
   const { theme } = useTheme()
   const isDark = theme !== "light"
@@ -484,7 +492,7 @@ export default function RadioPlayer() {
             : "bg-[#eef1ff] text-[#0f1535]"
         )}
       >
-        <main className="flex flex-1 flex-col items-center overflow-hidden">
+        <main className="flex flex-1 flex-col items-center overflow-y-auto">
           {/* Artwork */}
           <div className="w-full pt-6 text-center">
             <div className="relative mx-auto mb-3 w-fit">
@@ -534,6 +542,11 @@ export default function RadioPlayer() {
               >
                 Repentance &amp; Holiness · {listeners} listening
               </p>
+              {loading && (
+                <p className="animate-pulse text-[11px] font-semibold text-cyan-400">
+                  Connecting to {STREAMS[streamIdx].label}...
+                </p>
+              )}
               {sleepEndAt && (
                 <p className="text-[11px] font-semibold text-cyan-400">
                   Sleep in {String(sleepMinutes).padStart(2, "0")}:
@@ -544,19 +557,19 @@ export default function RadioPlayer() {
           </div>
 
           {/* EQ */}
-          <div className="mt-4 w-full max-w-2xl flex-shrink-0 overflow-hidden">
+          <div className="mt-4 w-full max-w-2xl shrink-0 overflow-hidden">
             <SegmentedEQ analyserRef={analyserRef} playing={playing} />
           </div>
 
           {/* Controls */}
-          <div className="mt-auto flex w-full flex-col gap-6 pb-[env(safe-area-inset-bottom,16px)]">
+          <div className="mt-auto flex w-full flex-col gap-6 pb-[max(env(safe-area-inset-bottom),24px)] lg:-mt-4">
             <div className="mt-4 flex items-center justify-center gap-1 px-4 sm:gap-4 sm:px-6">
               {/* Ellipses menu */}
               <div className="relative flex shrink-0 items-center">
                 <button
                   onClick={() => setMenuOpen((o) => !o)}
                   className={cn(
-                    "grid h-12 w-12 place-items-center rounded-full border transition-all",
+                    "grid h-12 w-12 cursor-pointer place-items-center rounded-full border transition-all",
                     menuOpen
                       ? isDark
                         ? "border-white/15 bg-white/10 text-white"
@@ -596,7 +609,7 @@ export default function RadioPlayer() {
                       },
                       {
                         icon: Share2,
-                        label: "Share",
+                        label: "Share App",
                         action: () => {
                           share()
                           setMenuOpen(false)
@@ -721,7 +734,7 @@ export default function RadioPlayer() {
             </div>
 
             {/* Volume */}
-            <div className="flex items-center gap-3 px-4 mb-8">
+            <div className="mb-8 flex items-center gap-3 px-4">
               <button
                 onClick={() => setMuted(!muted)}
                 className={muted ? "text-neutral-500" : "text-cyan-500"}

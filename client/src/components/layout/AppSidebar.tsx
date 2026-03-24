@@ -71,8 +71,8 @@ export function GlobalHeader() {
   return (
     <header
       className={cn(
-        "absolute top-0 right-0 z-40 flex h-16 items-center justify-between border-b px-3 backdrop-blur-xl transition-all duration-300 md:px-5",
-        isCollapsed ? "left-0 md:left-[3.5rem]" : "left-0 md:left-[15rem]"
+        "absolute top-0 right-0 z-40 flex h-16 items-center justify-between border-b px-3 backdrop-blur-xl transition-all duration-300 md:px-4",
+        isCollapsed ? "left-0 md:left-12" : "left-0 md:left-60"
       )}
       style={{
         background: "var(--app-header-bg)",
