@@ -469,7 +469,7 @@ export default function RadioPlayer() {
             : "bg-[#eef1ff] text-[#0f1535]"
         )}
       >
-        <main className="flex flex-1 flex-col items-center justify-between px-4 py-8 sm:px-6 lg:px-8">
+        <main className="flex flex-1 flex-col items-center justify-between px-4 py-8 sm:px-6 lg:px-8 lg:mt-4">
           {/* Artwork */}
           <div className="w-full pt-3 text-center sm:pt-4">
             <div className="relative mx-auto mb-3 w-fit">
@@ -703,7 +703,7 @@ export default function RadioPlayer() {
             </div>
 
             {/* Volume */}
-            <div className="mb-2 flex items-center gap-3 px-4">
+            <div className="mb-2 mt-2 flex items-center gap-3 px-4">
               <button
                 onClick={() => setMuted(!muted)}
                 className={muted ? "text-neutral-500" : "text-cyan-500"}
