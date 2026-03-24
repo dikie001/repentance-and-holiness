@@ -424,6 +424,23 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   )
 
   useEffect(() => {
+    if (!playing) return
+
+    // Self-heal analyser wiring for streams that start but expose delayed media graph data.
+    const id = window.setInterval(() => {
+      if (!analyserRef.current) {
+        try {
+          ensureCtx()
+        } catch {
+          /* */
+        }
+      }
+    }, 1200)
+
+    return () => window.clearInterval(id)
+  }, [playing, streamIdx, ensureCtx])
+
+  useEffect(() => {
     handleErrorRef.current = () => {
       const a = audioRef.current
       if (!a) return

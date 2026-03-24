@@ -66,7 +66,7 @@ export function GlobalHeader() {
 
   return (
     <header
-      className="fixed top-0 right-0 left-0 z-40 flex h-16 items-center justify-between border-b px-4 backdrop-blur-xl transition-all duration-200 md:left-(--sidebar-width"
+      className="md:left-(--sidebar-width fixed top-0 right-0 left-0 z-40 flex h-16 items-center justify-between border-b px-4 backdrop-blur-xl transition-all duration-200"
       style={{
         background: "var(--app-header-bg)",
         borderColor: "var(--app-border)",
@@ -111,7 +111,7 @@ export function GlobalHeader() {
             className="transition-transform group-hover/bell:rotate-12"
           />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full  bg-blue-600 px-1 text-[9px] font-black text-white shadow-[0_0_8px_rgba(37,99,235,0.5)]">
+            <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[9px] font-black text-white shadow-[0_0_8px_rgba(37,99,235,0.5)]">
               {unreadCount}
             </span>
           )}

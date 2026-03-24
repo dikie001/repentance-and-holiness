@@ -11,7 +11,6 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { useRadio } from "@/context/RadioContext"
-import { Download, Smartphone } from "lucide-react"
 
 /* ── Static media feed data ─────────────────────────────────── */
 const TRENDING = [
@@ -21,7 +20,7 @@ const TRENDING = [
     type: "Teaching",
     speaker: "Pastor Emmanuel",
     dur: "1:12:44",
-    grad: "from-indigo-700 to-blue-800",
+    grad: "from-slate-700 to-slate-800",
     icon: BookOpen,
   },
   {
@@ -30,7 +29,7 @@ const TRENDING = [
     type: "Song",
     speaker: "Choir Ministry",
     dur: "5:34",
-    grad: "from-blue-600 to-cyan-700",
+    grad: "from-slate-600 to-blue-700",
     icon: Music2,
   },
   {
@@ -39,7 +38,7 @@ const TRENDING = [
     type: "Prophecy",
     speaker: "Prophet Samuel",
     dur: "38:21",
-    grad: "from-blue-800 to-indigo-900",
+    grad: "from-slate-700 to-slate-900",
     icon: Flame,
   },
   {
@@ -48,7 +47,7 @@ const TRENDING = [
     type: "Video",
     speaker: "Ministry Team",
     dur: "2:04:15",
-    grad: "from-cyan-800 to-blue-900",
+    grad: "from-blue-700 to-slate-900",
     icon: Video,
   },
   {
@@ -57,7 +56,7 @@ const TRENDING = [
     type: "Teaching",
     speaker: "Pastor Grace",
     dur: "55:10",
-    grad: "from-slate-700 to-indigo-800",
+    grad: "from-slate-700 to-blue-800",
     icon: BookOpen,
   },
   {
@@ -66,7 +65,7 @@ const TRENDING = [
     type: "Video",
     speaker: "Ministry Team",
     dur: "1:58:30",
-    grad: "from-blue-900 to-indigo-900",
+    grad: "from-slate-800 to-slate-900",
     icon: Video,
   },
 ]
@@ -78,7 +77,7 @@ const RECENT = [
     type: "Prophecy",
     speaker: "Prophet Samuel",
     dur: "Mar 20",
-    grad: "from-indigo-700 to-blue-800",
+    grad: "from-slate-700 to-blue-800",
     icon: Flame,
   },
   {
@@ -87,7 +86,7 @@ const RECENT = [
     type: "Teaching",
     speaker: "Pastor Grace",
     dur: "55:10",
-    grad: "from-blue-700 to-indigo-700",
+    grad: "from-slate-700 to-slate-800",
     icon: BookOpen,
   },
   {
@@ -96,7 +95,7 @@ const RECENT = [
     type: "Song",
     speaker: "Worship Team",
     dur: "7:02",
-    grad: "from-blue-600 to-cyan-600",
+    grad: "from-slate-600 to-blue-700",
     icon: Music2,
   },
 ]
@@ -107,21 +106,6 @@ const TYPE_BADGE: Record<string, string> = {
   Prophecy: "border-amber-500/40 bg-amber-500/10 text-amber-300",
   Video: "border-cyan-500/40 bg-cyan-500/10 text-cyan-300",
 }
-
-const MOBILE_APPS = [
-  {
-    name: "iOS App",
-    platform: "App Store",
-    icon: Download,
-    url: "https://apps.apple.com",
-  },
-  {
-    name: "Android App",
-    platform: "Play Store",
-    icon: Smartphone,
-    url: "https://play.google.com/store",
-  },
-]
 
 function EqBars({ active }: { active: boolean }) {
   return (
@@ -273,7 +257,7 @@ export default function HomePage() {
           <Link
             to="/jesus-is-lord-radio"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-0.5 text-[11px] font-bold text-cyan-500 hover:text-cyan-400"
+            className="flex items-center gap-0.5 text-[11px] font-bold text-blue-600 hover:text-blue-500"
           >
             Full Player <ChevronRight size={11} />
           </Link>
@@ -291,7 +275,7 @@ export default function HomePage() {
           </p>
           <Link
             to="/media"
-            className="flex items-center gap-0.5 text-[11px] font-bold text-cyan-500 hover:text-cyan-400"
+            className="flex items-center gap-0.5 text-[11px] font-bold text-blue-600 hover:text-blue-500"
           >
             See all <ChevronRight size={11} />
           </Link>
@@ -362,7 +346,7 @@ export default function HomePage() {
           </p>
           <Link
             to="/teachings"
-            className="flex items-center gap-0.5 text-[11px] font-bold text-cyan-500 hover:text-cyan-400"
+            className="flex items-center gap-0.5 text-[11px] font-bold text-blue-600 hover:text-blue-500"
           >
             See all <ChevronRight size={11} />
           </Link>
@@ -416,57 +400,6 @@ export default function HomePage() {
           })}
         </div>
       </section>
-      {/* Mobile Apps Section */}
-      <section>
-        <p
-          className="mb-3 text-[11px] font-black tracking-widest uppercase"
-          style={{ color: "var(--app-text-faint)" }}
-        >
-          Get the App
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {MOBILE_APPS.map((app, idx) => {
-            const Icon = app.icon
-            return (
-              <motion.a
-                key={idx}
-                href={app.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 + idx * 0.1 }}
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.96 }}
-                className="flex flex-col items-center justify-center gap-2.5 rounded-xl border px-4 py-5 text-center transition-all hover:border-blue-400/50"
-                style={{
-                  background:
-                    "linear-gradient(135deg, var(--app-card) 0%, rgba(59, 130, 246, 0.04) 100%)",
-                  borderColor: "var(--app-border)",
-                }}
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600/20 to-cyan-500/20">
-                  <Icon size={20} style={{ color: "var(--app-text)" }} />
-                </div>
-                <div>
-                  <p
-                    className="text-sm leading-tight font-bold"
-                    style={{ color: "var(--app-text)" }}
-                  >
-                    {app.name}
-                  </p>
-                  <p
-                    className="mt-1 text-[10px]"
-                    style={{ color: "var(--app-text-muted)" }}
-                  >
-                    {app.platform}
-                  </p>
-                </div>
-              </motion.a>
-            )
-          })}
-        </div>
-      </section>{" "}
     </div>
   )
 }

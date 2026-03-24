@@ -20,7 +20,6 @@ import {
   Mic,
   Square,
   Timer,
-  Heart,
 } from "lucide-react"
 import { useRadio, STREAMS } from "@/context/RadioContext"
 
@@ -106,6 +105,9 @@ function SegmentedEQ({
   const freqDataRef = useRef<Uint8Array>(new Uint8Array(0))
   const timeDataRef = useRef<Uint8Array>(new Uint8Array(0))
   const phaseRef = useRef<Float32Array>(new Float32Array(0))
+  const jitterRef = useRef<Float32Array>(new Float32Array(0))
+  const responseRef = useRef<Float32Array>(new Float32Array(0))
+  const normRef = useRef(1)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -175,10 +177,25 @@ function SegmentedEQ({
         }
         phaseRef.current = next
       }
+      if (jitterRef.current.length !== barCount) {
+        const next = new Float32Array(barCount)
+        for (let i = 0; i < barCount; i++) {
+          next[i] = (Math.random() * 2 - 1) * 0.12
+        }
+        jitterRef.current = next
+      }
+      if (responseRef.current.length !== barCount) {
+        const next = new Float32Array(barCount)
+        for (let i = 0; i < barCount; i++) {
+          next[i] = 0.86 + Math.random() * 0.34
+        }
+        responseRef.current = next
+      }
 
       let rms = 0
       let centroid = 0
       let spectralMass = 0
+      let meanEnergy = 0
       if (playing && analyserRef.current) {
         const analyser = analyserRef.current
 
@@ -189,12 +206,18 @@ function SegmentedEQ({
           timeDataRef.current = new Uint8Array(analyser.fftSize)
         }
 
-        analyser.getByteFrequencyData(
-          freqDataRef.current as unknown as Uint8Array<ArrayBuffer>
-        )
-        analyser.getByteTimeDomainData(
-          timeDataRef.current as unknown as Uint8Array<ArrayBuffer>
-        )
+        try {
+          analyser.getByteFrequencyData(
+            freqDataRef.current as unknown as Uint8Array<ArrayBuffer>
+          )
+          analyser.getByteTimeDomainData(
+            timeDataRef.current as unknown as Uint8Array<ArrayBuffer>
+          )
+        } catch {
+          // Some streams intermittently block analyser reads; keep animation alive.
+          freqDataRef.current.fill(0)
+          timeDataRef.current.fill(128)
+        }
 
         for (let i = 0; i < timeDataRef.current.length; i++) {
           const sample = (timeDataRef.current[i] - 128) / 128
@@ -208,6 +231,14 @@ function SegmentedEQ({
         )
 
         for (let i = 1; i < maxSpectralBin; i++) {
+          meanEnergy += freqDataRef.current[i] / 255
+        }
+        meanEnergy /= Math.max(1, maxSpectralBin - 1)
+
+        const targetNorm = Math.min(3.2, Math.max(0.85, 0.24 / (meanEnergy + 0.02)))
+        normRef.current += (targetNorm - normRef.current) * 0.08
+
+        for (let i = 1; i < maxSpectralBin; i++) {
           const n = freqDataRef.current[i] / 255
           spectralMass += n
           centroid += n * i
@@ -218,44 +249,54 @@ function SegmentedEQ({
         const minBin = 3
         const maxBin = Math.min(freqDataRef.current.length - 1, maxSpectralBin)
         const centroidNorm = Math.min(1, centroid / Math.max(1, maxSpectralBin))
-        const noiseGate = 0.04 + rms * 0.07
+        const noiseGate = Math.max(0.012, 0.024 + rms * 0.045 - meanEnergy * 0.03)
         const now = performance.now()
 
         for (let i = 0; i < barCount; i++) {
           const barT = i / Math.max(1, barCount - 1)
           const distFromCenter = Math.abs(barT - 0.5)
           const centerWeight = Math.pow(1 - distFromCenter, 0.7)
+          const jitter = jitterRef.current[i]
+          const response = responseRef.current[i]
 
           // Keep the spectrum musically active by biasing toward low-mid bands.
           const barPhase = (i * 0.41 + barT * 1.3) % 1
-          const baseT = Math.pow(barT, 1.55)
+          const baseT = Math.pow(barT, 1.48)
           const freqT = Math.min(
             1,
-            baseT * 0.7 + barPhase * 0.15 + centroidNorm * 0.12
+            baseT * 0.64 + barPhase * 0.18 + centroidNorm * 0.13 + jitter
           )
-          const activeMaxBin = Math.floor(minBin + (maxBin - minBin) * 0.74)
+          const activeMaxBin = Math.floor(minBin + (maxBin - minBin) * 0.8)
           const bin = Math.floor(
             minBin +
               freqT * (activeMaxBin - minBin) +
-              Math.sin(phaseRef.current[i]) * 5
+              Math.sin(phaseRef.current[i] + now * 0.0008) * 4
           )
           const radius = 1 + Math.floor(1.5 + distFromCenter * 8)
           const offset = Math.floor(
-            Math.sin(phaseRef.current[i] * 0.5 + i * 0.11) * 3
+            Math.sin(phaseRef.current[i] * 0.5 + i * 0.11 + now * 0.0012) * 3
           )
-          const rawValue = sampleBand(freqDataRef.current, bin, radius, offset)
+          const rawValue = Math.min(
+            1,
+            sampleBand(freqDataRef.current, bin, radius, offset) * normRef.current
+          )
 
           // Staggered dynamics: each bar has slightly different attack/release
           const indexStagger =
             Math.sin((i * 0.19 + now * 0.00015) % Math.PI) * 0.1
-          const attack = 0.50 + centerWeight * 0.2 + indexStagger
-          const release = 0.15 + centerWeight * 0.14 + indexStagger * 0.4
+          const attack = (0.5 + centerWeight * 0.2 + indexStagger) * response
+          const release =
+            (0.15 + centerWeight * 0.14 + indexStagger * 0.4) *
+            (0.92 + response * 0.18)
 
           const prev = smoothRef.current[i]
           const edgeFloor = 0.004 + (1 - centerWeight) * 0.005
+          const rightTilt = 0.84 + barT * 0.3
           const target = Math.max(
             edgeFloor,
-            Math.max(0, rawValue - noiseGate) * (0.44 + 1.35 * centerWeight)
+            Math.max(0, rawValue - noiseGate) *
+              (0.42 + 1.34 * centerWeight) *
+              rightTilt
           )
 
           smoothRef.current[i] =
@@ -353,10 +394,6 @@ export default function RadioPlayer() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [sleepEndAt, setSleepEndAt] = useState<number | null>(null)
   const [sleepNowMs, setSleepNowMs] = useState(Date.now())
-  const [favorite, setFavorite] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false
-    return window.localStorage.getItem("rh-radio-favorite") === "1"
-  })
 
   const share = useCallback(async () => {
     const data = { title: "Jesus Is Lord Radio", url: STREAMS[streamIdx].url }
@@ -408,20 +445,6 @@ export default function RadioPlayer() {
     }
     setSleepEndAt(null)
   }, [sleepEndAt, sleepRemainingMs, playing, togglePlay, notify])
-
-  const toggleFavorite = useCallback(() => {
-    setFavorite((prev) => {
-      const next = !prev
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("rh-radio-favorite", next ? "1" : "0")
-      }
-      notify(
-        next ? "Added to Favorites" : "Removed from Favorites",
-        next ? "success" : "default"
-      )
-      return next
-    })
-  }, [notify])
 
   return (
     <>
@@ -478,20 +501,6 @@ export default function RadioPlayer() {
             <div className="mt-8 flex flex-col items-center gap-2">
               <div className="flex items-center gap-2 text-2xl font-black tracking-tight">
                 <h1>Jesus Is Lord Radio</h1>
-                <button
-                  onClick={toggleFavorite}
-                  className={cn(
-                    "grid h-8 w-8 place-items-center rounded-full border transition-colors",
-                    favorite
-                      ? "border-rose-400/40 bg-rose-500/10 text-rose-500"
-                      : isDark
-                        ? "border-white/15 bg-white/5 text-slate-300 hover:text-white"
-                        : "border-blue-300/80 bg-white/80 text-blue-700 hover:text-blue-900"
-                  )}
-                  aria-label="Toggle favorite"
-                >
-                  <Heart size={15} fill={favorite ? "currentColor" : "none"} />
-                </button>
                 {playing && (
                   <div
                     className={cn(
