@@ -23,8 +23,10 @@ export function AppLayout() {
       <NotificationProvider>
         <TooltipProvider>
           <SidebarProvider>
-
-            <NetworkNotFoundModal isVisible={isOnline} />
+            <NetworkNotFoundModal
+              isVisible={!isOnline}
+              onRetry={() => retryConnection()}
+            />
             <div
               className={cn(
                 "h-screen w-full overflow-hidden",

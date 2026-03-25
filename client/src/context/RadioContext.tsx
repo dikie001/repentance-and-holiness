@@ -426,10 +426,26 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
     // Reset audio graph so ensureCtx always wires a fresh analyser chain.
     // This mirrors what switchStream does and is why switching "fixed" the spectrum.
-    try { srcRef.current?.disconnect() } catch { /* */ }
-    try { gainRef.current?.disconnect() } catch { /* */ }
-    try { analyserRef.current?.disconnect() } catch { /* */ }
-    try { streamSrcRef.current?.disconnect() } catch { /* */ }
+    try {
+      srcRef.current?.disconnect()
+    } catch {
+      /* */
+    }
+    try {
+      gainRef.current?.disconnect()
+    } catch {
+      /* */
+    }
+    try {
+      analyserRef.current?.disconnect()
+    } catch {
+      /* */
+    }
+    try {
+      streamSrcRef.current?.disconnect()
+    } catch {
+      /* */
+    }
     srcRef.current = null
     gainRef.current = null
     analyserRef.current = null
