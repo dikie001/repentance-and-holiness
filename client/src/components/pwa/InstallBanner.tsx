@@ -72,47 +72,46 @@ export function InstallBanner() {
   if (!visible) return null
 
   return (
-    <section
-      className="mx-auto mb-4 flex w-full items-center gap-3 rounded-2xl border px-4 py-3 shadow-xl backdrop-blur-xl"
-      style={{
-        background: "var(--app-header-bg)",
-        borderColor: "var(--app-border)",
-        color: "var(--app-text)",
-      }}
-      aria-label="Install app banner"
-    >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-500/12 text-cyan-300">
-        <Download size={18} />
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-black tracking-wide">
-          Install this app for faster access
-        </p>
-        <p className="text-xs opacity-70">
-          Add Repentance &amp; Holiness to your home screen.
-        </p>
-      </div>
-
-      <button
-        onClick={install}
-        disabled={installing}
-        className="rounded-xl border border-cyan-500/40 bg-cyan-500 px-3 py-2 text-xs font-black text-white transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+    <div className="fixed right-4 bottom-4 left-4 z-[100] animate-in duration-500 fade-in slide-in-from-bottom-8 sm:right-6 sm:bottom-6 sm:left-auto sm:w-80">
+      <section
+        className="relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+        aria-label="Install app banner"
       >
-        {installing ? "Installing..." : "Install"}
-      </button>
+        {/* Dismiss Button (Top Right) */}
+        <button
+          onClick={dismiss}
+          className="absolute top-3 right-3 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+          aria-label="Dismiss install banner"
+        >
+          <X size={16} />
+        </button>
 
-      <button
-        onClick={dismiss}
-        className="grid h-8 w-8 place-items-center rounded-lg border transition-colors hover:bg-white/8"
-        style={{
-          borderColor: "var(--app-border)",
-          color: "var(--app-text-muted)",
-        }}
-        aria-label="Dismiss install banner"
-      >
-        <X size={16} />
-      </button>
-    </section>
+        <div className="flex items-start gap-4 pr-6">
+          {/* Professional Blue Icon Container */}
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+            <Download size={24} strokeWidth={2} />
+          </div>
+
+          {/* Text Content */}
+          <div className="flex flex-col pt-0.5">
+            <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">
+              Install  App
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              Add Repentance & Holiness App to your home screen for faster access.
+            </p>
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <button
+          onClick={install}
+          disabled={installing}
+          className="flex w-full items-center justify-center rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/30 active:scale-[0.98] disabled:opacity-70 dark:bg-blue-500 dark:hover:bg-blue-600"
+        >
+          {installing ? "Installing..." : "Install Now"}
+        </button>
+      </section>
+    </div>
   )
 }

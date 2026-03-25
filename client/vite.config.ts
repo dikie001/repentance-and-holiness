@@ -46,10 +46,29 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp}"],
+        navigateFallback: "index.html",
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
+          // Cache API responses with network-first strategy
+          {
+            urlPattern: /^https?:\/\/localhost.*\/api\/.*/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-cache",
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          // Cache external resources with cache-first strategy
           {
             urlPattern: /^https:\/\/.*$/i,
-            handler: "NetworkFirst",
+            handler: "CacheFirst",
             options: {
               cacheName: "http-cache",
               expiration: {

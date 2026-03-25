@@ -292,18 +292,32 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  /* ── Fake listeners count ─── */
+  /* ── Fetch real listeners count from API ─── */
   useEffect(() => {
-    const id = setInterval(
-      () =>
+    const fetchListeners = async () => {
+      try {
+        const response = await fetch("/api/radio/stats")
+        if (response.ok) {
+          const data = await response.json()
+          setListeners(data.listeners || 42)
+        }
+      } catch (error) {
+        console.warn("Failed to fetch listener stats:", error)
+        // Fallback to a random number if API fails
         setListeners((n) =>
           Math.max(
             1,
-            n + (Math.random() > 0.5 ? 1 : -1) * ~~(Math.random() * 5)
+            n + (Math.random() > 0.5 ? 1 : -1) * ~~(Math.random() * 3)
           )
-        ),
-      6000
-    )
+        )
+      }
+    }
+
+    // Fetch immediately on mount
+    fetchListeners()
+
+    // Then fetch every 30 seconds
+    const id = setInterval(fetchListeners, 30000)
     return () => clearInterval(id)
   }, [])
 

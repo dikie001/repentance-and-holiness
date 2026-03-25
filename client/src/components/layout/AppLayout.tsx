@@ -1,32 +1,26 @@
+import { NotificationSheet } from "@/components/notifications/NotificationSheet"
+import { InstallBanner } from "@/components/pwa/InstallBanner"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { NotificationProvider } from "@/context/NotificationContext"
+import { RadioProvider } from "@/context/RadioContext"
+import { cn } from "@/lib/utils"
 import { Outlet, useLocation } from "react-router-dom"
 import { AppSidebar } from "./AppSidebar"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { RadioProvider } from "@/context/RadioContext"
-import { NotificationProvider } from "@/context/NotificationContext"
-import { NotificationSheet } from "@/components/notifications/NotificationSheet"
 import { MiniPlayer } from "./MiniPlayer"
-import { InstallBanner } from "@/components/pwa/InstallBanner"
-import { cn } from "@/lib/utils"
-import NetworkNotFoundModal from "../networkNotFoundModal"
-import { useNetworkStatus } from "@/hooks/use-network"
 
 
 export function AppLayout() {
   const location = useLocation()
   const isRadioRoute = location.pathname.startsWith("/jesus-is-lord-radio")
   const useCardShell = true
-  const isOnline = useNetworkStatus()
 
   return (
     <RadioProvider>
       <NotificationProvider>
         <TooltipProvider>
           <SidebarProvider>
-            <NetworkNotFoundModal
-              isVisible={!isOnline}
-              onRetry={() => retryConnection()}
-            />
+        
             <div
               className={cn(
                 "h-screen w-full overflow-hidden",
