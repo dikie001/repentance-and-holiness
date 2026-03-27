@@ -359,6 +359,13 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       ctx.resume().catch(() => {})
     }
 
+    // Create analyser immediately (needed for both paths)
+    if (!analyserRef.current) {
+      analyserRef.current = ctx.createAnalyser()
+      analyserRef.current.fftSize = 2048
+      analyserRef.current.smoothingTimeConstant = 0.65
+    }
+
     // If direct media source fails because of CORS, analyze the element output stream instead.
     if (isCORSFallbackRef.current) {
       if (!streamSrcRef.current) {
@@ -378,7 +385,13 @@ export function RadioProvider({ children }: { children: ReactNode }) {
           null
 
         if (capture) {
-          streamSrcRef.current = ctx.createMediaStreamSource(capture)
+          try {
+            streamSrcRef.current = ctx.createMediaStreamSource(capture)
+          } catch (e) {
+            console.warn("Failed to create MediaStreamSource:", e)
+            // Will retry on next self-heal loop
+            return
+          }
         }
       }
 
@@ -388,12 +401,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      if (!analyserRef.current) {
-        analyserRef.current = ctx.createAnalyser()
-        analyserRef.current.fftSize = 2048
-        analyserRef.current.smoothingTimeConstant = 0.65
-      }
-
       if (streamSrcRef.current) {
         try {
           streamSrcRef.current.disconnect()
@@ -401,6 +408,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
           /* */
         }
         streamSrcRef.current.connect(analyserRef.current)
+        analyserRef.current.connect(ctx.destination)
       }
 
       return
@@ -411,7 +419,34 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       try {
         srcRef.current = ctx.createMediaElementSource(a)
       } catch (e) {
-        console.warn("AudioContext source creation failed:", e)
+        console.warn("AudioContext source creation failed, falling back to captureStream:", e)
+        // Mark to use CORS fallback method on next attempt
+        isCORSFallbackRef.current = true
+        // Try immediately to set up captureStream
+        const capture =
+          ((
+            a as HTMLAudioElement & {
+              captureStream?: () => MediaStream
+              mozCaptureStream?: () => MediaStream
+            }
+          ).captureStream?.() ||
+            (
+              a as HTMLAudioElement & {
+                captureStream?: () => MediaStream
+                mozCaptureStream?: () => MediaStream
+              }
+            ).mozCaptureStream?.()) ??
+          null
+
+        if (capture) {
+          try {
+            streamSrcRef.current = ctx.createMediaStreamSource(capture)
+            streamSrcRef.current.connect(analyserRef.current)
+            analyserRef.current.connect(ctx.destination)
+          } catch (captureErr) {
+            console.warn("captureStream setup failed, will retry:", captureErr)
+          }
+        }
         return
       }
     }
@@ -421,10 +456,19 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       gainRef.current.gain.value = muted ? 0 : volume / 100
       srcRef.current.connect(gainRef.current)
     }
-    if (!analyserRef.current) {
-      analyserRef.current = ctx.createAnalyser()
-      analyserRef.current.fftSize = 2048
-      analyserRef.current.smoothingTimeConstant = 0.65
+    
+    // Connect the audio graph
+    if (gainRef.current && analyserRef.current) {
+      try {
+        gainRef.current.disconnect()
+      } catch {
+        /* */
+      }
+      try {
+        analyserRef.current?.disconnect()
+      } catch {
+        /* */
+      }
       gainRef.current.connect(analyserRef.current)
       analyserRef.current.connect(ctx.destination)
     }
@@ -553,6 +597,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     }
 
     // Self-heal analyser wiring for streams that start but expose delayed media graph data.
+    // Reduced from 300ms to 100ms for faster spectrum recovery on primary stream
     const id = window.setInterval(() => {
       const needsFallbackStream =
         isCORSFallbackRef.current && !streamSrcRef.current
@@ -564,7 +609,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
           /* */
         }
       }
-    }, 300)
+    }, 100)
 
     return () => window.clearInterval(id)
   }, [playing, streamIdx, ensureCtx])

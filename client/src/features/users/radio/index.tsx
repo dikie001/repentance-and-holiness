@@ -163,6 +163,10 @@ function SegmentedEQ({
       const width = Math.max(240, canvas.clientWidth)
       const height = Math.max(120, canvas.clientHeight)
       const centerY = height * 0.5
+
+      // Ensure canvas dimensions are set
+      if (canvas.width === 0 || canvas.height === 0) return
+
       ctx.clearRect(0, 0, width, height)
 
       const barPitch = Math.max(3.4, width / 152)
@@ -463,13 +467,13 @@ export default function RadioPlayer() {
 
       <div
         className={cn(
-          "font-barlow relative flex h-full  flex-col overflow-hidden transition-colors duration-500",
+          "font-barlow relative flex h-full flex-col overflow-hidden transition-colors duration-500",
           isDark
             ? "bg-gradient-to-br from-[#060614] via-[#0a0a1e] to-[#060610] text-white"
             : "bg-[#eef1ff] text-[#0f1535]"
         )}
       >
-        <main className="flex flex-1 flex-col items-center justify-between px-4 mt-16  py-12 sm:px-6 lg:px-8 lg:mt-4">
+        <main className="mt-16 flex flex-1 flex-col items-center justify-between px-4 py-12 sm:px-6 lg:mt-4 lg:px-8">
           {/* Artwork */}
           <div className="w-full pt-3 text-center sm:pt-4">
             <div className="relative mx-auto mb-3 w-fit">
@@ -703,7 +707,7 @@ export default function RadioPlayer() {
             </div>
 
             {/* Volume */}
-            <div className="mb-2 mt-2 flex items-center gap-3 px-4">
+            <div className="mt-2 mb-2 flex items-center gap-3 px-4">
               <button
                 onClick={() => setMuted(!muted)}
                 className={muted ? "text-neutral-500" : "text-cyan-500"}

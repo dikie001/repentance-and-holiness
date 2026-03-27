@@ -1,100 +1,135 @@
-import {  RefreshCw } from "lucide-react"
-import { useTheme } from "./theme-provider"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react"
+import {
+  RefreshCw,
+  Wifi,
+  Router,
+  ArrowRightLeft,
+  Plane,
+  HelpCircle,
+  ChevronDown,
+} from "lucide-react"
+
+const troubleshootSteps = [
+  {
+    icon: <Wifi size={16} />,
+    text: "Make sure your Wi-Fi or mobile data is turned on",
+  },
+  {
+    icon: <Router size={16} />,
+    text: "Restart your router or modem",
+  },
+  {
+    icon: <ArrowRightLeft size={16} />,
+    text: "Switch between Wi-Fi and mobile data",
+  },
+  {
+    icon: <Plane size={16} />,
+    text: "Toggle Airplane Mode off and on again",
+  },
+]
 
 export function OfflineNotice() {
-  const { theme } = useTheme()
-  const isDark = theme !== "light"
+  const [isRetrying, setIsRetrying] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+  const [dots, setDots] = useState("")
+
+  // Animate the "Retrying..." dots
+  useEffect(() => {
+    if (!isRetrying) return
+    const interval = setInterval(() => {
+      setDots((prev) => (prev.length >= 3 ? "" : prev + "."))
+    }, 400)
+    return () => clearInterval(interval)
+  }, [isRetrying])
 
   const handleRetry = () => {
-    // Try to reload the page
-    window.location.reload()
+    setIsRetrying(true)
+    setTimeout(() => {
+      window.location.reload()
+    }, 800)
   }
 
   return (
-    <div
-      className={cn(
-        "fixed inset-0 z-[999] flex items-center justify-center p-4",
-        isDark
-          ? "bg-gradient-to-br from-slate-900 to-slate-950"
-          : "bg-gradient-to-br from-blue-50 to-blue-100"
-      )}
-    >
-      <div
-        className={cn(
-          "w-full max-w-md rounded-3xl border p-8 text-center shadow-2xl",
-          isDark ? "border-slate-700 bg-slate-800" : "border-blue-200 bg-white"
-        )}
-      >
-        {/* Icon */}
-        <div
-          className={cn(
-            "mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full",
-            isDark ? "bg-red-900/30" : "bg-red-100"
-          )}
-        >
-          <img
-            src="/images/net-error.png"
-            alt="No internet"
-            className="relative h-28 w-28 object-contain opacity-90"
-          />
+    <div className="fixed inset-0 z-[999] flex items-center justify-center overflow-hidden bg-[#05050a]/80 p-4 backdrop-blur-md transition-colors duration-300">
+      <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-[#1a1f3a] bg-[#0b0c16] shadow-2xl shadow-black/80">
+        {/* Top Cyan Accent Bar */}
+        <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#00c8ff] to-transparent opacity-80" />
+
+        <div className="flex flex-col items-center px-8 pt-6 pb-8 text-center">
+          {/* Icon with cyan glow */}
+          <div className="relative mb-6 flex h-24 w-24 items-center justify-center">
+            <div className="absolute inset-0 rounded-full bg-[#00c8ff] opacity-15 blur-[32px]" />
+            <img
+              src="/images/net-error.png"
+              alt="No internet"
+              className="relative h-full w-full object-contain brightness-110"
+            />
+          </div>
+
+          {/* Title */}
+          <h1 className="mb-2 text-2xl font-black tracking-tight text-white">
+            No Internet Connection
+          </h1>
+
+          {/* Description */}
+          <p className="mb-6 text-sm leading-relaxed text-[#8a8d9e]">
+            An active internet connection is required to use this app. Please
+            connect to a network to continue.
+          </p>
+
+          {/* Divider */}
+          <div className="mb-4 h-px w-full bg-gradient-to-r from-transparent via-[#1a1f3a] to-transparent" />
+
+          {/* Troubleshoot Toggle */}
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-[#00c8ff] transition-opacity hover:opacity-80"
+          >
+            <HelpCircle size={16} />
+            How to fix this
+            <ChevronDown
+              size={16}
+              className={`transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {/* Troubleshoot Steps Accordion */}
+          <div
+            className={`w-full overflow-hidden transition-all duration-300 ease-in-out ${
+              expanded ? "mb-6 max-h-72 opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
+            <div className="rounded-xl border border-[#1a1f3a] bg-[#121424] text-left shadow-inner">
+              {troubleshootSteps.map((step, i) => (
+                <div
+                  key={i}
+                  className={`flex items-start gap-3 px-4 py-3 ${i !== 0 ? "border-t border-[#1a1f3a]" : ""}`}
+                >
+                  <span className="mt-0.5 shrink-0 text-[#00c8ff] opacity-80">
+                    {step.icon}
+                  </span>
+                  <p className="text-sm leading-relaxed text-[#8a8d9e]">
+                    {step.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Retry Button (Matches your center play button) */}
+          <button
+            onClick={handleRetry}
+            disabled={isRetrying}
+            className={`mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#0277b6]/50 bg-gradient-to-b from-[#0288d1] to-[#02669b] px-6 py-3.5 font-bold text-white shadow-lg shadow-[#0277b6]/20 transition-all duration-300 ${
+              isRetrying
+                ? "cursor-wait opacity-70"
+                : "hover:scale-[1.02] hover:shadow-[#0277b6]/40 active:scale-[0.98]"
+            }`}
+          >
+            <RefreshCw size={18} className={isRetrying ? "animate-spin" : ""} />
+            {isRetrying ? `Retrying${dots}` : "Try Again"}
+          </button>
         </div>
-
-        {/* Title */}
-        <h1
-          className="mb-2 text-2xl font-black tracking-tight"
-          style={{ color: isDark ? "rgb(255, 255, 255)" : "rgb(15, 23, 42)" }}
-        >
-          No Internet Connection
-        </h1>
-
-        {/* Description */}
-        <p
-          className="mb-6 text-sm leading-relaxed"
-          style={{
-            color: isDark
-              ? "rgba(255, 255, 255, 0.7)"
-              : "rgba(15, 23, 42, 0.7)",
-          }}
-        >
-          You're currently offline. This app works best with an internet
-          connection. Some features may be limited or unavailable.
-        </p>
-
-        {/* Status Indicator */}
-        <div
-          className={cn(
-            "mb-8 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold tracking-widest uppercase",
-            isDark
-              ? "border border-red-600/35 bg-red-900/15 text-red-400"
-              : "border border-red-200 bg-red-50 text-red-600"
-          )}
-        >
-          <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-          OFFLINE
-        </div>
-
-        {/* Retry Button */}
-        <button
-          onClick={handleRetry}
-          className={cn(
-            "inline-flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-3 font-bold transition-all duration-300 hover:scale-105 active:scale-95",
-            isDark
-              ? "border border-white/20 bg-white/10 text-white hover:bg-white/15"
-              : "border border-blue-300 bg-blue-600 text-white hover:bg-blue-700"
-          )}
-        >
-          <RefreshCw size={18} />
-          Try Again
-        </button>
-
-        {/* Additional Context */}
-        <p
-          className="mt-6 text-xs opacity-60"
-          style={{ color: isDark ? "rgb(255, 255, 255)" : "rgb(15, 23, 42)" }}
-        >
-          Some cached content may still be available while you're offline.
-        </p>
       </div>
     </div>
   )

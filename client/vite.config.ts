@@ -12,7 +12,7 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: "auto",
-      includeAssets: ["icons/apple-touch-icon.png"],
+      includeAssets: ["icons/apple-touch-icon.png", "images/**/*"],
       manifest: {
         name: "Repentance & Holiness",
         short_name: "R&H",
@@ -23,6 +23,11 @@ export default defineConfig({
         start_url: "/",
         scope: "/",
         icons: [
+          {
+            src: "/images/net-error.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
           {
             src: "/icons/pwa-192x192.png",
             sizes: "192x192",
@@ -45,7 +50,7 @@ export default defineConfig({
         enabled: true,
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg,gif}"],
         navigateFallback: "index.html",
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
@@ -59,6 +64,21 @@ export default defineConfig({
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          // Cache all images including external sources
+          {
+            urlPattern: /\.(png|jpg|jpeg|gif|svg|webp)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "image-cache",
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
               },
               cacheableResponse: {
                 statuses: [0, 200],
