@@ -203,7 +203,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const analyserRef = useRef<AnalyserNode | null>(null)
   const gainRef = useRef<GainNode | null>(null)
   const srcRef = useRef<MediaElementAudioSourceNode | null>(null)
-  const streamSrcRef = useRef<MediaStreamAudioSourceNode | null>(null)
 
   // Recording Refs
   const recRef = useRef<MediaRecorder | null>(null)
@@ -214,7 +213,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
   const streamIdxRef = useRef(streamIdx)
   const failedAttemptsRef = useRef(0)
-  const isCORSFallbackRef = useRef(false)
   const handleErrorRef = useRef<() => void>(() => {})
   const shouldResumeRef = useRef(readStoredBool(LS_KEYS.shouldResume, false))
 
@@ -245,7 +243,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const a = new Audio()
-    // Start with anonymous to support visualizer
     a.crossOrigin = "anonymous"
     audioRef.current = a
 
@@ -254,7 +251,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       setLoading(false)
       setError(null)
       failedAttemptsRef.current = 0
-      // Ensure AudioContext is running when playback starts
       if (ctxRef.current && ctxRef.current.state === "suspended") {
         ctxRef.current.resume().catch(() => {})
       }
@@ -271,11 +267,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     // Best effort restore when app is reopened. Browsers may still gate autoplay.
     if (shouldResumeRef.current) {
       setLoading(true)
-      try {
-        ensureCtx()
-      } catch {
-        /* */
-      }
       a.play()
         .then(() => {
           notify(`Resumed: ${STREAMS[streamIdxRef.current].label}`, "success")
@@ -290,6 +281,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       a.src = ""
       if (recTimer.current) clearInterval(recTimer.current)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /* ── Fetch real listeners count from API ─── */
@@ -354,124 +346,39 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     }
     const ctx = ctxRef.current
 
-    // Always attempt to resume on user interaction or state change
     if (ctx.state === "suspended") {
       ctx.resume().catch(() => {})
     }
 
-    // Create analyser immediately (needed for both paths)
+    // Create analyser if missing
     if (!analyserRef.current) {
       analyserRef.current = ctx.createAnalyser()
       analyserRef.current.fftSize = 2048
       analyserRef.current.smoothingTimeConstant = 0.65
     }
 
-    // If direct media source fails because of CORS, analyze the element output stream instead.
-    if (isCORSFallbackRef.current) {
-      if (!streamSrcRef.current) {
-        const capture =
-          ((
-            a as HTMLAudioElement & {
-              captureStream?: () => MediaStream
-              mozCaptureStream?: () => MediaStream
-            }
-          ).captureStream?.() ||
-            (
-              a as HTMLAudioElement & {
-                captureStream?: () => MediaStream
-                mozCaptureStream?: () => MediaStream
-              }
-            ).mozCaptureStream?.()) ??
-          null
-
-        if (capture) {
-          try {
-            streamSrcRef.current = ctx.createMediaStreamSource(capture)
-          } catch (e) {
-            console.warn("Failed to create MediaStreamSource:", e)
-            // Will retry on next self-heal loop
-            return
-          }
-        }
-      }
-
-      // captureStream can be unavailable right when playback starts.
-      // Return and allow the self-heal loop to retry until it is ready.
-      if (!streamSrcRef.current) {
-        return
-      }
-
-      if (streamSrcRef.current) {
-        try {
-          streamSrcRef.current.disconnect()
-        } catch {
-          /* */
-        }
-        streamSrcRef.current.connect(analyserRef.current)
-        analyserRef.current.connect(ctx.destination)
-      }
-
-      return
-    }
-
-    // Try to create source from audio element
+    // Create media element source (only once per audio element)
     if (!srcRef.current) {
       try {
         srcRef.current = ctx.createMediaElementSource(a)
       } catch (e) {
-        console.warn("AudioContext source creation failed, falling back to captureStream:", e)
-        // Mark to use CORS fallback method on next attempt
-        isCORSFallbackRef.current = true
-        // Try immediately to set up captureStream
-        const capture =
-          ((
-            a as HTMLAudioElement & {
-              captureStream?: () => MediaStream
-              mozCaptureStream?: () => MediaStream
-            }
-          ).captureStream?.() ||
-            (
-              a as HTMLAudioElement & {
-                captureStream?: () => MediaStream
-                mozCaptureStream?: () => MediaStream
-              }
-            ).mozCaptureStream?.()) ??
-          null
-
-        if (capture) {
-          try {
-            streamSrcRef.current = ctx.createMediaStreamSource(capture)
-            streamSrcRef.current.connect(analyserRef.current)
-            analyserRef.current.connect(ctx.destination)
-          } catch (captureErr) {
-            console.warn("captureStream setup failed, will retry:", captureErr)
-          }
-        }
+        console.warn("createMediaElementSource failed:", e)
         return
       }
     }
 
+    // Create gain node if missing
     if (!gainRef.current) {
       gainRef.current = ctx.createGain()
       gainRef.current.gain.value = muted ? 0 : volume / 100
       srcRef.current.connect(gainRef.current)
     }
-    
-    // Connect the audio graph
-    if (gainRef.current && analyserRef.current) {
-      try {
-        gainRef.current.disconnect()
-      } catch {
-        /* */
-      }
-      try {
-        analyserRef.current?.disconnect()
-      } catch {
-        /* */
-      }
-      gainRef.current.connect(analyserRef.current)
-      analyserRef.current.connect(ctx.destination)
-    }
+
+    // Wire: gain -> analyser -> destination
+    try { gainRef.current.disconnect() } catch { /* */ }
+    try { analyserRef.current.disconnect() } catch { /* */ }
+    gainRef.current.connect(analyserRef.current)
+    analyserRef.current.connect(ctx.destination)
   }, [muted, volume])
 
   const togglePlay = useCallback(() => {
@@ -482,45 +389,30 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    // Reset audio graph so ensureCtx always wires a fresh analyser chain.
-    // This mirrors what switchStream does and is why switching "fixed" the spectrum.
-    try {
-      srcRef.current?.disconnect()
-    } catch {
-      /* */
+    // Ensure we have a src set (may have been cleared)
+    if (!a.src || a.src === window.location.href) {
+      a.src = STREAMS[streamIdxRef.current].url
+      a.load()
     }
-    try {
-      gainRef.current?.disconnect()
-    } catch {
-      /* */
-    }
-    try {
-      analyserRef.current?.disconnect()
-    } catch {
-      /* */
-    }
-    try {
-      streamSrcRef.current?.disconnect()
-    } catch {
-      /* */
-    }
-    srcRef.current = null
-    gainRef.current = null
-    analyserRef.current = null
-    streamSrcRef.current = null
-    isCORSFallbackRef.current = false
+
     a.crossOrigin = "anonymous"
 
+    // Wire up audio context BEFORE playing so analyser works from the start
     try {
       ensureCtx()
     } catch {
       /* */
     }
+
     setLoading(true)
     setError(null)
     a.play()
       .then(() => {
         notify(`Connected: ${STREAMS[streamIdxRef.current].label}`, "success")
+        // Resume context in case it was suspended (autoplay policy)
+        if (ctxRef.current?.state === "suspended") {
+          ctxRef.current.resume().catch(() => {})
+        }
       })
       .catch((err) => {
         if (err instanceof Error && err.name === "NotAllowedError") {
@@ -536,30 +428,20 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       if (!a) return
       if (!auto) failedAttemptsRef.current = 0
 
-      // Reset CORS state when switching
-      isCORSFallbackRef.current = false
       a.crossOrigin = "anonymous"
 
-      // Only show connection toast during automatic recovery attempts.
       if (auto) {
         notify(`Source error - trying ${STREAMS[idx].label}...`, "danger")
       }
 
-      try {
-        srcRef.current?.disconnect()
-      } catch {
-        /* */
-      }
-      try {
-        streamSrcRef.current?.disconnect()
-      } catch {
-        /* */
-      }
-      // Recreate the element source for a fresh analyser chain per stream.
+      // Disconnect and reset the audio graph so it rewires cleanly for the new src
+      try { srcRef.current?.disconnect() } catch { /* */ }
+      try { gainRef.current?.disconnect() } catch { /* */ }
+      try { analyserRef.current?.disconnect() } catch { /* */ }
       srcRef.current = null
       gainRef.current = null
       analyserRef.current = null
-      streamSrcRef.current = null
+
       a.pause()
       a.src = STREAMS[idx].url
       setStreamIdx(idx)
@@ -567,6 +449,8 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       setError(null)
       setLoading(true)
       a.load()
+
+      // Wire the new graph then play
       try {
         ensureCtx()
       } catch {
@@ -574,8 +458,10 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       }
       a.play()
         .then(() => {
-          // Direct success feedback
           notify(`Connected: ${STREAMS[idx].label}`, "success")
+          if (ctxRef.current?.state === "suspended") {
+            ctxRef.current.resume().catch(() => {})
+          }
         })
         .catch((err) => {
           if (!auto && err instanceof Error && err.name === "NotAllowedError") {
@@ -589,27 +475,30 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!playing) return
 
-    // Ensure analyser is immediately available and wired
+    // Wire context immediately when playback starts
     try {
       ensureCtx()
     } catch {
       /* */
     }
 
-    // Self-heal analyser wiring for streams that start but expose delayed media graph data.
-    // Reduced from 300ms to 100ms for faster spectrum recovery on primary stream
+    // Self-heal: retry wiring if analyser is missing or audio isn't flowing
     const id = window.setInterval(() => {
-      const needsFallbackStream =
-        isCORSFallbackRef.current && !streamSrcRef.current
-
-      if (!analyserRef.current || needsFallbackStream) {
-        try {
-          ensureCtx()
-        } catch {
-          /* */
+      if (!analyserRef.current || !gainRef.current) {
+        try { ensureCtx() } catch { /* */ }
+        return
+      }
+      // Check if the analyser is actually receiving audio data
+      const buf = new Uint8Array(analyserRef.current.frequencyBinCount)
+      analyserRef.current.getByteFrequencyData(buf as unknown as Uint8Array<ArrayBuffer>)
+      const hasSignal = buf.some((v) => v > 0)
+      if (!hasSignal) {
+        // Rewire the graph - context likely needs resuming
+        if (ctxRef.current?.state === "suspended") {
+          ctxRef.current.resume().catch(() => {})
         }
       }
-    }, 100)
+    }, 150)
 
     return () => window.clearInterval(id)
   }, [playing, streamIdx, ensureCtx])
@@ -618,21 +507,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     handleErrorRef.current = () => {
       const a = audioRef.current
       if (!a) return
-
-      // If we failed with CORS, try again WITHOUT CORS before skipping to next server
-      if (a.crossOrigin === "anonymous" && !isCORSFallbackRef.current) {
-        console.warn("Retrying stream without CORS...")
-        isCORSFallbackRef.current = true
-        a.crossOrigin = null
-        a.load()
-        try {
-          ensureCtx()
-        } catch {
-          /* */
-        }
-        a.play().catch(() => {}) // Audio only now
-        return
-      }
 
       setLoading(false)
       setPlaying(false)
@@ -644,7 +518,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
         notify("Stream failed - try another server", "danger")
       }
     }
-  }, [switchStream, notify, ensureCtx])
+  }, [switchStream, notify])
 
   const setVolume = useCallback((v: number) => setVolumeState(v), [])
   const setMuted = useCallback((m: boolean) => setMutedState(m), [])

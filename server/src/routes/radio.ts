@@ -45,7 +45,11 @@ const fetchRealListeners = async (): Promise<ListenerStats> => {
     // Peak hours: 6-9am, 12-1pm, 5-7pm (typical radio listening patterns)
     let baseListeners = 40;
 
-    if ((hour >= 6 && hour < 10) || (hour >= 12 && hour < 14) || (hour >= 17 && hour < 19)) {
+    if (
+      (hour >= 6 && hour < 10) ||
+      (hour >= 12 && hour < 14) ||
+      (hour >= 17 && hour < 19)
+    ) {
       // Peak hours: add 30-50 listeners
       baseListeners += 40;
     } else if ((hour >= 10 && hour < 12) || (hour >= 19 && hour < 23)) {
