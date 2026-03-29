@@ -387,6 +387,7 @@ export default function RadioPlayer() {
   const {
     playing,
     loading,
+    loadingMsg,
     streamIdx,
     volume,
     muted,
@@ -525,7 +526,7 @@ export default function RadioPlayer() {
               </p>
               {loading && (
                 <p className="animate-pulse text-[11px] font-semibold text-cyan-400">
-                  Connecting to {STREAMS[streamIdx].label}...
+                  {loadingMsg}
                 </p>
               )}
               {sleepEndAt && (

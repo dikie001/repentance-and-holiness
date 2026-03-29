@@ -13,6 +13,7 @@ export function MiniPlayer() {
   const {
     playing,
     loading,
+    loadingMsg,
     togglePlay,
     muted,
     setMuted,
@@ -107,6 +108,10 @@ export function MiniPlayer() {
                   {recording ? (
                     <span className="flex animate-pulse items-center gap-1 font-bold text-red-500">
                       ● REC {fmt(recDuration)}
+                    </span>
+                  ) : loading ? (
+                    <span className="animate-pulse font-semibold text-cyan-400">
+                      {loadingMsg}
                     </span>
                   ) : (
                     "105.3 · 105.9 FM"
