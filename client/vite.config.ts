@@ -70,6 +70,19 @@ export default defineConfig({
               },
             },
           },
+          // Never cache live audio streams. They use range requests and can break
+          // badly when a service worker treats them like static assets.
+          {
+            urlPattern: ({ request, url }) =>
+              request.destination === "audio" ||
+              [
+                "s3.radio.co",
+                "stream.zeno.fm",
+                "station.voscast.com",
+                "197.248.33.26",
+              ].includes(url.hostname),
+            handler: "NetworkOnly",
+          },
           // Cache all images including external sources
           {
             urlPattern: /\.(png|jpg|jpeg|gif|svg|webp)$/i,
@@ -87,7 +100,12 @@ export default defineConfig({
           },
           // Cache external resources with cache-first strategy
           {
-            urlPattern: /^https:\/\/.*$/i,
+            urlPattern: ({ request, url }) =>
+              url.protocol === "https:" &&
+              request.destination !== "audio" &&
+              !["s3.radio.co", "stream.zeno.fm", "station.voscast.com"].includes(
+                url.hostname
+              ),
             handler: "CacheFirst",
             options: {
               cacheName: "http-cache",

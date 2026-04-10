@@ -13,38 +13,29 @@ import { MiniPlayer } from "./MiniPlayer"
 export function AppLayout() {
   const location = useLocation()
   const isRadioRoute = location.pathname.startsWith("/jesus-is-lord-radio")
-  const useCardShell = true
 
   return (
     <RadioProvider>
       <NotificationProvider>
         <TooltipProvider>
           <SidebarProvider>
-        
             <div
               className={cn(
-                "h-screen w-full overflow-hidden",
-                isRadioRoute ? "px-0" : "px-0 md:px-6 xl:px-10"
+                "h-dvh w-full overflow-hidden",
+                isRadioRoute ? "px-0" : "md:px-4 md:py-4"
               )}
               style={{ background: "var(--app-bg)", color: "var(--app-text)" }}
             >
               <div
                 className={cn(
                   "mx-auto h-full w-full overflow-hidden",
-                  useCardShell
-                    ? "max-w-[1180px] md:my-3 md:h-[calc(100vh-24px)] md:rounded-xl md:border md:shadow-[0_20px_70px_-32px_rgba(15,23,42,0.45)]"
-                    : ""
+                  isRadioRoute
+                    ? "max-w-none"
+                    : "max-w-[1240px] md:rounded-[28px] md:border md:bg-[var(--app-panel)] md:shadow-[0_24px_80px_-36px_rgba(15,23,42,0.45)]"
                 )}
-                style={
-                  useCardShell
-                    ? {
-                        background: "var(--app-card)",
-                        borderColor: "var(--app-border)",
-                      }
-                    : undefined
-                }
+                style={!isRadioRoute ? { borderColor: "var(--app-border)" } : undefined}
               >
-                <div className="relative flex h-full w-full overflow-hidden md:rounded-xl">
+                <div className="relative flex h-full w-full overflow-hidden md:rounded-[28px]">
                   <AppSidebar />
                   <SidebarInset className="relative flex w-full flex-col overflow-hidden bg-transparent">
                     <main
@@ -52,13 +43,13 @@ export function AppLayout() {
                         "relative flex min-h-0 w-full flex-1 flex-col",
                         isRadioRoute
                           ? "overflow-hidden pt-0 pb-0"
-                          : "overflow-y-auto pt-8 pb-24 md:pb-6"
+                          : "overflow-y-auto pt-20 pb-28 md:pb-8"
                       )}
                     >
                       <div
                         className={cn(
                           "w-full",
-                          isRadioRoute ? "px-0" : "px-4 sm:px-6"
+                          isRadioRoute ? "px-0" : "px-4 sm:px-6 lg:px-8"
                         )}
                       >
                         <div
@@ -66,19 +57,9 @@ export function AppLayout() {
                             "mx-auto w-full",
                             isRadioRoute
                               ? "max-w-none"
-                              : "max-w-4xl xl:max-w-6xl"
+                              : "max-w-5xl"
                           )}
                         >
-                          <div className="hidden justify-end pt-2 pb-4 lg:flex">
-                            <div
-                              className="inline-flex items-center gap-1 rounded-xl border p-1 shadow-sm"
-                              style={{
-                                background: "var(--app-surface)",
-                                borderColor: "var(--app-border)",
-                              }}
-                            ></div>
-                          </div>
-
                           <div className="w-full">
                             <InstallBanner />
                             <Outlet />
