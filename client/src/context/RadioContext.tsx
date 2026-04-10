@@ -331,7 +331,9 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       try {
         // Create AudioContext on first interaction
         if (!audioContext) {
-          audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+          audioContext = new (
+            window.AudioContext || (window as any).webkitAudioContext
+          )()
           source = audioContext.createMediaElementSource(audioRef.current!)
 
           // Create analyser and connect
