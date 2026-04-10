@@ -260,11 +260,11 @@ function SegmentedEQ({
           spectralMass > 0 ? centroid / spectralMass : maxSpectralBin * 0.3
 
         const minBin = 3
-        const maxBin = Math.min(freqDataRef.current.length - 1, maxSpectralBin)
+        const maxBin = Math.min(freqDataRef.current.length - 1, Math.floor(freqDataRef.current.length * 0.75))
         const centroidNorm = Math.min(1, centroid / Math.max(1, maxSpectralBin))
         const noiseGate = Math.max(
-          0.012,
-          0.024 + rms * 0.045 - meanEnergy * 0.03
+          0.06,
+          0.08 + rms * 0.03 - meanEnergy * 0.05
         )
         const now = performance.now()
 
@@ -275,23 +275,13 @@ function SegmentedEQ({
           const jitter = jitterRef.current[i]
           const response = responseRef.current[i]
 
-          // Keep the spectrum musically active by biasing toward low-mid bands.
-          const barPhase = (i * 0.41 + barT * 1.3) % 1
-          const baseT = Math.pow(barT, 1.48)
-          const freqT = Math.min(
-            1,
-            baseT * 0.64 + barPhase * 0.18 + centroidNorm * 0.13 + jitter
-          )
-          const activeMaxBin = Math.floor(minBin + (maxBin - minBin) * 0.8)
-          const bin = Math.floor(
-            minBin +
-              freqT * (activeMaxBin - minBin) +
-              Math.sin(phaseRef.current[i] + now * 0.0008) * 4
-          )
-          const radius = 1 + Math.floor(1.5 + distFromCenter * 8)
-          const offset = Math.floor(
-            Math.sin(phaseRef.current[i] * 0.5 + i * 0.11 + now * 0.0012) * 3
-          )
+          // Map bar directly to frequency bin without decorative animation
+          const minBin = 3
+          const maxBin = Math.min(freqDataRef.current.length - 1, Math.floor(freqDataRef.current.length * 0.75))
+          const bin = Math.floor(minBin + barT * (maxBin - minBin))
+          
+          const radius = Math.max(1, Math.floor(0.5 + distFromCenter * 4))
+          const offset = 0
           const rawValue = Math.min(
             1,
             sampleBand(freqDataRef.current, bin, radius, offset) *
@@ -300,19 +290,19 @@ function SegmentedEQ({
 
           // Staggered dynamics: each bar has slightly different attack/release
           const indexStagger =
-            Math.sin((i * 0.19 + now * 0.00015) % Math.PI) * 0.1
-          const attack = (0.5 + centerWeight * 0.2 + indexStagger) * response
+            Math.sin((i * 0.19) % Math.PI) * 0.08
+          const attack = (0.6 + centerWeight * 0.15 + indexStagger) * response
           const release =
-            (0.15 + centerWeight * 0.14 + indexStagger * 0.4) *
-            (0.92 + response * 0.18)
+            (0.12 + centerWeight * 0.12 + indexStagger * 0.3) *
+            (0.95 + response * 0.15)
 
           const prev = smoothRef.current[i]
-          const edgeFloor = 0.004 + (1 - centerWeight) * 0.005
-          const rightTilt = 0.84 + barT * 0.3
+          const edgeFloor = 0.002 + (1 - centerWeight) * 0.003
+          const rightTilt = 0.88 + barT * 0.25
           const target = Math.max(
             edgeFloor,
             Math.max(0, rawValue - noiseGate) *
-              (0.42 + 1.34 * centerWeight) *
+              (0.48 + 1.25 * centerWeight) *
               rightTilt
           )
 
@@ -323,13 +313,13 @@ function SegmentedEQ({
         }
       } else {
         for (let i = 0; i < smoothRef.current.length; i++) {
-          smoothRef.current[i] *= 0.82
+          smoothRef.current[i] *= 0.88
         }
       }
 
-      const minHalf = 1
+      const minHalf = 0.5
       const maxHalf = height * 0.36
-      const energyScale = 0.45 + rms * 1.65
+      const energyScale = Math.max(0, 0.25 + rms * 1.5)
       const glow = Math.min(1, rms * 6)
       const span = Math.max(0, width - barPitch * (barCount - 1)) * 0.5
 
@@ -341,7 +331,7 @@ function SegmentedEQ({
         const level = Math.pow(Math.max(0, smoothRef.current[i]), 0.88)
         const half = Math.min(
           maxHalf,
-          minHalf + level * maxHalf * energyScale * (0.32 + 0.9 * centerWeight)
+          minHalf + level * maxHalf * energyScale * (0.28 + 0.95 * centerWeight)
         )
         const color = colorAt(t)
 
