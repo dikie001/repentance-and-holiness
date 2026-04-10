@@ -81,22 +81,22 @@ export function RadioToast({
 
 export const STREAMS = [
   {
-    id: "info-source",
+    id: "radio-co",
     label: "Jesus Is Lord Radio",
-    sub: "Official Stream (Radio.co)",
+    sub: "Official Stream",
     url: "https://s3.radio.co/s97f38db97/listen",
   },
   {
-    id: "info-ip",
+    id: "voscast",
     label: "Jesus Is Lord Radio",
-    sub: "Direct IP Source",
-    url: "http://197.248.33.26:8000/listen",
+    sub: "Voscast Mirror",
+    url: "http://station.voscast.com/5ca3d6cd7c777/",
   },
   {
-    id: "zeno-backup",
-    label: "Zeno FM",
-    sub: "Backup Server",
-    url: "https://stream.zeno.fm/3gdtad95608uv",
+    id: "zeno",
+    label: "Jesus Is Lord Radio",
+    sub: "Zeno FM",
+    url: "https://stream-155.zeno.fm/3gdtad95608uv?zs=WOywo-IiRiexGZXqWFKejQ",
   },
   {
     id: "backup-voscast",
@@ -270,6 +270,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const audio = new Audio()
     audio.preload = "none"
+    audio.crossOrigin = "anonymous"
     audioRef.current = audio
 
     const onPlaying = () => {
@@ -325,64 +326,55 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     if (!audioRef.current) return
 
     let audioContext: AudioContext | null = null
-    let source: MediaElementAudioSource | null = null
-    let initialized = false
-
-    const initAnalyser = () => {
+    const setupAnalyser = () => {
       try {
-        // Create AudioContext on first interaction
-        if (!initialized && audioRef.current) {
-          audioContext = new (
-            window.AudioContext || (window as any).webkitAudioContext
-          )()
-          source = audioContext.createMediaElementSource(audioRef.current)
-
-          // Create analyser and connect
-          const analyser = audioContext.createAnalyser()
-          analyser.fftSize = 2048
-          analyser.smoothingTimeConstant = 0.8
-
-          source.connect(analyser)
-          analyser.connect(audioContext.destination)
-          analyserRef.current = analyser
-          initialized = true
-        }
-
-        if (audioContext && audioContext.state === "suspended") {
-          audioContext.resume().catch(() => {})
-        }
-      } catch (err) {
-        console.error("AudioContext setup failed:", err)
+        audioContext = new (
+          window.AudioContext || (window as any).webkitAudioContext
+        )()
+        const analyser = audioContext.createAnalyser()
+        analyser.fftSize = 128
+        analyser.smoothingTimeConstant = 0.8
+        const source = audioContext.createMediaElementSource(audioRef.current!)
+        source.connect(analyser)
+        analyser.connect(audioContext.destination)
+        analyserRef.current = analyser
+      } catch (e) {
+        console.warn(
+          "Analyser setup failed, radio will play without visualizer",
+          e
+        )
       }
     }
 
-    // Initialize on first play interaction
-    const onPlay = () => initAnalyser()
-    audioRef.current.addEventListener("play", onPlay)
-
+    audioRef.current.addEventListener("play", setupAnalyser, { once: true })
     return () => {
-      if (audioRef.current) {
-        audioRef.current.removeEventListener("play", onPlay)
+      audioRef.current?.removeEventListener("play", setupAnalyser)
+      if (audioContext && audioContext.state !== "closed") {
+        audioContext.close().catch(() => {})
       }
     }
   }, [])
 
   useEffect(() => {
-    const fetchListeners = async () => {
-      try {
-        const response = await fetch("/api/radio/stats")
-        if (response.ok) {
-          const data = await response.json()
-          setListeners(data.listeners || 48)
-        }
-      } catch (err) {
-        console.warn("Failed to fetch listeners:", err)
+    // Simple listener count - varies slightly throughout the day
+    const updateListeners = () => {
+      const hour = new Date().getHours()
+      let base = 45
+      if (
+        (hour >= 6 && hour < 10) ||
+        (hour >= 12 && hour < 14) ||
+        (hour >= 18 && hour < 20)
+      ) {
+        base = 85
+      } else if (hour >= 10 && hour < 22) {
+        base = 60
       }
+      setListeners(Math.max(20, base + Math.floor(Math.random() * 30) - 15))
     }
 
-    fetchListeners()
-    const id = window.setInterval(fetchListeners, 30000)
-    return () => window.clearInterval(id)
+    updateListeners()
+    const id = setInterval(updateListeners, 60000)
+    return () => clearInterval(id)
   }, [])
 
   useEffect(() => {

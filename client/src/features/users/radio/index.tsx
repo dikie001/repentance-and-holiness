@@ -104,11 +104,6 @@ function SegmentedEQ({
   const animRef = useRef<number | null>(null)
   const smoothRef = useRef<Float32Array>(new Float32Array(0))
   const freqDataRef = useRef<Uint8Array>(new Uint8Array(0))
-  const timeDataRef = useRef<Uint8Array>(new Uint8Array(0))
-  const phaseRef = useRef<Float32Array>(new Float32Array(0))
-  const jitterRef = useRef<Float32Array>(new Float32Array(0))
-  const responseRef = useRef<Float32Array>(new Float32Array(0))
-  const normRef = useRef(1)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -116,22 +111,15 @@ function SegmentedEQ({
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    const resizeCanvas = () => {
-      const width = Math.max(240, canvas.clientWidth)
-      const height = Math.max(120, canvas.clientHeight)
-      const dpr = Math.max(1, window.devicePixelRatio || 1)
-      const nextW = Math.floor(width * dpr)
-      const nextH = Math.floor(height * dpr)
-      if (canvas.width !== nextW || canvas.height !== nextH) {
-        canvas.width = nextW
-        canvas.height = nextH
-      }
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width * devicePixelRatio
+      canvas.height = rect.height * devicePixelRatio
+      ctx.scale(devicePixelRatio, devicePixelRatio)
     }
-
-    resizeCanvas()
-    const resizeObserver = new ResizeObserver(resizeCanvas)
-    resizeObserver.observe(canvas)
+    resize()
+    const obs = new ResizeObserver(resize)
+    obs.observe(canvas)
 
     const colorAt = (t: number) => {
       // Reduce saturation and lightness for subtle, elegant spectrum

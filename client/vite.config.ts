@@ -103,9 +103,11 @@ export default defineConfig({
             urlPattern: ({ request, url }) =>
               url.protocol === "https:" &&
               request.destination !== "audio" &&
-              !["s3.radio.co", "stream.zeno.fm", "station.voscast.com"].includes(
-                url.hostname
-              ),
+              ![
+                "s3.radio.co",
+                "stream.zeno.fm",
+                "station.voscast.com",
+              ].includes(url.hostname),
             handler: "CacheFirst",
             options: {
               cacheName: "http-cache",
