@@ -260,12 +260,12 @@ function SegmentedEQ({
           spectralMass > 0 ? centroid / spectralMass : maxSpectralBin * 0.3
 
         const minBin = 3
-        const maxBin = Math.min(freqDataRef.current.length - 1, Math.floor(freqDataRef.current.length * 0.75))
-        const centroidNorm = Math.min(1, centroid / Math.max(1, maxSpectralBin))
-        const noiseGate = Math.max(
-          0.06,
-          0.08 + rms * 0.03 - meanEnergy * 0.05
+        const maxBin = Math.min(
+          freqDataRef.current.length - 1,
+          Math.floor(freqDataRef.current.length * 0.75)
         )
+        const centroidNorm = Math.min(1, centroid / Math.max(1, maxSpectralBin))
+        const noiseGate = Math.max(0.08, 0.1 + rms * 0.02 - meanEnergy * 0.04)
         const now = performance.now()
 
         for (let i = 0; i < barCount; i++) {
@@ -275,12 +275,16 @@ function SegmentedEQ({
           const jitter = jitterRef.current[i]
           const response = responseRef.current[i]
 
-          // Map bar directly to frequency bin without decorative animation
+          // Intelligent frequency mapping: distribute bars logarithmically
           const minBin = 3
-          const maxBin = Math.min(freqDataRef.current.length - 1, Math.floor(freqDataRef.current.length * 0.75))
+          const maxBin = Math.min(
+            freqDataRef.current.length - 1,
+            Math.floor(freqDataRef.current.length * 0.75)
+          )
+
+          // Use barT position to map to frequency bin
           const bin = Math.floor(minBin + barT * (maxBin - minBin))
-          
-          const radius = Math.max(1, Math.floor(0.5 + distFromCenter * 4))
+          const radius = 1 + Math.floor(1 + distFromCenter * 5)
           const offset = 0
           const rawValue = Math.min(
             1,
@@ -289,20 +293,20 @@ function SegmentedEQ({
           )
 
           // Staggered dynamics: each bar has slightly different attack/release
-          const indexStagger =
-            Math.sin((i * 0.19) % Math.PI) * 0.08
-          const attack = (0.6 + centerWeight * 0.15 + indexStagger) * response
+          const indexStagger = Math.sin((i * 0.19) % Math.PI) * 0.1
+          const attack =
+            (0.52 + centerWeight * 0.22 + indexStagger * 0.4) * response
           const release =
-            (0.12 + centerWeight * 0.12 + indexStagger * 0.3) *
-            (0.95 + response * 0.15)
+            (0.14 + centerWeight * 0.14 + indexStagger * 0.35) *
+            (0.92 + response * 0.18)
 
           const prev = smoothRef.current[i]
-          const edgeFloor = 0.002 + (1 - centerWeight) * 0.003
-          const rightTilt = 0.88 + barT * 0.25
+          const edgeFloor = 0.003 + (1 - centerWeight) * 0.004
+          const rightTilt = 0.85 + barT * 0.3
           const target = Math.max(
             edgeFloor,
             Math.max(0, rawValue - noiseGate) *
-              (0.48 + 1.25 * centerWeight) *
+              (0.44 + 1.35 * centerWeight) *
               rightTilt
           )
 
@@ -317,9 +321,9 @@ function SegmentedEQ({
         }
       }
 
-      const minHalf = 0.5
+      const minHalf = 1
       const maxHalf = height * 0.36
-      const energyScale = Math.max(0, 0.25 + rms * 1.5)
+      const energyScale = 0.5 + rms * 1.5
       const glow = Math.min(1, rms * 6)
       const span = Math.max(0, width - barPitch * (barCount - 1)) * 0.5
 

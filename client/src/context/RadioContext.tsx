@@ -322,20 +322,57 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   }, [muted, notify, startLoadingTimer, stopLoadingTimer, volume])
 
   useEffect(() => {
+    if (!audioRef.current) return
+
+    let audioContext: AudioContext | null = null
+    let source: MediaElementAudioSource | null = null
+
+    const initAnalyser = async () => {
+      try {
+        // Create AudioContext on first interaction
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+          source = audioContext.createMediaElementSource(audioRef.current!)
+
+          // Create analyser and connect
+          const analyser = audioContext.createAnalyser()
+          analyser.fftSize = 2048
+          analyser.smoothingTimeConstant = 0.8
+
+          source.connect(analyser)
+          analyser.connect(audioContext.destination)
+          analyserRef.current = analyser
+        }
+
+        if (audioContext && audioContext.state === "suspended") {
+          await audioContext.resume()
+        }
+      } catch (err) {
+        console.warn("AudioContext setup failed:", err)
+      }
+    }
+
+    // Initialize on first play interaction
+    const onPlay = () => initAnalyser()
+    audioRef.current.addEventListener("play", onPlay)
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.removeEventListener("play", onPlay)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
     const fetchListeners = async () => {
       try {
         const response = await fetch("/api/radio/stats")
         if (response.ok) {
           const data = await response.json()
-          setListeners(data.listeners || 42)
+          setListeners(data.listeners || 48)
         }
-      } catch {
-        setListeners((current) =>
-          Math.max(
-            1,
-            current + (Math.random() > 0.5 ? 1 : -1) * ~~(Math.random() * 3)
-          )
-        )
+      } catch (err) {
+        console.warn("Failed to fetch listeners:", err)
       }
     }
 
