@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-1b3d9405'], (function (workbox) { 'use strict';
+define(['./workbox-0f654660'], (function (workbox) { 'use strict';
 
   self.skipWaiting();
   workbox.clientsClaim();
@@ -82,7 +82,7 @@ define(['./workbox-1b3d9405'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.fjqiraglg5"
+    "revision": "0.s3aomlvq2e8"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
@@ -99,6 +99,10 @@ define(['./workbox-1b3d9405'], (function (workbox) { 'use strict';
       statuses: [0, 200]
     })]
   }), 'GET');
+  workbox.registerRoute(({
+    request,
+    url
+  }) => request.destination === "audio" || ["s3.radio.co", "stream.zeno.fm", "station.voscast.com", "197.248.33.26"].includes(url.hostname), new workbox.NetworkOnly(), 'GET');
   workbox.registerRoute(/\.(png|jpg|jpeg|gif|svg|webp)$/i, new workbox.CacheFirst({
     "cacheName": "image-cache",
     plugins: [new workbox.ExpirationPlugin({
@@ -108,7 +112,10 @@ define(['./workbox-1b3d9405'], (function (workbox) { 'use strict';
       statuses: [0, 200]
     })]
   }), 'GET');
-  workbox.registerRoute(/^https:\/\/.*$/i, new workbox.CacheFirst({
+  workbox.registerRoute(({
+    request,
+    url
+  }) => url.protocol === "https:" && request.destination !== "audio" && !["s3.radio.co", "stream.zeno.fm", "station.voscast.com"].includes(url.hostname), new workbox.CacheFirst({
     "cacheName": "http-cache",
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 50,
