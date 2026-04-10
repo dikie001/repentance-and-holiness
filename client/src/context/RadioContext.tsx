@@ -326,15 +326,16 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
     let audioContext: AudioContext | null = null
     let source: MediaElementAudioSource | null = null
+    let initialized = false
 
-    const initAnalyser = async () => {
+    const initAnalyser = () => {
       try {
         // Create AudioContext on first interaction
-        if (!audioContext) {
+        if (!initialized && audioRef.current) {
           audioContext = new (
             window.AudioContext || (window as any).webkitAudioContext
           )()
-          source = audioContext.createMediaElementSource(audioRef.current!)
+          source = audioContext.createMediaElementSource(audioRef.current)
 
           // Create analyser and connect
           const analyser = audioContext.createAnalyser()
@@ -344,13 +345,14 @@ export function RadioProvider({ children }: { children: ReactNode }) {
           source.connect(analyser)
           analyser.connect(audioContext.destination)
           analyserRef.current = analyser
+          initialized = true
         }
 
         if (audioContext && audioContext.state === "suspended") {
-          await audioContext.resume()
+          audioContext.resume().catch(() => {})
         }
       } catch (err) {
-        console.warn("AudioContext setup failed:", err)
+        console.error("AudioContext setup failed:", err)
       }
     }
 
