@@ -109,11 +109,11 @@ function LiveRadioCard() {
             <span className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-black tracking-[0.2em] text-cyan-400 uppercase">
               Live Radio
             </span>
-            {playing && (
+            {/* {playing && (
               <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-[10px] font-black tracking-[0.2em] text-red-400 uppercase">
                 On Air
               </span>
-            )}
+            )} */}
             {recording && (
               <span className="rounded-full border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-[10px] font-black tracking-[0.12em] text-rose-400 uppercase">
                 Rec {recordingLabel}
@@ -163,38 +163,6 @@ function LiveRadioCard() {
 export default function HomePage() {
   return (
     <div className="space-y-8 pb-6">
-      <section
-        className="rounded-[32px] border px-5 py-6 md:px-7 md:py-8"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(14,165,233,0.08) 0%, var(--app-card) 48%, var(--app-surface) 100%)",
-          borderColor: "var(--app-border)",
-        }}
-      >
-        <div className="max-w-3xl">
-          <p
-            className="text-[11px] font-black tracking-[0.22em] uppercase"
-            style={{ color: "var(--app-text-faint)" }}
-          >
-            Repentance and Holiness
-          </p>
-          <h1
-            className="mt-3 text-3xl font-black tracking-tight md:text-4xl"
-            style={{ color: "var(--app-text)" }}
-          >
-            One place for the live radio, teachings, worship, and ministry
-            updates.
-          </h1>
-          <p
-            className="mt-3 max-w-2xl text-sm leading-7 md:text-base"
-            style={{ color: "var(--app-text-muted)" }}
-          >
-            Follow the broadcast, listen back to featured messages, and browse
-            recent ministry content without the crowded dashboard feel.
-          </p>
-        </div>
-      </section>
-
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div>

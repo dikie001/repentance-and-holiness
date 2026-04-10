@@ -270,7 +270,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const audio = new Audio()
     audio.preload = "none"
-    audio.crossOrigin = "anonymous"
     audioRef.current = audio
 
     const onPlaying = () => {
@@ -325,34 +324,25 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!audioRef.current) return
 
-    let audioContext: AudioContext | null = null
     const setupAnalyser = () => {
       try {
-        audioContext = new (
+        const ctx = new (
           window.AudioContext || (window as any).webkitAudioContext
         )()
-        const analyser = audioContext.createAnalyser()
-        analyser.fftSize = 128
-        analyser.smoothingTimeConstant = 0.8
-        const source = audioContext.createMediaElementSource(audioRef.current!)
+        const analyser = ctx.createAnalyser()
+        analyser.fftSize = 256
+        analyser.smoothingTimeConstant = 0.85
+        const source = ctx.createMediaElementSource(audioRef.current!)
         source.connect(analyser)
-        analyser.connect(audioContext.destination)
+        analyser.connect(ctx.destination)
         analyserRef.current = analyser
       } catch (e) {
-        console.warn(
-          "Analyser setup failed, radio will play without visualizer",
-          e
-        )
+        console.warn("Analyser setup failed", e)
       }
     }
 
     audioRef.current.addEventListener("play", setupAnalyser, { once: true })
-    return () => {
-      audioRef.current?.removeEventListener("play", setupAnalyser)
-      if (audioContext && audioContext.state !== "closed") {
-        audioContext.close().catch(() => {})
-      }
-    }
+    return () => audioRef.current?.removeEventListener("play", setupAnalyser)
   }, [])
 
   useEffect(() => {
