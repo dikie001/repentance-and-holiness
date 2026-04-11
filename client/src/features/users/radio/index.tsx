@@ -55,7 +55,7 @@ export default function RadioPlayer() {
           `}</style>
           <div
             className={cn(
-              "mb-8 spin-logo overflow-hidden rounded-full border-4 shadow-2xl",
+              "spin-logo mb-8 overflow-hidden rounded-full border-4 shadow-2xl",
               isDark
                 ? "border-blue-400 bg-black/50"
                 : "border-blue-500 bg-white/50"
@@ -166,7 +166,9 @@ export default function RadioPlayer() {
         <div
           className={cn(
             "mb-8 w-full max-w-sm rounded-xl p-4 backdrop-blur-sm",
-            isDark ? "bg-white/5 border border-white/10" : "bg-white/60 border border-white/40"
+            isDark
+              ? "border border-white/10 bg-white/5"
+              : "border border-white/40 bg-white/60"
           )}
         >
           <div className="flex items-center gap-4">
@@ -232,7 +234,9 @@ export default function RadioPlayer() {
           <div
             className={cn(
               "rounded-xl p-4 text-center backdrop-blur-sm",
-              isDark ? "bg-white/5 border border-white/10" : "bg-white/60 border border-white/40"
+              isDark
+                ? "border border-white/10 bg-white/5"
+                : "border border-white/40 bg-white/60"
             )}
           >
             <p
