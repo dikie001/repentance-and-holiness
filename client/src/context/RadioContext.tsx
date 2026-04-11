@@ -311,7 +311,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       if (recTimer.current) clearInterval(recTimer.current)
       stopLoadingTimer()
     }
-  }, [muted, notify, startLoadingTimer, stopLoadingTimer, volume])
+  }, [notify, startLoadingTimer, stopLoadingTimer])
 
   useEffect(() => {
     if (!audioRef.current) return
@@ -338,9 +338,8 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = muted ? 0 : volume / 100
-    }
+    if (!audioRef.current) return
+    audioRef.current.volume = muted ? 0 : volume / 100
   }, [volume, muted])
 
   const togglePlay = useCallback(() => {

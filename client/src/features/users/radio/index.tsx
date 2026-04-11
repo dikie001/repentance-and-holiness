@@ -37,26 +37,34 @@ export default function RadioPlayer() {
       className={cn(
         "relative flex h-full flex-col overflow-hidden",
         isDark
-          ? "bg-gradient-to-br from-[#0a0a14] via-[#0f0f23] to-[#0a0a14]"
-          : "bg-gradient-to-br from-blue-50 to-indigo-50"
+          ? "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"
+          : "bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50"
       )}
     >
-      <main className="flex flex-1 flex-col items-center justify-center px-4 py-8 pb-24">
+      <main className="flex flex-1 flex-col items-center justify-center px-4 py-8 pb-32">
         {/* Logo Section */}
         <div className="relative mb-12 flex flex-col items-center pt-4">
+          <style>{`
+            @keyframes spin-smooth {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+            .spin-logo {
+              animation: spin-smooth 8s linear infinite;
+            }
+          `}</style>
           <div
             className={cn(
-              "mb-8 animate-spin overflow-hidden rounded-2xl border-4 shadow-2xl",
+              "mb-8 spin-logo overflow-hidden rounded-full border-4 shadow-2xl",
               isDark
                 ? "border-blue-400 bg-black/50"
                 : "border-blue-500 bg-white/50"
             )}
-            style={{ animationDuration: "6s" }}
           >
             <img
               src="/images/radio-logo.png"
               alt="Jesus Is Lord Radio"
-              className="h-48 w-48 object-cover"
+              className="h-56 w-56 object-cover"
               onError={(e) => {
                 e.currentTarget.src =
                   "https://static-media.streema.com/media/cache/b8/70/b870ab4505ebd20d76984a8ea8025007.jpg"
@@ -65,7 +73,7 @@ export default function RadioPlayer() {
           </div>
           <h1
             className={cn(
-              "text-4xl font-black tracking-tight",
+              "text-5xl font-black tracking-tighter",
               isDark ? "text-white" : "text-slate-900"
             )}
           >
@@ -73,11 +81,11 @@ export default function RadioPlayer() {
           </h1>
           <p
             className={cn(
-              "mt-2 text-base font-medium",
-              isDark ? "text-sky-300" : "text-blue-600"
+              "mt-3 text-lg font-semibold tracking-wide",
+              isDark ? "text-cyan-400" : "text-blue-600"
             )}
           >
-            Repentance & Holiness Ministry
+            Repentance &amp; Holiness
           </p>
         </div>
 
@@ -157,8 +165,8 @@ export default function RadioPlayer() {
         {/* Volume Control */}
         <div
           className={cn(
-            "mb-8 w-full max-w-sm rounded-xl p-4",
-            isDark ? "bg-white/5" : "bg-white/50"
+            "mb-8 w-full max-w-sm rounded-xl p-4 backdrop-blur-sm",
+            isDark ? "bg-white/5 border border-white/10" : "bg-white/60 border border-white/40"
           )}
         >
           <div className="flex items-center gap-4">
@@ -223,8 +231,8 @@ export default function RadioPlayer() {
         <div className="w-full max-w-sm space-y-4">
           <div
             className={cn(
-              "rounded-xl p-4 text-center",
-              isDark ? "bg-white/5" : "bg-white/50"
+              "rounded-xl p-4 text-center backdrop-blur-sm",
+              isDark ? "bg-white/5 border border-white/10" : "bg-white/60 border border-white/40"
             )}
           >
             <p
