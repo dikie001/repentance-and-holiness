@@ -12,13 +12,14 @@ import {
 import { useRadio, STREAMS } from "@/context/RadioContext"
 
 /**
- * Minimal, lightweight radio player
- * Removed visualizer, recordings, sleep timer - focus on playback
+ * Professional radio player
+ * Clean, minimal interface optimized for streaming
  */
 export default function RadioPlayer() {
   const {
     playing,
     loading,
+    error,
     streamIdx,
     volume,
     muted,
@@ -55,7 +56,9 @@ export default function RadioPlayer() {
             />
           </div>
           <h1 className="text-3xl font-black">Jesus Is Lord Radio</h1>
-          <p className="mt-2 text-sm opacity-70">Repentance & Holiness Ministry</p>
+          <p className="mt-2 text-sm opacity-70">
+            Repentance & Holiness Ministry
+          </p>
           {loading && (
             <p className="mt-2 text-xs text-cyan-400">Connecting...</p>
           )}

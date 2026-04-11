@@ -337,8 +337,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     return () => audioRef.current?.removeEventListener("play", setupAnalyser)
   }, [])
 
-
-
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = muted ? 0 : volume / 100
