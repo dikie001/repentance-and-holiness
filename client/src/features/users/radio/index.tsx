@@ -41,7 +41,7 @@ export default function RadioPlayer() {
           : "bg-gradient-to-br from-blue-50 to-indigo-50"
       )}
     >
-      <main className="flex flex-1 flex-col items-center justify-center px-4 py-8">
+      <main className="flex flex-1 flex-col items-center justify-center px-4 py-8 pb-24">
         {/* Logo Section */}
         <div className="relative mb-12 flex flex-col items-center pt-4">
           <div
