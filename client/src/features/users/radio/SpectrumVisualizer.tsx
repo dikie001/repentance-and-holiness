@@ -53,8 +53,7 @@ export function SpectrumVisualizer({
         // Smooth the value with previous height
         const smoothFactor = 0.6
         const smoothedValue =
-          prevHeightsRef.current[i] * smoothFactor +
-          value * (1 - smoothFactor)
+          prevHeightsRef.current[i] * smoothFactor + value * (1 - smoothFactor)
         prevHeightsRef.current[i] = smoothedValue
 
         // Calculate bar height (inverted so it goes upward)
@@ -70,10 +69,7 @@ export function SpectrumVisualizer({
         const saturation = 90 + smoothedValue * 10
         const lightness = 45 + smoothedValue * 15
 
-        gradient.addColorStop(
-          0,
-          `hsl(${hue}, ${saturation}%, ${lightness}%)`
-        )
+        gradient.addColorStop(0, `hsl(${hue}, ${saturation}%, ${lightness}%)`)
         gradient.addColorStop(
           0.5,
           `hsl(${hue + 20}, ${saturation}%, ${lightness - 5}%)`
