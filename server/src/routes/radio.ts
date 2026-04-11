@@ -1,5 +1,7 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
+import https from "https";
+import http from "http";
 
 const router = Router();
 
@@ -8,6 +10,22 @@ interface ListenerStats {
   peakListeners: number;
   lastUpdated: string;
 }
+
+// Stream configurations
+const STREAMS = [
+  {
+    id: "radio-co",
+    url: "https://s3.radio.co/s97f38db97/listen",
+  },
+  {
+    id: "voscast",
+    url: "http://station.voscast.com/5ca3d6cd7c777/",
+  },
+  {
+    id: "zeno",
+    url: "https://stream-155.zeno.fm/3gdtad95608uv?zs=WOywo-IiRiexGZXqWFKejQ",
+  },
+] as const
 
 // Cache to avoid excessive API calls
 const listenerCache: { data: ListenerStats | null; timestamp: number } = {
