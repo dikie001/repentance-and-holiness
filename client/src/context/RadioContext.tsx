@@ -83,26 +83,20 @@ export const STREAMS = [
   {
     id: "radio-co",
     label: "Jesus Is Lord Radio",
-    sub: "Official Stream",
+    sub: "Primary Stream",
     url: "https://s3.radio.co/s97f38db97/listen",
   },
   {
     id: "voscast",
     label: "Jesus Is Lord Radio",
-    sub: "Voscast Mirror",
+    sub: "Backup Stream",
     url: "http://station.voscast.com/5ca3d6cd7c777/",
   },
   {
     id: "zeno",
     label: "Jesus Is Lord Radio",
-    sub: "Zeno FM",
+    sub: "Alternative Stream",
     url: "https://stream-155.zeno.fm/3gdtad95608uv?zs=WOywo-IiRiexGZXqWFKejQ",
-  },
-  {
-    id: "backup-voscast",
-    label: "Voscast",
-    sub: "Backup 2",
-    url: "https://station.voscast.com/5ca3d6cd7c777/",
   },
 ] as const
 
@@ -120,7 +114,6 @@ interface RadioState {
   streamIdx: number
   volume: number
   muted: boolean
-  listeners: number
   analyserRef: React.MutableRefObject<AnalyserNode | null>
   recording: boolean
   recordings: Recording[]
@@ -184,7 +177,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const [muted, setMutedState] = useState(() =>
     readStoredBool(LS_KEYS.muted, false)
   )
-  const [listeners, setListeners] = useState(48)
   const [recording, setRecording] = useState(false)
   const [recordings, setRecordings] = useState<Recording[]>([])
   const [recDuration, setRecDuration] = useState(0)
@@ -345,27 +337,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     return () => audioRef.current?.removeEventListener("play", setupAnalyser)
   }, [])
 
-  useEffect(() => {
-    // Simple listener count - varies slightly throughout the day
-    const updateListeners = () => {
-      const hour = new Date().getHours()
-      let base = 45
-      if (
-        (hour >= 6 && hour < 10) ||
-        (hour >= 12 && hour < 14) ||
-        (hour >= 18 && hour < 20)
-      ) {
-        base = 85
-      } else if (hour >= 10 && hour < 22) {
-        base = 60
-      }
-      setListeners(Math.max(20, base + Math.floor(Math.random() * 30) - 15))
-    }
 
-    updateListeners()
-    const id = setInterval(updateListeners, 60000)
-    return () => clearInterval(id)
-  }, [])
 
   useEffect(() => {
     if (audioRef.current) {
@@ -643,7 +615,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
         streamIdx,
         volume,
         muted,
-        listeners,
         analyserRef,
         togglePlay,
         switchStream,

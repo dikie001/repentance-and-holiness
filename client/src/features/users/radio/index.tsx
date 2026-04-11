@@ -22,7 +22,6 @@ export default function RadioPlayer() {
     streamIdx,
     volume,
     muted,
-    listeners,
     togglePlay,
     switchStream,
     setVolume,
@@ -56,8 +55,7 @@ export default function RadioPlayer() {
             />
           </div>
           <h1 className="text-3xl font-black">Jesus Is Lord Radio</h1>
-          <p className="mt-2 text-sm opacity-70">Repentance & Holiness</p>
-          <p className="mt-1 text-xs opacity-50">{listeners} listening</p>
+          <p className="mt-2 text-sm opacity-70">Repentance & Holiness Ministry</p>
           {loading && (
             <p className="mt-2 text-xs text-cyan-400">Connecting...</p>
           )}
