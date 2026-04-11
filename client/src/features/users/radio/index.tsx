@@ -128,72 +128,7 @@ export default function RadioPlayer() {
           </div>
         )}
 
-        {/* Volume Control */}
-        <div
-          className={cn(
-            "mb-8 w-full max-w-sm rounded-xl p-4 backdrop-blur-sm",
-            isDark
-              ? "border border-white/10 bg-white/5"
-              : "border border-white/40 bg-white/60"
-          )}
-        >
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setMuted(!muted)}
-              className={cn(
-                "transition-colors",
-                isDark
-                  ? "text-cyan-400 hover:text-cyan-300"
-                  : "text-blue-600 hover:text-blue-500"
-              )}
-              aria-label={muted ? "Unmute" : "Mute"}
-            >
-              {muted || volume === 0 ? (
-                <VolumeX size={22} />
-              ) : (
-                <Volume2 size={22} />
-              )}
-            </button>
-            <div className="relative flex-1">
-              <div
-                className={cn(
-                  "h-2.5 rounded-full",
-                  isDark ? "bg-gray-700" : "bg-gray-300"
-                )}
-              >
-                <div
-                  className={cn(
-                    "h-full rounded-full transition-all",
-                    isDark
-                      ? "bg-gradient-to-r from-blue-500 to-cyan-400"
-                      : "bg-gradient-to-r from-blue-500 to-blue-600"
-                  )}
-                  style={{ width: `${muted ? 0 : volume}%` }}
-                />
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={muted ? 0 : volume}
-                onChange={(e) => {
-                  setVolume(+e.target.value)
-                  setMuted(false)
-                }}
-                className="absolute inset-y-[-6px] w-full cursor-pointer opacity-0"
-                aria-label="Volume"
-              />
-            </div>
-            <span
-              className={cn(
-                "min-w-10 text-right text-sm font-semibold",
-                isDark ? "text-gray-400" : "text-gray-600"
-              )}
-            >
-              {muted ? "0" : volume}%
-            </span>
-          </div>
-        </div>
+
 
         {/* Current Stream Info & Selector */}
         <div className="w-full max-w-sm space-y-4">

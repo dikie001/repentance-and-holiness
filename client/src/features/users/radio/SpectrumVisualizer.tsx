@@ -33,7 +33,12 @@ export function SpectrumVisualizer({
       analyser.getByteFrequencyData(dataArray)
 
       // Clear canvas with gradient background
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+      const gradient = ctx.createLinearGradient(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      )
       gradient.addColorStop(0, "rgba(30, 41, 59, 0)")
       gradient.addColorStop(0.5, "rgba(99, 102, 241, 0.05)")
       gradient.addColorStop(1, "rgba(30, 41, 59, 0)")
@@ -49,30 +54,28 @@ export function SpectrumVisualizer({
       for (let i = 0; i < bars; i++) {
         const angle = (i / bars) * Math.PI * 2
         const dataIndex = Math.floor((i / bars) * dataArray.length)
-        const value = dataArray[dataIndex] / 255
+        const rawValue = dataArray[dataIndex] ?? 0
+        const value = Math.max(0, Math.min(1, rawValue / 255))
 
         // Smooth the value
         const barHeight = value * 40 + 5
 
-        const x1 = centerX + Math.cos(angle) * radius
-        const y1 = centerY + Math.sin(angle) * radius
-        const x2 = centerX + Math.cos(angle) * (radius + barHeight)
-        const y2 = centerY + Math.sin(angle) * (radius + barHeight)
+        const cosAngle = Math.cos(angle)
+        const sinAngle = Math.sin(angle)
+        
+        const x1 = centerX + cosAngle * radius
+        const y1 = centerY + sinAngle * radius
+        const x2 = centerX + cosAngle * (radius + barHeight)
+        const y2 = centerY + sinAngle * (radius + barHeight)
 
         // Create gradient for each bar
         const barGradient = ctx.createLinearGradient(x1, y1, x2, y2)
         const hue = (i / bars) * 360
-        barGradient.addColorStop(
-          0,
-          `hsl(${hue}, 100%, 50%)`
-        )
-        barGradient.addColorStop(
-          1,
-          `hsl(${(hue + 60) % 360}, 100%, 60%)`
-        )
+        barGradient.addColorStop(0, `hsl(${hue}, 100%, 50%)`)
+        barGradient.addColorStop(1, `hsl(${(hue + 60) % 360}, 100%, 60%)`)
 
         ctx.strokeStyle = barGradient
-        ctx.lineWidth = Math.max(2, 3 * value)
+        ctx.lineWidth = Math.max(1, 3 * value)
         ctx.lineCap = "round"
         ctx.beginPath()
         ctx.moveTo(x1, y1)
