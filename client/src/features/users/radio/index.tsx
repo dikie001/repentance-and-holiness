@@ -46,7 +46,7 @@ export default function RadioPlayer() {
         <div className="relative mb-12 flex flex-col items-center pt-4">
           <div
             className={cn(
-              "mb-8 overflow-hidden rounded-2xl border-4 shadow-2xl animate-spin",
+              "mb-8 animate-spin overflow-hidden rounded-2xl border-4 shadow-2xl",
               isDark
                 ? "border-blue-400 bg-black/50"
                 : "border-blue-500 bg-white/50"
@@ -93,7 +93,7 @@ export default function RadioPlayer() {
               isDark
                 ? "text-blue-400 hover:text-blue-300"
                 : "text-blue-600 hover:text-blue-500",
-              loading && "opacity-50 cursor-not-allowed"
+              loading && "cursor-not-allowed opacity-50"
             )}
             aria-label="Previous stream"
           >
@@ -128,7 +128,7 @@ export default function RadioPlayer() {
               isDark
                 ? "text-blue-400 hover:text-blue-300"
                 : "text-blue-600 hover:text-blue-500",
-              loading && "opacity-50 cursor-not-allowed"
+              loading && "cursor-not-allowed opacity-50"
             )}
             aria-label="Next stream"
           >
@@ -146,8 +146,8 @@ export default function RadioPlayer() {
                   ? "bg-red-900/20 text-red-300"
                   : "bg-red-100 text-red-700"
                 : isDark
-                ? "bg-cyan-900/20 text-cyan-300"
-                : "bg-cyan-100 text-cyan-700"
+                  ? "bg-cyan-900/20 text-cyan-300"
+                  : "bg-cyan-100 text-cyan-700"
             )}
           >
             {error || "Connecting..."}
@@ -223,34 +223,46 @@ export default function RadioPlayer() {
         <div className="w-full max-w-sm space-y-4">
           <div
             className={cn(
-              "text-center rounded-xl p-4",
+              "rounded-xl p-4 text-center",
               isDark ? "bg-white/5" : "bg-white/50"
             )}
           >
-            <p className={cn(
-              "text-sm font-semibold",
-              isDark ? "text-cyan-300" : "text-blue-600"
-            )}>{STREAMS[streamIdx].label}</p>
-            <p className={cn(
-              "text-xs mt-1",
-              isDark ? "text-gray-400" : "text-gray-600"
-            )}>{STREAMS[streamIdx].sub}</p>
+            <p
+              className={cn(
+                "text-sm font-semibold",
+                isDark ? "text-cyan-300" : "text-blue-600"
+              )}
+            >
+              {STREAMS[streamIdx].label}
+            </p>
+            <p
+              className={cn(
+                "mt-1 text-xs",
+                isDark ? "text-gray-400" : "text-gray-600"
+              )}
+            >
+              {STREAMS[streamIdx].sub}
+            </p>
           </div>
 
           {/* Stream selector */}
           <div className="space-y-2">
-            <p className={cn(
-              "text-xs font-semibold uppercase tracking-wide text-center",
-              isDark ? "text-gray-400" : "text-gray-600"
-            )}>Available Streams</p>
-            <div className="flex flex-wrap gap-2 justify-center">
+            <p
+              className={cn(
+                "text-center text-xs font-semibold tracking-wide uppercase",
+                isDark ? "text-gray-400" : "text-gray-600"
+              )}
+            >
+              Available Streams
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
               {STREAMS.map((stream, idx) => (
                 <button
                   key={stream.id}
                   onClick={() => switchStream(idx)}
                   disabled={loading}
                   className={cn(
-                    "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200",
+                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200",
                     streamIdx === idx
                       ? isDark
                         ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30"
@@ -258,7 +270,7 @@ export default function RadioPlayer() {
                       : isDark
                         ? "bg-white/10 text-gray-300 hover:bg-white/20"
                         : "bg-gray-200 text-gray-700 hover:bg-gray-300",
-                    loading && "opacity-60 cursor-not-allowed"
+                    loading && "cursor-not-allowed opacity-60"
                   )}
                 >
                   {idx + 1}

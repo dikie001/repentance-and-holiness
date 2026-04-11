@@ -25,7 +25,7 @@ const STREAMS = [
     id: "zeno",
     url: "https://stream-155.zeno.fm/3gdtad95608uv?zs=WOywo-IiRiexGZXqWFKejQ",
   },
-] as const
+] as const;
 
 // Cache to avoid excessive API calls
 const listenerCache: { data: ListenerStats | null; timestamp: number } = {
