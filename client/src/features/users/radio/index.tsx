@@ -1,15 +1,8 @@
 ﻿import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
-import {
-  Play,
-  Pause,
-  Loader2,
-  SkipBack,
-  SkipForward,
-  VolumeX,
-  Volume2,
-} from "lucide-react"
+import { Play, Pause, Loader2 } from "lucide-react"
 import { useRadio, STREAMS } from "@/context/RadioContext"
+import { SpectrumVisualizer } from "./SpectrumVisualizer"
 
 /**
  * Professional radio player
@@ -21,12 +14,9 @@ export default function RadioPlayer() {
     loading,
     error,
     streamIdx,
-    volume,
-    muted,
     togglePlay,
     switchStream,
-    setVolume,
-    setMuted,
+    analyserRef,
   } = useRadio()
 
   const { theme } = useTheme()
@@ -90,57 +80,33 @@ export default function RadioPlayer() {
         </div>
 
         {/* Play Controls */}
-        <div className="mb-16 flex items-center justify-center gap-8">
-          <button
-            onClick={() =>
-              switchStream((streamIdx - 1 + STREAMS.length) % STREAMS.length)
-            }
-            disabled={loading}
-            className={cn(
-              "transition-all duration-200 active:scale-90",
-              isDark
-                ? "text-blue-400 hover:text-blue-300"
-                : "text-blue-600 hover:text-blue-500",
-              loading && "cursor-not-allowed opacity-50"
-            )}
-            aria-label="Previous stream"
-          >
-            <SkipBack size={36} fill="currentColor" />
-          </button>
-
+        <div className="relative mb-16 flex items-center justify-center">
           <button
             onClick={() => togglePlay()}
             disabled={loading}
             className={cn(
-              "relative grid h-28 w-28 place-items-center rounded-full shadow-2xl transition-all duration-200",
+              "relative grid h-32 w-32 place-items-center rounded-full shadow-2xl transition-all duration-200",
               isDark
-                ? "bg-gradient-to-br from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400"
-                : "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500",
+                ? "bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:via-indigo-500 hover:to-cyan-400"
+                : "bg-gradient-to-br from-blue-500 via-indigo-500 to-blue-600 hover:from-blue-400 hover:via-indigo-400 hover:to-blue-500",
               loading ? "opacity-75" : "hover:scale-110 active:scale-95"
             )}
           >
-            {loading ? (
-              <Loader2 size={56} className="animate-spin text-white" />
-            ) : playing ? (
-              <Pause size={56} fill="white" color="white" />
-            ) : (
-              <Play size={56} fill="white" color="white" className="ml-1" />
-            )}
-          </button>
+            {/* Spectrum Visualizer Background */}
+            <div className="absolute inset-0 overflow-hidden rounded-full">
+              <SpectrumVisualizer analyserRef={analyserRef} playing={playing} />
+            </div>
 
-          <button
-            onClick={() => switchStream((streamIdx + 1) % STREAMS.length)}
-            disabled={loading}
-            className={cn(
-              "transition-all duration-200 active:scale-90",
-              isDark
-                ? "text-blue-400 hover:text-blue-300"
-                : "text-blue-600 hover:text-blue-500",
-              loading && "cursor-not-allowed opacity-50"
-            )}
-            aria-label="Next stream"
-          >
-            <SkipForward size={36} fill="currentColor" />
+            {/* Play/Pause Icon */}
+            <div className="relative z-10">
+              {loading ? (
+                <Loader2 size={64} className="animate-spin text-white" />
+              ) : playing ? (
+                <Pause size={64} fill="white" color="white" />
+              ) : (
+                <Play size={64} fill="white" color="white" className="ml-1" />
+              )}
+            </div>
           </button>
         </div>
 
