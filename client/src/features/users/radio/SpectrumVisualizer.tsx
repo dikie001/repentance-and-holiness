@@ -11,76 +11,94 @@ export function SpectrumVisualizer({
 }: SpectrumVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number | null>(null)
+  const prevHeightsRef = useRef<number[]>([])
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { alpha: true })
     if (!ctx) return
+
+    const bars = 128
+    const barWidth = canvas.width / bars
+    const gapWidth = barWidth * 0.15
+
+    // Initialize previous heights for smoothing
+    if (prevHeightsRef.current.length === 0) {
+      prevHeightsRef.current = Array(bars).fill(0)
+    }
 
     const draw = () => {
       const analyser = analyserRef.current
+
+      // Clear with semi-transparent background for fade effect
+      ctx.fillStyle = "rgba(15, 23, 42, 0.1)"
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
       if (!analyser || !playing) {
-        // Draw empty state
-        ctx.fillStyle = "rgba(99, 102, 241, 0.2)"
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        animationRef.current = requestAnimationFrame(draw)
+        // Fade out idle bars
+        requestAnimationFrame(draw)
         return
       }
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount)
       analyser.getByteFrequencyData(dataArray)
 
-      // Clear canvas with gradient background
-      const gradient = ctx.createLinearGradient(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      )
-      gradient.addColorStop(0, "rgba(30, 41, 59, 0)")
-      gradient.addColorStop(0.5, "rgba(99, 102, 241, 0.05)")
-      gradient.addColorStop(1, "rgba(30, 41, 59, 0)")
-      ctx.fillStyle = gradient
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-      // Draw spectrum bars in a circular pattern
-      const bars = 64
-      const centerX = canvas.width / 2
-      const centerY = canvas.height / 2
-      const radius = 80
-
+      // Draw horizontal spectrum bars with smoothing
       for (let i = 0; i < bars; i++) {
-        const angle = (i / bars) * Math.PI * 2
         const dataIndex = Math.floor((i / bars) * dataArray.length)
-        const rawValue = dataArray[dataIndex] ?? 0
-        const value = Math.max(0, Math.min(1, rawValue / 255))
+        const value = (dataArray[dataIndex] ?? 0) / 255
 
-        // Smooth the value
-        const barHeight = value * 40 + 5
+        // Smooth the value with previous height
+        const smoothFactor = 0.6
+        const smoothedValue =
+          prevHeightsRef.current[i] * smoothFactor +
+          value * (1 - smoothFactor)
+        prevHeightsRef.current[i] = smoothedValue
 
-        const cosAngle = Math.cos(angle)
-        const sinAngle = Math.sin(angle)
-        
-        const x1 = centerX + cosAngle * radius
-        const y1 = centerY + sinAngle * radius
-        const x2 = centerX + cosAngle * (radius + barHeight)
-        const y2 = centerY + sinAngle * (radius + barHeight)
+        // Calculate bar height (inverted so it goes upward)
+        const barHeight = smoothedValue * canvas.height
+        const x = i * barWidth + gapWidth / 2
+        const y = canvas.height - barHeight
 
-        // Create gradient for each bar
-        const barGradient = ctx.createLinearGradient(x1, y1, x2, y2)
-        const hue = (i / bars) * 360
-        barGradient.addColorStop(0, `hsl(${hue}, 100%, 50%)`)
-        barGradient.addColorStop(1, `hsl(${(hue + 60) % 360}, 100%, 60%)`)
+        // Create gradient from pink/magenta to more vibrant colors
+        const gradient = ctx.createLinearGradient(x, y, x, canvas.height)
 
-        ctx.strokeStyle = barGradient
-        ctx.lineWidth = Math.max(1, 3 * value)
-        ctx.lineCap = "round"
+        // Pink/Red/Magenta gradient similar to the image
+        const hue = 340 + i * 0.15 // Pink to magenta range
+        const saturation = 90 + smoothedValue * 10
+        const lightness = 45 + smoothedValue * 15
+
+        gradient.addColorStop(
+          0,
+          `hsl(${hue}, ${saturation}%, ${lightness}%)`
+        )
+        gradient.addColorStop(
+          0.5,
+          `hsl(${hue + 20}, ${saturation}%, ${lightness - 5}%)`
+        )
+        gradient.addColorStop(
+          1,
+          `hsla(${hue + 40}, ${saturation}%, ${lightness - 10}%, 0.3)`
+        )
+
+        // Draw the bar with rounded top
+        ctx.fillStyle = gradient
         ctx.beginPath()
-        ctx.moveTo(x1, y1)
-        ctx.lineTo(x2, y2)
-        ctx.stroke()
+        ctx.moveTo(x, canvas.height)
+        ctx.lineTo(x, y)
+        ctx.lineTo(x + (barWidth - gapWidth), y)
+        ctx.lineTo(x + (barWidth - gapWidth), canvas.height)
+        ctx.closePath()
+        ctx.fill()
+
+        // Add subtle glow for the active bars
+        if (smoothedValue > 0.2) {
+          ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, 0.4)`
+          ctx.lineWidth = 1
+          ctx.stroke()
+        }
       }
 
       animationRef.current = requestAnimationFrame(draw)
@@ -98,9 +116,8 @@ export function SpectrumVisualizer({
   return (
     <canvas
       ref={canvasRef}
-      width={300}
-      height={300}
-      className="absolute inset-0 h-full w-full opacity-60"
+      className="h-full w-full"
+      style={{ display: "block" }}
     />
   )
 }
