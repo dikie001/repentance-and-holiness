@@ -1,103 +1,29 @@
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
-import { createPortal } from "react-dom"
-import {
-  Play,
-  Pause,
-  Loader2,
-  SkipBack,
-  SkipForward,
-  VolumeX,
-  Volume2,
-  MoreVertical,
-  X,
-  Download,
-  Trash2,
-  Info,
-  Server,
-  Mic,
-  Square,
-  Timer,
-} from "lucide-react"
+import { Play, Pause, Loader2, SkipBack, SkipForward, VolumeX, Volume2 } from "lucide-react"
 import { useRadio, STREAMS } from "@/context/RadioContext"
 
-/* ── Helpers ───────────────────────────────────────────────── */
-const fmt = (s: number) =>
-  `${Math.floor(s / 60)
-    .toString()
-    .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`
+export default function RadioPlayer() {
+  const {
+    playing,
+    loading,
+    streamIdx,
+    volume,
+    muted,
+    listeners,
+    togglePlay,
+    switchStream,
+    setVolume,
+    setMuted,
+  } = useRadio()
 
-/* ── Spectrum EQ settings ──────────────────────────────────── */
-const MIN_BARS = 56
-const MAX_BARS = 180
-
-/* ── Bottom Sheet ──────────────────────────────────────────── */
-function Sheet({
-  open,
-  onClose,
-  title,
-  children,
-}: {
-  open: boolean
-  onClose: () => void
-  title: string
-  children: React.ReactNode
-}) {
   const { theme } = useTheme()
   const isDark = theme !== "light"
-  if (!open || typeof document === "undefined") return null
-  return createPortal(
-    <div
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-      className="fixed inset-0 z-[200] flex items-end justify-center bg-black/70 backdrop-blur-lg md:items-center"
-    >
-      <div
-        className="max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-t-[28px] border border-b-0 shadow-2xl md:max-h-[82vh] md:rounded-2xl md:border"
-        style={{
-          background: isDark ? "var(--app-surface)" : "var(--app-nav-bg)",
-          borderColor: "var(--app-border)",
-        }}
-      >
-        <div
-          className={cn(
-            "mx-auto mt-4.5 h-1.5 w-11 rounded-full",
-            isDark ? "bg-neutral-700" : "bg-blue-900/10"
-          )}
-        />
-        <div className="flex items-center justify-between px-6 pt-4 pb-2">
-          <span
-            className="text-xl font-extrabold"
-            style={{ color: "var(--app-text)" }}
-          >
-            {title}
-          </span>
-          <button
-            onClick={onClose}
-            className="grid h-10 w-10 place-items-center rounded-full border transition-colors"
-            style={{
-              background: "var(--app-card)",
-              borderColor: "var(--app-border)",
-              color: "var(--app-text-muted)",
-            }}
-          >
-            <X size={22} />
-          </button>
-        </div>
-        <div className="px-6 pb-10">{children}</div>
-      </div>
-    </div>,
-    document.body
-  )
-}
 
-function SegmentedEQ({
-  analyserRef,
-  playing,
-}: {
-  analyserRef: React.MutableRefObject<AnalyserNode | null>
-  playing: boolean
-}) {
+  const handlePlayPause = useCallback(() => {
+    togglePlay()
+  }, [togglePlay])
   const { theme } = useTheme()
   const isDark = theme !== "light"
   const canvasRef = useRef<HTMLCanvasElement>(null)
